@@ -1,0 +1,1106 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auraquina</title>
+    <meta name="description" content="Auraquina" />
+    <link rel="icon" href="https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1769740142660-Untitled-1_resized128-png.webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --white: #fffefc;
+        --cream: #f4efe7;
+        --warm: #faf6ef;
+        --sand: #d6c4ae;
+        --brown: #7a503e;
+        --ink: #201916;
+        --muted: #71665d;
+        --black: #201916;
+        --text: #201916;
+        --soft: #f4efe7;
+        --border: rgba(214, 196, 174, 0.58);
+        --page-w: 1292px;
+      }
+      * {
+        box-sizing: border-box;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: geometricPrecision;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        font-family:
+          Lato,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          Oxygen,
+          Ubuntu,
+          sans-serif;
+        color: var(--text);
+        background: var(--warm);
+      }
+      body {
+        overflow-x: hidden;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      .appbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        height: 56px;
+        background: transparent;
+        color: var(--ink);
+      }
+      .notice {
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        line-height: 16px;
+        background: var(--brown);
+        color: var(--white);
+        pointer-events: none;
+      }
+      .nav-row {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 56px;
+        height: 86px;
+        display: flex;
+        align-items: center;
+        padding: 0 48px;
+        background: transparent;
+        color: var(--ink);
+        transition:
+          background 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+      .appbar.is-solid .nav-row {
+        background: rgba(255, 254, 252, 0.94);
+        box-shadow: 0 1px 0 var(--border);
+        backdrop-filter: blur(10px);
+      }
+      .brand {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 52px;
+        transform: translate(-50%, -50%);
+        font-size: 32px;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .main-nav {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-right: auto;
+      }
+      .nav-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 36px;
+        padding: 0 14px;
+        font-size: 14px;
+        line-height: 20px;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .nav-item svg {
+        width: 16px;
+        height: 16px;
+        margin-left: 2px;
+        stroke-width: 1.7;
+      }
+      .nav-item.sale {
+        font-weight: 700;
+        color: var(--brown);
+      }
+      .dropdown {
+        position: absolute;
+        top: 36px;
+        left: 50%;
+        min-width: 214px;
+        transform: translateX(-50%) translateY(8px);
+        background: var(--white);
+        box-shadow: 0 8px 24px rgba(131, 81, 61, 0.12);
+        border: 1px solid var(--border);
+        padding: 8px 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.18s ease;
+        z-index: 80;
+      }
+      .nav-item:hover .dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+      }
+      .dropdown a {
+        display: block;
+        padding: 8px 16px;
+        font-size: 13px;
+        line-height: 18px;
+        color: var(--ink);
+      }
+      .dropdown a:hover {
+        background: var(--cream);
+      }
+      .tools {
+        display: flex;
+        align-items: center;
+        margin-left: 12px;
+        gap: 4px;
+      }
+      .currency {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 36px;
+        padding: 0 10px;
+        font-size: 14px;
+        line-height: 20px;
+      }
+      .currency img {
+        width: 20.66px;
+        height: 16px;
+        border: 1px solid var(--sand);
+        object-fit: cover;
+      }
+      .icon-btn {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        color: var(--ink);
+      }
+      .icon-btn:hover,
+      .currency:hover {
+        background: var(--cream);
+      }
+      .mobile-toggle {
+        display: none;
+        margin-left: auto;
+      }
+
+      .hero {
+        position: relative;
+        z-index: 1;
+        margin-top: 0;
+        background: var(--warm);
+        overflow: hidden;
+      }
+      .hero-frame {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1.0579/1;
+      }
+      .hero-track {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        transform: translateX(calc(var(--slide, 0) * -100%));
+        transition: transform 0.45s ease-out;
+      }
+      .hero-slide {
+        position: relative;
+        flex: 0 0 100%;
+        height: 100%;
+      }
+      .hero-slide img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .below-page {
+        background: var(--warm);
+        color: var(--ink);
+      }
+      .content-wrap {
+        width: min(1184px, calc(100vw - 32px));
+        margin: 0 auto;
+      }
+      .shop-story {
+        padding: 48px 0 46px;
+        border-bottom: 1px solid var(--border);
+      }
+      .story-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 28px;
+        margin-bottom: 38px;
+      }
+      .story-head h1 {
+        max-width: 390px;
+        margin: 0;
+        font-size: 36px;
+        line-height: 1.08;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--ink);
+      }
+      .story-actions {
+        display: flex;
+        align-items: center;
+        gap: 64px;
+        padding-top: 34px;
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 700;
+        color: var(--brown);
+      }
+      .text-arrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 28px;
+        white-space: nowrap;
+      }
+      .text-arrow svg {
+        width: 18px;
+        height: 18px;
+        stroke-width: 1.8;
+      }
+      .story-layout {
+        display: grid;
+        grid-template-columns: 48px 1.08fr 2.28fr;
+        gap: 24px;
+        align-items: start;
+      }
+      .vertical-menu {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+        padding-top: 8px;
+        color: var(--ink);
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+      .vertical-menu span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 58px;
+        white-space: nowrap;
+        transform: rotate(90deg);
+        transform-origin: center;
+      }
+      .vertical-menu i {
+        display: block;
+        width: 1px;
+        height: 38px;
+        background: var(--sand);
+      }
+      .product-image {
+        display: block;
+        overflow: hidden;
+        background: var(--sand);
+      }
+      .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.35s ease;
+      }
+      .product-info {
+        display: block;
+        padding: 14px 14px 18px;
+        font-size: 14px;
+        line-height: 20px;
+        color: var(--ink);
+      }
+      .feature-card,
+      .product-card,
+      .look-card {
+        display: block;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--white);
+        color: var(--ink);
+      }
+      .feature-card {
+        min-height: 740px;
+      }
+      .feature-card .product-image {
+        aspect-ratio: 1/1.42;
+      }
+      .feature-card .product-info {
+        padding: 28px 22px 26px;
+      }
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+      .product-card:hover .product-image img,
+      .feature-card:hover .product-image img,
+      .look-card:hover img {
+        transform: scale(1.025);
+      }
+      .product-card .product-image {
+        aspect-ratio: 1/1.1;
+      }
+      .product-name {
+        margin: 0 0 12px;
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 400;
+        color: var(--ink);
+      }
+      .product-price {
+        margin: 0 0 10px;
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .product-desc {
+        max-width: 310px;
+        margin: 24px 0 28px;
+        font-size: 14px;
+        line-height: 1.65;
+        color: var(--muted);
+      }
+      .rating {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 2px;
+        font-size: 12px;
+        line-height: 16px;
+        color: var(--muted);
+      }
+      .rating svg {
+        width: 13px;
+        height: 13px;
+        fill: var(--brown);
+      }
+      .detail-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--brown);
+      }
+      .detail-link svg {
+        width: 16px;
+        height: 16px;
+        stroke-width: 1.8;
+      }
+      .lookbook {
+        padding: 0 0 64px;
+      }
+      .lookbook-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      .lookbook h2 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 28px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .lookbook-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+      .look-card {
+        border: 0;
+        border-radius: 0;
+        overflow: visible;
+        background: var(--warm);
+      }
+      .look-card figure {
+        margin: 0 0 16px;
+        overflow: hidden;
+        background: var(--sand);
+        aspect-ratio: 1.12/1;
+      }
+      .look-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.35s ease;
+      }
+      .look-card h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+        line-height: 22px;
+        color: var(--ink);
+      }
+      .look-card p {
+        margin: 0 0 16px;
+        font-size: 14px;
+        line-height: 20px;
+        color: var(--muted);
+      }
+      .lookbook-actions {
+        display: flex;
+        justify-content: center;
+        margin-top: 34px;
+      }
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 138px;
+        height: 42px;
+        padding: 0 22px;
+        border: 1px solid var(--brown);
+        border-radius: 999px;
+        background: var(--brown);
+        color: var(--white);
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 700;
+        transition:
+          background 0.18s ease,
+          color 0.18s ease,
+          transform 0.18s ease;
+      }
+      .primary-button:hover {
+        background: transparent;
+        color: var(--brown);
+        transform: translateY(-1px);
+      }
+      .service-strip {
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 34px 0;
+        background: var(--cream);
+      }
+      .service-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+      }
+      .service-item {
+        display: grid;
+        grid-template-columns: 34px 1fr;
+        gap: 14px;
+        align-items: center;
+        padding: 0 28px;
+        border-right: 1px solid var(--border);
+      }
+      .service-item:first-child {
+        padding-left: 0;
+      }
+      .service-item:last-child {
+        border-right: 0;
+        padding-right: 0;
+      }
+      .service-item svg {
+        width: 26px;
+        height: 26px;
+        fill: none;
+        stroke: var(--brown);
+        stroke-width: 1.7;
+      }
+      .service-item strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+        line-height: 18px;
+        color: var(--ink);
+      }
+      .service-item span {
+        display: block;
+        font-size: 12px;
+        line-height: 18px;
+        color: var(--muted);
+      }
+      footer {
+        background: var(--white);
+        color: var(--ink);
+      }
+      .footer-inner {
+        width: min(1184px, calc(100vw - 32px));
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.35fr 0.8fr 0.8fr 1.4fr;
+        gap: 52px;
+        padding: 36px 0 22px;
+        font-size: 13px;
+        line-height: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .footer-title {
+        margin: 0 0 14px;
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .footer-inner p {
+        margin: 0 0 8px;
+        color: var(--muted);
+      }
+      .footer-inner a {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--ink);
+      }
+      .socials {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-top: 28px;
+      }
+      .socials svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: var(--ink);
+        stroke-width: 1.9;
+      }
+      .payments {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 0;
+        font-weight: 400;
+      }
+      .payments span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 3px 11px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--cream);
+        font-size: 12px;
+        line-height: 16px;
+        color: var(--ink);
+      }
+      .copyright {
+        width: min(1184px, calc(100vw - 32px));
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 18px 0 20px;
+        font-size: 12px;
+        line-height: 18px;
+        color: var(--muted);
+      }
+      .card-logos {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--ink);
+        font-weight: 700;
+      }
+      .wa-fab {
+        position: fixed;
+        right: 22px;
+        bottom: 18px;
+        z-index: 90;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--brown);
+        color: var(--white);
+      }
+
+      .mobile-menu {
+        position: fixed;
+        inset: 0;
+        background: var(--white);
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        color: var(--ink);
+      }
+      .mobile-menu.open {
+        transform: translateX(0);
+      }
+      .mobile-head {
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .mobile-head .brand {
+        position: static;
+        height: auto;
+        transform: none;
+        font-size: 18px;
+        letter-spacing: 0.08em;
+      }
+      .mobile-links {
+        display: flex;
+        flex-direction: column;
+        padding: 12px 20px;
+        font-size: 15px;
+        line-height: 22px;
+      }
+      .mobile-links a {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      @media (max-width: 1024px) {
+        .nav-row {
+          height: 72px;
+          padding: 0 16px;
+        }
+        .brand {
+          position: static;
+          height: auto;
+          transform: none;
+          font-size: 18px;
+          letter-spacing: 0.08em;
+        }
+        .main-nav,
+        .tools {
+          display: none;
+        }
+        .mobile-toggle {
+          display: flex;
+        }
+        .hero-frame {
+          aspect-ratio: 4/5;
+        }
+        .content-wrap {
+          width: calc(100vw - 28px);
+        }
+        .shop-story {
+          padding-top: 34px;
+        }
+        .story-head {
+          display: block;
+          margin-bottom: 24px;
+        }
+        .story-head h1 {
+          font-size: 29px;
+        }
+        .story-actions {
+          padding-top: 18px;
+          gap: 26px;
+          flex-wrap: wrap;
+        }
+        .story-layout {
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+        .vertical-menu {
+          display: none;
+        }
+        .feature-card {
+          min-height: 0;
+        }
+        .product-grid,
+        .lookbook-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+        }
+        .service-grid {
+          grid-template-columns: repeat(2, 1fr);
+          row-gap: 26px;
+        }
+        .service-item {
+          padding: 0 18px;
+        }
+        .service-item:nth-child(2) {
+          border-right: 0;
+        }
+        .footer-inner {
+          grid-template-columns: 1fr 1fr;
+          gap: 28px;
+        }
+        .copyright {
+          flex-direction: column;
+        }
+        .wa-fab {
+          right: 12px;
+          bottom: 12px;
+        }
+      }
+      @media (max-width: 620px) {
+        .story-head h1 {
+          font-size: 26px;
+        }
+        .story-actions {
+          font-size: 13px;
+        }
+        .product-grid,
+        .lookbook-grid,
+        .service-grid,
+        .footer-inner {
+          grid-template-columns: 1fr;
+        }
+        .feature-card .product-info {
+          padding: 20px 16px;
+        }
+        .product-desc {
+          margin: 16px 0 20px;
+        }
+        .service-item,
+        .service-item:nth-child(2) {
+          border-right: 0;
+          padding: 0;
+        }
+        .footer-inner {
+          padding-top: 30px;
+        }
+        .copyright {
+          padding-bottom: 72px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="appbar" id="appbar">
+      <div class="notice">Max payment 1 Hour. Happy Shopping!</div>
+      <div class="nav-row">
+        <a class="brand" href="/" aria-label="Auraquina">AURAQUINA</a>
+        <button class="icon-btn mobile-toggle" id="menu-open" type="button" aria-label="Menu">
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+        </button>
+        <nav class="main-nav" aria-label="Primary navigation">
+          <a class="nav-item" href="/">Home</a>
+          <a class="nav-item" href="/shop">All Product</a>
+          <div class="nav-item">
+            Collection<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m6 9 6 6 6-6" /></svg>
+            <div class="dropdown">
+              <a href="/shop">New Arrival</a><a href="/shop">Abaya</a><a href="/shop">Khimar</a
+              ><a href="/shop">One Set</a><a href="/shop">Accessories</a>
+            </div>
+          </div>
+          <a class="nav-item sale" href="/shop">Sale</a>
+          <a class="nav-item" href="#about">About</a>
+        </nav>
+        <div class="tools">
+          <button class="icon-btn" type="button" aria-label="Account">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21a8 8 0 0 1 16 0" />
+            </svg>
+          </button>
+          <button class="icon-btn" type="button" aria-label="Search">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" />
+            </svg>
+          </button>
+          <button class="icon-btn" type="button" aria-label="Cart">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M6 7h12l-1.5 12a2 2 0 0 1-2 1.8h-5a2 2 0 0 1-2-1.8L6 7z" />
+              <path d="M9 7a3 3 0 0 1 6 0" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="mobile-head">
+        <a class="brand" href="/" aria-label="Auraquina">AURAQUINA</a
+        ><button class="icon-btn" id="menu-close" type="button" aria-label="Close">
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+      <nav class="mobile-links">
+        <a href="/">Home</a><a href="/shop">All Product</a><a href="/shop">Collection</a><a href="/shop">Sale</a
+        ><a href="#about">About</a>
+      </nav>
+    </div>
+
+    <main>
+      <section class="hero" aria-label="Featured collections">
+        <div class="hero-frame"><div class="hero-track" id="hero-track"></div></div>
+      </section>
+      <div class="below-page">
+        <section class="shop-story content-wrap" aria-labelledby="new-essentials-title">
+          <div class="story-head">
+            <h1 id="new-essentials-title">New essentials,<br />quiet silhouettes</h1>
+            <div class="story-actions">
+              <a class="text-arrow" href="/shop"
+                >Shop New Collection <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6" /></svg
+              ></a>
+              <a class="text-arrow" href="#lookbook"
+                >View Lookbook <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6" /></svg
+              ></a>
+            </div>
+          </div>
+          <div class="story-layout">
+            <nav class="vertical-menu" aria-label="Collection categories"><span>New</span><i></i><span>Abaya</span><i></i><span>Khiban</span><i></i><span>One Set</span><i></i><span>Look</span></nav>
+            <a class="feature-card" href="/shop">
+              <span class="product-image"><img src="https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/WhatsApp_Image_2026-04-26_at_205006_1777252624783_resized256-jpeg.webp" alt="Nujayl Abaya Black" loading="lazy" /></span>
+              <span class="product-info"
+                ><p class="product-name">Nujayl Abaya - Black</p>
+                <p class="product-price">Rp 489,000</p>
+                <p class="product-desc">Effortless shape with a clean drape. Made for calm days and every moment in between.</p>
+                <span class="detail-link"
+                  >View Details <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span
+              ></span>
+            </a>
+            <div class="product-grid" id="product-grid"></div>
+          </div>
+        </section>
+        <section class="lookbook content-wrap" id="lookbook" aria-labelledby="lookbook-title">
+          <div class="lookbook-head">
+            <h2 id="lookbook-title">Lookbook</h2>
+            <a class="text-arrow" href="#"
+              >View All Lookbook <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6" /></svg
+            ></a>
+          </div>
+          <div class="lookbook-grid">
+            <a class="look-card" href="#"
+              ><figure><img src="https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1777252109529-nujayl_tas_resized2048-jpg.webp" alt="Calm Mornings look" loading="lazy" /></figure>
+              <h3>Calm Mornings</h3>
+              <p>Soft layers for slow starts.</p>
+              <span class="detail-link"
+                >View Look <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span
+            ></a>
+            <a class="look-card" href="#"
+              ><figure><img src="https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1776327748043-plain_loose_hadda_medina_resized2048-jpg.webp" alt="Everyday Ease look" loading="lazy" /></figure>
+              <h3>Everyday Ease</h3>
+              <p>Simple pieces, made to move with you.</p>
+              <span class="detail-link"
+                >View Look <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span
+            ></a>
+            <a class="look-card" href="#"
+              ><figure><img src="https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1776998886122-not_too_basic_atas_resized2048-jpg.webp" alt="Evening Quiet look" loading="lazy" /></figure>
+              <h3>Evening Quiet</h3>
+              <p>Understated details, all day and night.</p>
+              <span class="detail-link"
+                >View Look <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span
+            ></a>
+          </div>
+          <div class="lookbook-actions"><a class="primary-button" href="/shop">All Product</a></div>
+        </section>
+        <section class="service-strip" aria-label="Store benefits">
+          <div class="service-grid content-wrap">
+            <div class="service-item">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2 4 6.5v9L12 20l8-4.5v-9L12 2Zm0 0v8.8m8-4.3-8 4.3m-8-4.3 8 4.3m0 9.2v-9.2" /></svg><span><strong>Premium Fabric</strong><span>Nyaman dipakai seharian.</span></span>
+            </div>
+            <div class="service-item">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 7v5l3 2m5-2a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM9 2h6" /></svg><span><strong>Timeless Design</strong><span>Gaya minimal yang selalu relevan.</span></span>
+            </div>
+            <div class="service-item">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 14a8 8 0 0 1 16 0v5a2 2 0 0 1-2 2h-2v-7h4M4 14h4v7H6a2 2 0 0 1-2-2v-5Z" /></svg
+              ><span><strong>Easy Styling</strong><span>Mudah dipadukan untuk setiap kesempatan.</span></span>
+            </div>
+            <div class="service-item">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 18a5 5 0 1 1 .8-9.9A6.5 6.5 0 0 1 20 11.5a3.5 3.5 0 0 1-.5 6.5H7Z" /></svg><span><strong>Reliable Service</strong><span>Kami siap membantu kapan saja.</span></span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <footer>
+      <div class="footer-inner">
+        <div>
+          <p class="footer-title">Auraquina Official</p>
+          <p>Admin : 0811-3662-636</p>
+          <p>Malang, East Java, Indonesia.</p>
+          <div class="socials">
+            <a href="#" aria-label="Instagram"
+              ><svg aria-hidden="true" viewBox="0 0 24 24">
+                <rect x="4" y="4" width="16" height="16" rx="4" />
+                <circle cx="12" cy="12" r="3.5" />
+                <path d="M17 7h.01" /></svg></a
+            ><a href="#" aria-label="TikTok"
+              ><svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M14 3v11.5a4 4 0 1 1-4-4" />
+                <path d="M14 6a6 6 0 0 0 5 3" /></svg></a
+            ><a href="#" aria-label="YouTube"
+              ><svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M4 8.5A3 3 0 0 1 7 6h10a3 3 0 0 1 3 2.5 18 18 0 0 1 0 7A3 3 0 0 1 17 18H7a3 3 0 0 1-3-2.5 18 18 0 0 1 0-7Z" />
+                <path d="m10 9 5 3-5 3Z" /></svg></a
+            ><a href="#" aria-label="Email"
+              ><svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M4 6h16v12H4z" />
+                <path d="m4 7 8 6 8-6" /></svg
+            ></a>
+          </div>
+        </div>
+        <div>
+          <p class="footer-title">Customer Care</p>
+          <a href="#">Contact Us</a><a href="#">Shipping Policy</a><a href="#">Return &amp; Exchange</a><a href="#">FAQ</a>
+        </div>
+        <div>
+          <p class="footer-title">Information</p>
+          <a href="#">About Us</a><a href="#">Size Guide</a><a href="#">Privacy Policy</a><a href="#">Terms &amp; Conditions</a>
+        </div>
+        <div>
+          <p class="footer-title">Payment Method</p>
+          <div class="payments"><span>QRIS</span><span>mandiri</span><span>BRI</span><span>BNI</span><span>PermataBank</span><span>Danamon</span><span>BSI</span></div>
+        </div>
+      </div>
+      <div class="copyright">
+        <span>© 2024 AURAQUINA. All Rights Reserved.</span><span class="card-logos">We Accept <b>VISA</b><b>Mastercard</b><b>BCA</b><b>mandiri</b><b>BRI</b><b>BSI</b></span>
+      </div>
+    </footer>
+    <a class="wa-fab" href="https://wa.me/628113662636" aria-label="WhatsApp"
+      ><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12a11.93 11.93 0 0 0 1.64 6.06L0 24l6.16-1.61A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.25-6.2-3.48-8.52zM12 21.8a9.78 9.78 0 0 1-5-1.37l-.36-.21-3.66.96.98-3.57-.23-.37A9.8 9.8 0 1 1 21.8 12 9.8 9.8 0 0 1 12 21.8zm5.36-7.34c-.29-.15-1.74-.86-2-.96s-.46-.15-.66.15-.76.96-.93 1.16-.34.22-.63.07a8.06 8.06 0 0 1-2.36-1.46 8.86 8.86 0 0 1-1.63-2.04c-.17-.29 0-.45.13-.6s.29-.34.43-.5a2 2 0 0 0 .29-.5.55.55 0 0 0 0-.5c-.07-.15-.66-1.6-.91-2.18s-.48-.5-.66-.5h-.57a1.1 1.1 0 0 0-.8.37 3.36 3.36 0 0 0-1.05 2.5 5.83 5.83 0 0 0 1.22 3.1 13.34 13.34 0 0 0 5.13 4.53c.71.31 1.27.5 1.7.64a4.13 4.13 0 0 0 1.88.12 3.07 3.07 0 0 0 2-1.42 2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.56-.34z"
+        /></svg
+    ></a>
+
+    <script>
+      const heroImages = [
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1777252109529-nujayl_tas_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1776998886122-not_too_basic_atas_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1776327748043-plain_loose_hadda_medina_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1776151010398-zeya_atass_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1771832642504-rayon_1_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1771547798609-fajraa_atas_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1771305399372-rua_atas_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1770794734994-Maida_series_atas_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1770266686504-eshaal_atas_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1769674838185-thuwal_1_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1769674814745-eshaal_abaya_1_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1769389587222-halaa_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1762737632775-atas_resized2048-jpg.webp',
+        'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1759043910005-COVER-SAMPUL-WEB_copy_resized256-jpg.webp',
+      ];
+      const products = [
+        [
+          'Nujayl Abaya - Black',
+          'Rp 489,000',
+          'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/WhatsApp_Image_2026-04-26_at_205006_1777252624783_resized256-jpeg.webp',
+          '/shop',
+        ],
+        [
+          'Nujayl Abaya - Blackout',
+          'Rp 489,000',
+          'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/WhatsApp_Image_2026-04-26_at_205006_2_1777253657392_resized256-jpeg.webp',
+          '/shop',
+          5,
+        ],
+        [
+          'Nujayl Abaya - Tarmac',
+          'Rp 489,000',
+          'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/WhatsApp_Image_2026-04-26_at_205038_1_1777252824266_resized256-jpeg.webp',
+          '/shop',
+        ],
+        [
+          'Nujayl Abaya - Bitter Chocolate',
+          'Rp 489,000',
+          'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/bitter_cho-2_1773662363924_resized256-jpg.webp',
+          '/shop',
+        ],
+        [
+          'Nujayl Abaya - Carafe',
+          'Rp 489,000',
+          'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/WhatsApp_Image_2026-04-26_at_205009_1777252590047_resized256-jpeg.webp',
+          '/shop',
+        ],
+        [
+          'Nujayl Abaya - Midnight Blue',
+          'Rp 489,000',
+          'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/WhatsApp_Image_2026-04-26_at_205014_1777252911877_resized256-jpeg.webp',
+          '/shop',
+          5,
+        ],
+        [
+          'Nujayl Abaya - Saneca Brown',
+          'Rp 489,000',
+          'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/WhatsApp_Image_2026-04-26_at_205037_1777252851589_resized256-jpeg.webp',
+          '/shop',
+        ],
+        ['Nujayl Abaya - Moonlight', 'Rp 489,000', 'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/moonlight-2_copy_1771997657708_resized256-jpg.webp', '/shop'],
+        [
+          'Nujayl Abaya - Blush',
+          'Rp 489,000',
+          'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/WhatsApp_Image_2026-04-26_at_205008_1777252794161_resized256-jpeg.webp',
+          '/shop',
+        ],
+        ['Nujayl Abaya - Off White', 'Rp 489,000', 'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/bw_1_1773662500007_resized256-JPEG.webp', '/shop'],
+        [
+          'Nujayl Abaya - Morel',
+          'Rp 489,000',
+          'https://d2kchovjbwl1tk.cloudfront.net/vendor/292/product/WhatsApp_Image_2026-04-26_at_205033_1777252891527_resized256-jpeg.webp',
+          '/shop',
+        ],
+      ];
+      const heroTrack = document.getElementById('hero-track');
+      heroTrack.innerHTML = heroImages.map((src, i) => `<div class="hero-slide"><img src="${src}" alt="" ${i > 2 ? 'loading="lazy"' : ''}></div>`).join('');
+      let slide = 9;
+      function setSlide(next) {
+        slide = (next + heroImages.length) % heroImages.length;
+        heroTrack.style.setProperty('--slide', slide);
+      }
+      setSlide(slide);
+      setInterval(() => setSlide(slide + 1), 5600);
+
+      const productGrid = document.getElementById('product-grid');
+      productGrid.innerHTML = products
+        .slice(1, 7)
+        .map(
+          ([name, price, img, href, rating], index) =>
+            `<a class="product-card" href="${href}"><span class="product-image"><img src="${img}" alt="Image of ${name}" loading="${index < 3 ? 'eager' : 'lazy'}"></span><span class="product-info"><p class="product-name">${name}</p><p class="product-price">${price}</p>${rating ? `<span class="rating"><svg aria-hidden="true" viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9.5 17,14.5 18.5,21.5 12,18 5.5,21.5 7,14.5 2,9.5 9,9"/></svg>${rating}</span>` : ''}</span></a>`,
+        )
+        .join('');
+
+      const appbar = document.getElementById('appbar');
+      function syncHeader() {
+        appbar.classList.toggle('is-solid', scrollY > 48);
+      }
+      syncHeader();
+      addEventListener('scroll', syncHeader, { passive: true });
+      const menu = document.getElementById('mobile-menu');
+      document.getElementById('menu-open').addEventListener('click', () => menu.classList.add('open'));
+      document.getElementById('menu-close').addEventListener('click', () => menu.classList.remove('open'));
+    </script>
+  </body>
+</html>

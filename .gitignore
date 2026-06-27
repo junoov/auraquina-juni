@@ -1,0 +1,89 @@
+# ========================
+# Laravel / PHP
+# ========================
+/vendor/
+node_modules/
+.env
+.env.backup
+.env.production
+.env.*.local
+/storage/*.key
+/storage/pail
+/public/build
+/public/hot
+/public/storage
+/public/fonts-manifest.dev.json
+/.phpunit.cache
+.phpunit.result.cache
+.phpactor.json
+_ide_helper.php
+_ide_helper_models.php
+Homestead.json
+Homestead.yaml
+auth.json
+*.log
+
+# ========================
+# OS & Editor
+# ========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+/.idea
+/.vscode
+/.zed
+/.nova
+/.codex
+/.cursor
+
+# ========================
+# AI / Agent Tools (JANGAN DI-COMMIT - bikin repo bengkak!)
+# ========================
+/.claude/
+/.codegraph/
+/.kiro/
+/.omo/
+/.sisyphus/
+/.playwright-mcp/
+*.mcp.json
+
+# ========================
+# Product images (terlalu besar - 1.8GB+)
+# ========================
+/storage/app/public/produk/
+
+# ========================
+# Database dumps & data
+# ========================
+*.sql
+*.sqlite
+*.sqlite-journal
+/database/*.sqlite
+
+# ========================
+# Screenshots & temp files (dr AI tools)
+# ========================
+*.png
+*.jpg
+*.jpeg
+!public/**/*.png
+!public/**/*.jpg
+!public/**/*.jpeg
+!resources/**/*.png
+!resources/**/*.jpg
+!resources/**/*.jpeg
+
+# ========================
+# Misc temp / generated
+# ========================
+/downloads/
+nul
+*.md.bak
+*-snapshot.md
+serve.log
+serve-sqlite.log
+.php_cs.cache
+.csa-cache/
