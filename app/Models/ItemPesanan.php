@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ItemPesanan extends Model
 {
@@ -31,5 +32,14 @@ class ItemPesanan extends Model
     public function varian(): BelongsTo
     {
         return $this->belongsTo(VarianProduk::class, 'varian_id');
+    }
+
+    public function getFullGambarUrlAttribute(): ?string
+    {
+        if (!$this->gambar_url) return null;
+        if (str_starts_with($this->gambar_url, 'http://') || str_starts_with($this->gambar_url, 'https://')) {
+            return $this->gambar_url;
+        }
+        return Storage::disk('public')->url($this->gambar_url);
     }
 }

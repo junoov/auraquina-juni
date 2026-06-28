@@ -8,6 +8,7 @@ use DomainException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\HasActivity;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -15,6 +16,7 @@ use Throwable;
 
 class Pesanan extends Model
 {
+    use HasActivity;
     public const STATUS_PENDING_PAYMENT = 'pending_payment';
     public const STATUS_PAID = 'paid';
     public const STATUS_PROCESSING = 'processing';
@@ -55,6 +57,10 @@ class Pesanan extends Model
         'total',
         'batas_bayar',
         'dibayar_pada',
+        'midtrans_snap_token',
+        'midtrans_redirect_url',
+        'midtrans_status',
+        'midtrans_raw_response',
         'stock_reserved_at',
     ];
 
