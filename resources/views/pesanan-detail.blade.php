@@ -73,29 +73,65 @@
 
       <hr class="border-[var(--border)]" />
 
-      {{-- QRIS Section --}}
-      @if ($pesanan->status === 'pending_payment' && str_contains(strtolower($pesanan->metode_pembayaran), 'qris'))
+      @php
+        $midtransData = $pesanan->midtrans_raw_response ? json_decode($pesanan->midtrans_raw_response) : null;
+      @endphp
+
+      {{-- Midtrans Payment (QRIS, Transfer Bank, GoPay, OVO, etc.) --}}
+      @if ($pesanan->status === 'pending_payment' && !str_contains(strtolower($pesanan->metode_pembayaran), 'cod'))
         <section class="py-8 text-center">
-          <p class="mb-4 text-[12px] font-bold uppercase tracking-wide text-[var(--ink)]">QRIS</p>
+          <p class="mb-4 text-[12px] font-bold uppercase tracking-wide text-[var(--ink)]">Pembayaran</p>
+          <p class="mb-4 text-[12px] text-[var(--muted)]">{{ $pesanan->metode_pembayaran }}</p>
 
-          {{-- QR placeholder --}}
-          <div class="mx-auto mb-3 flex h-[180px] w-[180px] items-center justify-center border border-[var(--border)] bg-[#FAFAFA]">
-            <div class="text-center">
-              <svg class="mx-auto mb-1 text-[var(--muted)]" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.7">
-                <rect x="2" y="2" width="8" height="8" rx="1"/>
-                <rect x="14" y="2" width="8" height="8" rx="1"/>
-                <rect x="2" y="14" width="8" height="8" rx="1"/>
-                <rect x="14" y="14" width="4" height="4"/>
-                <rect x="18" y="18" width="4" height="4"/>
-                <rect x="4" y="4" width="4" height="4" fill="currentColor" opacity="0.2"/>
-                <rect x="16" y="4" width="4" height="4" fill="currentColor" opacity="0.2"/>
-                <rect x="4" y="16" width="4" height="4" fill="currentColor" opacity="0.2"/>
-              </svg>
-              <p class="text-[10px] text-[var(--muted)]">Placeholder</p>
+          @if ($midtransData && ($midtransData->payment_type ?? '') === 'gopay' && isset($midtransData->actions[0]->url))
+            {{-- QR Code Display --}}
+            <div class="mx-auto mb-3 flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-white max-w-[280px] shadow-sm">
+              <img src="https://gopay.co.id/icon.png" onerror="this.style.display='none'" alt="GoPay" class="h-6 mb-4 object-contain">
+              <img src="{{ $midtransData->actions[0]->url }}" alt="QR Code" class="w-[200px] h-[200px] object-cover mb-4">
+              <p class="text-[11px] text-[var(--muted)]">Scan QR code menggunakan aplikasi GoPay atau aplikasi QRIS lainnya</p>
             </div>
-          </div>
+          @elseif ($midtransData && isset($midtransData->va_numbers[0]->va_number))
+            {{-- Virtual Account Display --}}
+            <div class="mx-auto mb-3 flex flex-col items-center justify-center p-6 rounded-xl border border-[var(--border)] bg-white max-w-[320px] shadow-sm">
+              <p class="text-[12px] text-[var(--muted)] mb-1">Nomor Virtual Account</p>
+              <div class="flex items-center gap-3 mb-2">
+                <p class="text-[24px] font-bold tracking-wider text-[var(--ink)]" id="va-number">{{ $midtransData->va_numbers[0]->va_number }}</p>
+                <button onclick="navigator.clipboard.writeText('{{ $midtransData->va_numbers[0]->va_number }}'); alert('Tersalin!')" class="text-[var(--brown)] hover:opacity-80" aria-label="Copy">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+              <p class="text-[12px] font-bold text-[var(--ink)] uppercase">{{ $midtransData->va_numbers[0]->bank }}</p>
+            </div>
+          @elseif ($midtransData && isset($midtransData->biller_code) && isset($midtransData->bill_key))
+            {{-- Mandiri Bill Payment Display --}}
+            <div class="mx-auto mb-3 flex flex-col items-center justify-center p-6 rounded-xl border border-[var(--border)] bg-white max-w-[320px] shadow-sm">
+              <p class="text-[12px] text-[var(--muted)] mb-1">Kode Perusahaan</p>
+              <div class="flex items-center gap-3 mb-4">
+                <p class="text-[20px] font-bold tracking-wider text-[var(--ink)]">{{ $midtransData->biller_code }}</p>
+                <button onclick="navigator.clipboard.writeText('{{ $midtransData->biller_code }}'); alert('Tersalin!')" class="text-[var(--brown)] hover:opacity-80" aria-label="Copy">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+              
+              <p class="text-[12px] text-[var(--muted)] mb-1">Nomor Pembayaran</p>
+              <div class="flex items-center gap-3 mb-2">
+                <p class="text-[20px] font-bold tracking-wider text-[var(--ink)]">{{ $midtransData->bill_key }}</p>
+                <button onclick="navigator.clipboard.writeText('{{ $midtransData->bill_key }}'); alert('Tersalin!')" class="text-[var(--brown)] hover:opacity-80" aria-label="Copy">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+              <p class="text-[12px] font-bold text-[var(--ink)] uppercase">MANDIRI BILL PAYMENT</p>
+            </div>
+          @else
+            <div class="mx-auto mb-3 flex h-[180px] w-[280px] flex-col items-center justify-center rounded-xl border border-[var(--border)] bg-[#FAFAFA] text-center p-4">
+              <svg class="mx-auto mb-2 text-[var(--muted)]" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              <p class="text-[13px] font-bold text-[var(--ink)] mb-1">Sedang memproses pembayaran...</p>
+              <p class="text-[11px] text-[var(--muted)]">Mohon tunggu atau muat ulang halaman</p>
+              <button onclick="window.location.reload()" class="mt-3 text-[11px] font-bold text-[var(--brown)] hover:underline">Muat Ulang</button>
+            </div>
+          @endif
 
-          <p class="text-[12px] text-[var(--muted)]">QR Code berlaku selama</p>
+          <p class="mt-4 text-[12px] text-[var(--muted)]">Pembayaran berlaku selama</p>
           <p id="qr-countdown" class="text-[14px] font-bold text-[var(--ink)]"></p>
         </section>
 
@@ -103,17 +139,38 @@
 
         {{-- How to pay --}}
         <section class="py-6">
-          <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">How to pay</h3>
-          <ol class="list-inside list-decimal space-y-1.5 text-[12px] leading-relaxed text-[var(--muted)]">
-            <li>Open your chosen app to make the payment, such as GoPay, OVO, BCA Mobile, etc.</li>
-            <li>Choose pay with QR method.</li>
-            <li>Scan QR Code from the order detail.</li>
-            <li>Follow the instruction and confirm your payment from the app.</li>
-          </ol>
+          <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">Cara Pembayaran</h3>
+          
+          @if ($midtransData && ($midtransData->payment_type ?? '') === 'gopay')
+            <ol class="list-inside list-decimal space-y-1.5 text-[12px] leading-relaxed text-[var(--muted)]">
+              <li>Buka aplikasi <strong>GoPay</strong>, <strong>OVO</strong>, <strong>Dana</strong>, atau aplikasi mobile banking yang mendukung QRIS.</li>
+              <li>Pilih menu <strong>Scan QR / Bayar</strong>.</li>
+              <li>Arahkan kamera ke QR Code di atas, atau simpan gambar QR dan upload dari galeri.</li>
+              <li>Periksa detail pembayaran (Pastikan nama merchant: <strong>Auraquina</strong>).</li>
+              <li>Pilih <strong>Bayar</strong> dan masukkan PIN Anda.</li>
+            </ol>
+          @elseif ($midtransData && isset($midtransData->va_numbers[0]->va_number))
+            <ol class="list-inside list-decimal space-y-1.5 text-[12px] leading-relaxed text-[var(--muted)]">
+              <li>Buka aplikasi Mobile Banking atau ATM bank Anda.</li>
+              <li>Pilih menu <strong>Transfer</strong> > <strong>Virtual Account</strong>.</li>
+              <li>Masukkan Nomor Virtual Account: <strong>{{ $midtransData->va_numbers[0]->va_number }}</strong>.</li>
+              <li>Masukkan nominal tagihan: <strong>Rp {{ number_format($pesanan->total, 0, ',', '.') }}</strong>.</li>
+              <li>Periksa detail pembayaran dan pastikan nama merchant benar.</li>
+              <li>Pilih <strong>Bayar/Konfirmasi</strong> dan masukkan PIN Anda.</li>
+            </ol>
+          @elseif ($midtransData && isset($midtransData->biller_code))
+            <ol class="list-inside list-decimal space-y-1.5 text-[12px] leading-relaxed text-[var(--muted)]">
+              <li>Buka aplikasi Livin' by Mandiri atau ATM Mandiri.</li>
+              <li>Pilih menu <strong>Bayar</strong> > <strong>Multipayment</strong>.</li>
+              <li>Masukkan Kode Perusahaan: <strong>{{ $midtransData->biller_code }}</strong> (Midtrans).</li>
+              <li>Masukkan Nomor Pembayaran: <strong>{{ $midtransData->bill_key }}</strong>.</li>
+              <li>Periksa detail pembayaran dan konfirmasi.</li>
+            </ol>
+          @endif
 
           <div class="mt-4 flex items-start gap-2 rounded bg-[#F5F5F5] px-3 py-2.5">
             <svg class="mt-0.5 flex-shrink-0 text-[var(--muted)]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-            <p class="text-[11px] leading-relaxed text-[var(--muted)]">Follow payment instructions on our website and avoid sharing personal info elsewhere.</p>
+            <p class="text-[11px] leading-relaxed text-[var(--muted)]">Halaman ini akan otomatis diperbarui ketika pembayaran berhasil.</p>
           </div>
         </section>
 
@@ -127,29 +184,19 @@
         <hr class="border-[var(--border)]" />
       @endif
 
-      {{-- Transfer Bank --}}
-      @if ($pesanan->status === 'pending_payment' && str_contains(strtolower($pesanan->metode_pembayaran), 'transfer'))
+      {{-- COD (Bayar di Tempat) --}}
+      @if ($pesanan->status === 'pending_payment' && str_contains(strtolower($pesanan->metode_pembayaran), 'cod'))
         <section class="py-8 text-center">
-          <p class="mb-3 text-[12px] font-bold uppercase tracking-wide text-[var(--ink)]">{{ $pesanan->metode_pembayaran }}</p>
+          <p class="mb-3 text-[12px] font-bold uppercase tracking-wide text-[var(--ink)]">COD (Bayar di Tempat)</p>
           <div class="mx-auto max-w-[280px] rounded bg-[#F5F5F5] p-4">
-            <p class="mb-1 text-[11px] text-[var(--muted)]">Nomor Rekening</p>
-            <p class="text-[18px] font-bold tracking-[0.04em] text-[var(--ink)]">XXXX-XXXX-XXXX</p>
-            <p class="mt-1 text-[11px] text-[var(--muted)]">a.n. Auraquina Official</p>
+            <svg class="mx-auto mb-2 text-green-600" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+              <path d="M8 12l3 3 5-5"/>
+            </svg>
+            <p class="mb-1 text-[13px] font-bold text-[var(--ink)]">Siapkan uang tunai</p>
+            <p class="text-[12px] text-[var(--muted)]">Bayar langsung ke kurir saat barang diterima</p>
           </div>
-          <p class="mt-3 text-[12px] text-[var(--muted)]">Transfer tepat <strong>Rp {{ number_format($pesanan->total, 0, ',', '.') }}</strong></p>
-        </section>
-
-        <hr class="border-[var(--border)]" />
-
-        <section class="py-6">
-          <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">How to pay</h3>
-          <ol class="list-inside list-decimal space-y-1.5 text-[12px] leading-relaxed text-[var(--muted)]">
-            <li>Open your mobile banking or go to ATM.</li>
-            <li>Select Transfer menu.</li>
-            <li>Enter the account number above.</li>
-            <li>Enter the exact amount as shown.</li>
-            <li>Confirm and save the receipt.</li>
-          </ol>
+          <p class="mt-3 text-[12px] text-[var(--muted)]">Total yang harus dibayar: <strong>Rp {{ number_format($pesanan->total, 0, ',', '.') }}</strong></p>
         </section>
 
         <hr class="border-[var(--border)]" />
@@ -163,7 +210,7 @@
           <div class="flex items-start gap-3 {{ !$loop->last ? 'mb-4 pb-4 border-b border-[var(--border)]' : 'mb-4' }}">
             <div class="h-[56px] w-[44px] flex-shrink-0 overflow-hidden rounded bg-[#F5F5F5]">
               @if ($item->gambar_url)
-                <img src="{{ $item->gambar_url }}" alt="{{ $item->nama_produk }}" class="h-full w-full object-cover" />
+                <img src="{{ $item->full_gambar_url }}" alt="{{ $item->nama_produk }}" class="h-full w-full object-cover" />
               @endif
             </div>
             <div class="flex-1 min-w-0">
@@ -279,6 +326,15 @@
 
       {{-- Back --}}
       <div class="space-y-3 pb-10 pt-4 text-center">
+        @if ($pesanan->status === 'pending_payment')
+          <button
+            type="button"
+            id="btn-pay-now"
+            onclick="payWithMidtrans()"
+            class="inline-flex h-[42px] items-center justify-center rounded bg-[var(--brown)] px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:opacity-85">
+            Bayar Sekarang
+          </button>
+        @endif
         <a href="{{ route('pesanan.invoice', $pesanan->kode_pesanan) }}" class="inline-flex h-[42px] items-center justify-center rounded border border-[var(--border)] bg-white px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] transition hover:bg-[var(--cream)]">Buka Invoice</a>
         @if ($pesanan->status === 'pending_payment')
           <form method="POST" action="{{ URL::temporarySignedRoute('pesanan.cancel', now()->addDays(30), ['kode' => $pesanan->kode_pesanan]) }}">
@@ -320,6 +376,44 @@
           }
           tick();
         })();
+      @endif
+
+      @if ($pesanan->status === 'pending_payment' && !str_contains(strtolower($pesanan->metode_pembayaran), 'cod'))
+        let isPolling = true;
+        
+        async function checkPaymentStatus() {
+          if (!isPolling) return;
+          
+          try {
+            const response = await fetch('{{ route('pesanan.show', $pesanan->kode_pesanan) }}', {
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+              }
+            });
+            
+            if (response.redirected || response.status === 200) {
+              // Read status from a small API or just reload if we see it changed 
+              // Better: just fetch a specific status endpoint, but for now we can 
+              // just reload the page and let the server decide.
+              // Actually, fetching the page and checking the HTML is easiest without a new route
+              const html = await response.text();
+              if (!html.includes('pending_payment') || html.includes('Sudah Dibayar')) {
+                isPolling = false;
+                window.location.reload();
+              }
+            }
+          } catch (e) {
+            console.error('Polling error', e);
+          }
+          
+          if (isPolling) {
+            setTimeout(checkPaymentStatus, 5000);
+          }
+        }
+        
+        // Start polling
+        setTimeout(checkPaymentStatus, 5000);
       @endif
     </script>
   </body>

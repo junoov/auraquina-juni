@@ -2,11 +2,12 @@
 
 namespace App\Filament\Admin\Resources\Pesanans;
 
-use App\Filament\Admin\Resources\Pesanans\Pages\CreatePesanan;
 use App\Filament\Admin\Resources\Pesanans\Pages\EditPesanan;
 use App\Filament\Admin\Resources\Pesanans\Pages\ListPesanans;
+use App\Filament\Admin\Resources\Pesanans\Pages\ViewPesanan;
 use App\Filament\Admin\Resources\Pesanans\RelationManagers\ItemsRelationManager;
 use App\Filament\Admin\Resources\Pesanans\Schemas\PesananForm;
+use App\Filament\Admin\Resources\Pesanans\Schemas\PesananInfolist;
 use App\Filament\Admin\Resources\Pesanans\Tables\PesanansTable;
 use App\Models\Pesanan;
 use BackedEnum;
@@ -39,6 +40,11 @@ class PesananResource extends Resource
         return PesananForm::configure($schema);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return PesananInfolist::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return PesanansTable::configure($table);
@@ -55,7 +61,7 @@ class PesananResource extends Resource
     {
         return [
             'index' => ListPesanans::route('/'),
-            'create' => CreatePesanan::route('/create'),
+            'view' => ViewPesanan::route('/{record}'),
             'edit' => EditPesanan::route('/{record}/edit'),
         ];
     }
@@ -71,7 +77,7 @@ class PesananResource extends Resource
     }
 
     public static function canViewAny(): bool { return auth()->user()?->can('view_pesanan') ?? false; }
-    public static function canCreate(): bool { return auth()->user()?->can('create_pesanan') ?? false; }
+    public static function canCreate(): bool { return false; }
     public static function canEdit($record): bool { return auth()->user()?->can('update_pesanan') ?? false; }
     public static function canDelete($record): bool { return auth()->user()?->can('delete_pesanan') ?? false; }
     public static function canDeleteAny(): bool { return auth()->user()?->can('delete_pesanan') ?? false; }

@@ -23,7 +23,7 @@ class ItemsRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                ImageColumn::make('gambar_url')->label('Gambar')->square()->size(48),
+                ImageColumn::make('gambar_url')->label('Gambar')->disk('public')->square()->size(48),
                 TextColumn::make('nama_produk')->label('Nama Produk')->wrap()->searchable(),
                 TextColumn::make('varian_label')->label('Varian'),
                 TextColumn::make('harga')->label('Harga')->money('IDR', divideBy: 1),

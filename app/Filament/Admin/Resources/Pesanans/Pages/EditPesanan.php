@@ -3,7 +3,7 @@
 namespace App\Filament\Admin\Resources\Pesanans\Pages;
 
 use App\Filament\Admin\Resources\Pesanans\PesananResource;
-use Filament\Actions\DeleteAction;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 
 class EditPesanan extends EditRecord
@@ -13,7 +13,11 @@ class EditPesanan extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            Action::make('cetakInvoice')
+                ->label('Cetak Invoice')
+                ->icon('heroicon-o-document-text')
+                ->url(fn ($record) => $record->signedInvoiceUrl())
+                ->openUrlInNewTab(),
         ];
     }
 }
