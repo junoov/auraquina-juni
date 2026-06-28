@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\ItemKeranjang;
 use App\Models\Kategori;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,7 +50,18 @@ class LoginController extends Controller
             ]);
         }
 
+        // Simpan old_session_id sebelum regenerate
+        $oldSessionId = $request->session()->getId();
+
         $request->session()->regenerate();
+
+        // Pindahkan cart guest ke user yang baru login
+        ItemKeranjang::where('session_id', $oldSessionId)
+            ->whereNull('user_id')
+            ->update([
+                'user_id' => Auth::id(),
+                'session_id' => $request->session()->getId(),
+            ]);
 
         return redirect()->intended('/');
     }

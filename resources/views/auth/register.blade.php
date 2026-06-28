@@ -106,6 +106,34 @@
             </div>
           </div>
 
+          {{-- Konfirmasi Password --}}
+          <div>
+            <label for="password_confirmation" class="mb-2.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--ink)]">Konfirmasi Password</label>
+            <div class="relative">
+              <input
+                type="password"
+                id="password_confirmation"
+                name="password_confirmation"
+                autocomplete="new-password"
+                required
+                class="block h-[46px] w-full rounded-[2px] border border-[var(--border)] bg-[var(--white)] pr-12 pl-4 text-[14px] text-[var(--ink)] placeholder:text-[var(--muted)] focus:border-[var(--brown)] focus:outline-none focus:ring-1 focus:ring-[var(--brown)]/20 @error('password') border-[#C24D3F] @enderror"
+              />
+              <button
+                type="button"
+                data-toggle-password
+                aria-label="Tampilkan password"
+                class="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded text-[var(--muted)] transition hover:bg-[var(--cream)] hover:text-[var(--ink)]"
+              >
+                <svg data-icon-eye aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-[18px] w-[18px] stroke-[1.6]">
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" />
+                </svg>
+                <svg data-icon-eye-off aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="hidden h-[18px] w-[18px] stroke-[1.6]">
+                  <path d="m3 3 18 18M10.6 5.1A9.4 9.4 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4M6.7 6.7A17 17 0 0 0 2 12s3.5 7 10 7a9.4 9.4 0 0 0 4.3-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
           {{-- No. Telephone --}}
           <div>
             <label for="phone" class="mb-2.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--ink)]">No. Telephone</label>

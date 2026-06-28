@@ -34,13 +34,14 @@ class RegisterController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:20'],
             'password' => ['required', 'confirmed', Password::min(8)],
             'terms' => ['required', 'accepted'],
         ], [
-            'name.required' => 'Nama lengkap wajib diisi.',
+            'first_name.required' => 'Nama depan wajib diisi.',
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'email.unique' => 'Email ini sudah terdaftar.',
@@ -51,8 +52,10 @@ class RegisterController extends Controller
             'terms.accepted' => 'Anda harus menyetujui Syarat & Ketentuan.',
         ]);
 
+        $name = trim($validated['first_name'] . ' ' . ($validated['last_name'] ?? ''));
+
         $user = User::create([
-            'name' => $validated['name'],
+            'name' => $name,
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'password' => Hash::make($validated['password']),
