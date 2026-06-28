@@ -1,0 +1,154 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/Admin/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/*
+ |----------------------------------------------------------------------
+ | Auraquina Admin — Clean Light & Solid Dark Theme
+ |----------------------------------------------------------------------
+ | Resolves "belang-belang" by cleanly extending Filament's native
+ | dark mode instead of aggressively fighting it.
+ |----------------------------------------------------------------------
+ */
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Primary = Indigo */
+    --primary-50: #eef2ff;
+    --primary-100: #e0e7ff;
+    --primary-200: #c7d2fe;
+    --primary-300: #a5b4fc;
+    --primary-400: #818cf8;
+    --primary-500: #6366f1;
+    --primary-600: #4f46e5;
+    --primary-700: #4338ca;
+    --primary-800: #3730a3;
+    --primary-900: #312e81;
+    --primary-950: #1e1b4b;
+}
+
+:root {
+    /* Orchid Light Gray Palette */
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --gray-950: #030712;
+}
+
+:root.dark {
+    /* Solid Dark — 50 = lightest (text), 950 = darkest (body bg) */
+    --gray-50:  #e2e8f0; /* headings, bright text */
+    --gray-100: #cbd5e1; /* primary text */
+    --gray-200: #94a3b8; /* secondary text */
+    --gray-300: #64748b; /* placeholder text */
+    --gray-400: #4b4b72; /* disabled text, badge bg */
+    --gray-500: #3b3b5c; /* muted icons */
+    --gray-600: #2a2a45; /* borders, dividers */
+    --gray-700: #1e1e32; /* hover states */
+    --gray-800: #1a1a2e; /* elevated surfaces */
+    --gray-900: #151525; /* sidebar, dropdown, card bg */
+    --gray-950: #0f0f1a; /* body background — darkest */
+}
+
+@layer components {
+    /* ----------------------------------------------------------------------
+       GLOBAL STRUCTURAL CLEANUPS
+    ---------------------------------------------------------------------- */
+    .fi-header-heading,
+    .fi-page h1,
+    .fi-page h2,
+    h1, h2, h3 {
+        letter-spacing: -0.015em;
+    }
+}
+
+/* ----------------------------------------------------------------------
+   LIGHT THEME (CLEAN WHITE) - Unlayered for specificity
+---------------------------------------------------------------------- */
+:root:not(.dark) .fi-main,
+:root:not(.dark) .fi-content,
+:root:not(.dark) .fi-page {
+    background-color: #f9fafb !important;
+}
+
+:root:not(.dark) .fi-section,
+:root:not(.dark) .fi-card,
+:root:not(.dark) .fi-widget,
+:root:not(.dark) .fi-stats-card {
+    background-color: #ffffff !important;
+    border-color: #e5e7eb !important;
+}
+
+:root:not(.dark) .fi-sidebar,
+:root:not(.dark) .fi-sidebar-header,
+:root:not(.dark) .fi-sidebar-footer,
+:root:not(.dark) .fi-sidebar-nav,
+:root:not(.dark) aside.fi-sidebar {
+    background-color: #ffffff !important;
+}
+
+:root:not(.dark) .fi-topbar {
+    background: #ffffff !important;
+}
+
+:root:not(.dark) .fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
+:root:not(.dark) .fi-sidebar-item.fi-active > a {
+    background-color: #eef2ff !important;
+}
+
+:root:not(.dark) .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-icon,
+:root:not(.dark) .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label,
+:root:not(.dark) .fi-sidebar-item.fi-active > a .fi-sidebar-item-icon,
+:root:not(.dark) .fi-sidebar-item.fi-active > a .fi-sidebar-item-label {
+    color: #4f46e5 !important;
+    font-weight: 600 !important;
+}
+
+/* ----------------------------------------------------------------------
+   DARK THEME (SOLID DARK) - Unlayered for specificity
+---------------------------------------------------------------------- */
+.dark .fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
+.dark .fi-sidebar-item.fi-active > a {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+.dark .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-icon,
+.dark .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label,
+.dark .fi-sidebar-item.fi-active > a .fi-sidebar-item-icon,
+.dark .fi-sidebar-item.fi-active > a .fi-sidebar-item-label {
+    color: #818cf8 !important;
+    font-weight: 600 !important;
+}
+
+/* ----------------------------------------------------------------------
+   SCROLLBAR
+---------------------------------------------------------------------- */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+    background-color: #4b4b72;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+    background-color: #5c677d;
+}
