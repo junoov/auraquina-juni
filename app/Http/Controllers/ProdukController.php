@@ -106,7 +106,7 @@ class ProdukController extends Controller
                 'url' => url('/shop/' . $produk->slug),
                 'harga' => $produk->hargaFormatted(),
                 'kategori' => $produk->kategori?->nama,
-                'gambar' => $produk->gambarUtama?->url,
+                    'gambar' => $produk->gambarUtama?->full_url,
             ]);
 
         return response()->json(['items' => $items]);

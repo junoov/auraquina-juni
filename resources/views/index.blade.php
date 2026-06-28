@@ -23,7 +23,7 @@
       $homeProductCards = ($produkUnggulan ?? collect())->map(fn ($produk) => [
           'name' => $produk->nama,
           'price' => $produk->hargaFormatted(),
-          'img' => $produk->gambarUtama?->url ?? '',
+          'img' => $produk->gambarUtama?->full_url ?? '',
           'href' => '/shop/'.$produk->slug,
           'desc' => $produk->deskripsi_singkat ?: Str::limit((string) $produk->deskripsi, 130),
           'badge' => $produk->badge ? Str::title($produk->badge) : 'New Arrival',

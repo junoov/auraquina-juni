@@ -203,7 +203,7 @@
                       @foreach ($produkSaran as $saran)
                         <a href="/shop/{{ $saran->slug }}" class="group block text-center text-[var(--ink)]">
                           <span class="block rounded-[4px] bg-[var(--sand)]">
-                            <img src="{{ $saran->gambarUtama?->url ?? '' }}" alt="{{ $saran->nama }}" loading="lazy" class="h-auto w-full rounded-[4px] object-contain transition-transform duration-300 group-hover:scale-[1.01]" />
+                            <img src="{{ $saran->gambarUtama?->full_url ?? '' }}" alt="{{ $saran->nama }}" loading="lazy" class="h-auto w-full rounded-[4px] object-contain transition-transform duration-300 group-hover:scale-[1.01]" />
                           </span>
                           <span class="mt-2 block truncate text-[12px]">{{ $saran->nama }}</span>
                         </a>
@@ -217,7 +217,7 @@
                 @foreach ($produks as $index => $produk)
                   <a class="group block text-[var(--ink)]" href="/shop/{{ $produk->slug }}" data-product-card data-category="{{ $produk->kategori->nama }}" data-category-slug="{{ $produk->kategori->slug }}" data-price="{{ $produk->harga }}" data-sizes="{{ $produk->varians->pluck('ukuran')->unique()->implode(',') }}" data-colors="{{ $produk->varians->pluck('warna')->unique()->implode(',') }}">
                     <span class="block overflow-hidden rounded-[4px] bg-[var(--sand)]" style="aspect-ratio:3/4;">
-                      <img src="{{ $produk->gambarUtama?->url ?? '' }}" alt="{{ $produk->nama }}" loading="{{ $index < 3 ? 'eager' : 'lazy' }}" class="h-full w-full rounded-[4px] object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.01]" />
+                      <img src="{{ $produk->gambarUtama?->full_url ?? '' }}" alt="{{ $produk->nama }}" loading="{{ $index < 3 ? 'eager' : 'lazy' }}" class="h-full w-full rounded-[4px] object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.01]" />
                     </span>
                     <span class="block pt-3 max-sm:pt-2">
                       <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--brown)] max-sm:text-[9px]">{{ $produk->kategori->nama }}</p>

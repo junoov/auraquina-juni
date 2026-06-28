@@ -15,15 +15,15 @@
     @php
       $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-28px)]';
 
-      $images = $produk->gambars->pluck('url')->toArray();
+      $images = $produk->gambars->pluck('full_url')->toArray();
       $sizes = $produk->varians->pluck('ukuran')->unique()->values()->toArray();
       $variantGalleries = $produk->varians->mapWithKeys(fn($varian) => [
-          $varian->id => $varian->gambarVarians->pluck('url')->values()->toArray(),
+          $varian->id => $varian->gambarVarians->pluck('full_url')->values()->toArray(),
       ])->toArray();
       $colors = $produk->varians->unique('warna')->map(fn($v) => [
           'name' => $v->warna,
           'hex' => $v->kode_warna,
-          'image' => $v->gambarVarianUtama?->url ?? ($variantGalleries[$v->id][0] ?? null),
+          'image' => $v->gambarVarianUtama?->full_url ?? ($variantGalleries[$v->id][0] ?? null),
       ])->values()->toArray();
       $defaultVarian = $produk->varians->firstWhere('warna', $colors[0]['name'] ?? null) ?? $produk->varians->first();
       $initialVariantImages = $defaultVarian ? ($variantGalleries[$defaultVarian->id] ?? []) : [];
@@ -216,7 +216,7 @@
           @foreach ($terkait as $item)
             <a class="related-edit__item" href="/shop/{{ $item->slug }}">
               <figure class="related-edit__frame">
-                <img src="{{ $item->gambarUtama?->url ?? '' }}" alt="{{ $item->nama }}" loading="lazy" />
+                <img src="{{ $item->gambarUtama?->full_url ?? '' }}" alt="{{ $item->nama }}" loading="lazy" />
               </figure>
               <span class="related-edit__name">{{ $item->nama }}</span>
               <span class="related-edit__price">{{ $item->hargaFormatted() }}</span>
