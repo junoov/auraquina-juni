@@ -154,7 +154,7 @@ class ImportShopeeProducts extends Command
 
             GambarProduk::create([
                 'produk_id' => $produk->id,
-                'url' => '/storage/produk/'.$produk->slug.'/'.$filename,
+                            'url' => 'produk/'.$produk->slug.'/'.$filename,
                 'alt' => $produk->nama.' - gambar '.$urutan,
                 'urutan' => $urutan,
                 'utama' => $urutan === 1,
@@ -217,7 +217,7 @@ class ImportShopeeProducts extends Command
 
             GambarVarianProduk::create([
                 'varian_produk_id' => $varian->id,
-                'url' => '/storage/produk/'.$varian->produk->slug.'/'.$filename,
+                'url' => 'produk/'.$varian->produk->slug.'/'.$filename,
                 'alt' => $varian->produk->nama.' - '.$warna.' - gambar '.$urutan,
                 'urutan' => $urutan,
                 'utama' => $urutan === 1,
