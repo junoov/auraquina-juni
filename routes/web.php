@@ -41,6 +41,10 @@ Route::get('/pesanan/{kode}/invoice', [CheckoutController::class, 'showInvoice']
 Route::post('/pesanan/{kode}/cancel', [CheckoutController::class, 'cancelOrder'])->name('pesanan.cancel');
 Route::post('/pesanan/{kode}/confirm-received', [CheckoutController::class, 'confirmReceived'])->name('pesanan.confirm-received');
 
+// Payment
+Route::post('/payment/midtrans/callback', [CheckoutController::class, 'midtransCallback'])->name('payment.midtrans.callback');
+Route::get('/pesanan/{kode}/pay', [CheckoutController::class, 'retryPayment'])->name('pesanan.pay');
+
 // Trust & information pages
 Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
 

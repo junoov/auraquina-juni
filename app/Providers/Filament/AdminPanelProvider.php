@@ -40,8 +40,10 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Admin Auraquina')
             ->spa()
             ->globalSearchDebounce('750ms')
+            ->sidebarCollapsibleOnDesktop()
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#4f46e5',
             ])
             ->resources([
                 KategoriResource::class,

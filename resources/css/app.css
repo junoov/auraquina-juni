@@ -203,44 +203,6 @@ h1, h2, h3, blockquote {
   }
 }
 
-/* Product horizontal carousel */
-.product-carousel-wrapper {
-  position: relative;
-}
-
-.product-carousel-track {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  padding-bottom: 4px;
-}
-
-.product-carousel-track::-webkit-scrollbar {
-  display: none;
-}
-
-.product-carousel-item {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  width: calc((100% - 60px) / 4);
-}
-
-@media (max-width: 1023px) {
-  .product-carousel-item {
-    width: calc((100% - 40px) / 3);
-  }
-}
-
-@media (max-width: 640px) {
-  .product-carousel-item {
-    width: calc((100% - 16px) / 2);
-  }
-}
-
 /* Carousel arrows */
 .carousel-arrow {
   position: absolute;
