@@ -9,15 +9,6 @@ use Illuminate\Http\Request;
 
 class KeranjangController extends Controller
 {
-    // Ambil session ID untuk cart
-    private function identifier(): array
-    {
-        if (auth()->check()) {
-            return ['user_id' => auth()->id()];
-        }
-        return ['session_id' => session()->getId()];
-    }
-
     private function cartAttributes(): array
     {
         return array_merge(['session_id' => session()->getId()], auth()->check() ? ['user_id' => auth()->id()] : []);
@@ -35,21 +26,13 @@ class KeranjangController extends Controller
             return $harga * $item->jumlah;
         });
 
-        if (! $request->expectsJson()) {
-            return view('keranjang', [
-                'items' => $items,
-                'subtotal' => $subtotal,
-                'totalItem' => $items->sum('jumlah'),
-            ]);
-        }
-
         return response()->json([
             'items' => $items->map(function ($item) {
                 return [
                     'id' => $item->id,
                     'produk_id' => $item->produk_id,
                     'nama' => $item->produk->nama,
-                    'gambar' => $item->varian?->gambarVarianUtama?->url ?? $item->produk->gambarUtama?->url,
+                    'gambar' => $item->varian?->gambarVarianUtama?->full_url ?? $item->produk->gambarUtama?->full_url,
                     'ukuran' => $item->varian?->ukuran,
                     'warna' => $item->varian?->warna,
                     'kode_warna' => $item->varian?->kode_warna,

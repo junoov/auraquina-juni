@@ -66,7 +66,7 @@
       <span id="cart-subtotal" style="font-size:15px;font-weight:700;color:var(--brown);font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Rp 0</span>
     </div>
     <p style="font-size:11px;color:var(--muted);margin:0 0 16px;">Shipping, taxes, and discount codes calculated at checkout.</p>
-    <a href="/checkout" style="display:flex;align-items:center;justify-content:center;height:46px;width:100%;border-radius:3px;background:var(--brown);color:#fff;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Check Out</a>
+    <button type="button" id="cart-drawer-checkout" onclick="checkoutFromDrawer()" style="display:flex;align-items:center;justify-content:center;height:46px;width:100%;border-radius:3px;background:var(--brown);color:#fff;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;border:none;cursor:pointer;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Check Out</button>
   </div>
 </div>
 
@@ -347,5 +347,45 @@
         syncCartBadges(data.total_item);
       }
     }).catch(() => loadCart());
+  }
+
+  function checkoutFromDrawer() {
+    const itemNodes = document.querySelectorAll('#cart-list [data-id]');
+    const itemIds = Array.from(itemNodes).map(el => parseInt(el.dataset.id));
+    
+    if (itemIds.length === 0) return;
+
+    const btn = document.getElementById('cart-drawer-checkout');
+    const oldText = btn.textContent;
+    btn.textContent = 'Memproses...';
+    btn.style.opacity = '0.7';
+    btn.disabled = true;
+
+    fetch('/checkout/from-cart', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
+      },
+      body: JSON.stringify({ item_ids: itemIds }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success && data.redirect) {
+        window.location.href = data.redirect;
+      } else {
+        alert(data.error || 'Checkout gagal diproses');
+        btn.textContent = oldText;
+        btn.style.opacity = '1';
+        btn.disabled = false;
+      }
+    })
+    .catch(err => {
+      alert('Terjadi kesalahan koneksi');
+      btn.textContent = oldText;
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    });
   }
 </script>

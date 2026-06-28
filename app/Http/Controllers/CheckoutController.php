@@ -12,6 +12,7 @@ use DomainException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 
 class CheckoutController extends Controller
@@ -35,14 +36,14 @@ class CheckoutController extends Controller
             'variant' => $variant ?: 'Default',
             'qty' => $qty,
             'price' => $price,
-            'img' => $varian?->gambarVarianUtama?->url ?? $produk->gambarUtama?->url,
+            'img' => $varian?->gambarVarianUtama?->full_url ?? $produk->gambarUtama?->full_url,
         ];
     }
 
     private function cartItems(?array $selectedIds = null): Collection
     {
         $query = ItemKeranjang::with(['produk.gambarUtama', 'varian.gambarVarianUtama'])
-            ->where('session_id', $this->sessionId());
+            ->where($this->identifier());
 
         if ($selectedIds) {
             $query->whereIn('id', $selectedIds);
@@ -158,7 +159,7 @@ class CheckoutController extends Controller
         $checkoutItems = $this->checkoutItemsFromSession();
 
         if ($checkoutItems->isEmpty()) {
-            return redirect()->route('keranjang.index');
+            return redirect()->route('shop.index');
         }
 
         $totals = $this->checkoutTotals($checkoutItems);
@@ -243,7 +244,7 @@ class CheckoutController extends Controller
             'item_ids.*' => 'integer',
         ]);
 
-        $selectedIds = ItemKeranjang::where('session_id', $this->sessionId())
+        $selectedIds = ItemKeranjang::where($this->identifier())
             ->whereIn('id', $validated['item_ids'])
             ->pluck('id')
             ->all();
@@ -344,7 +345,7 @@ class CheckoutController extends Controller
 
                 // Remove purchased items from cart
                 if (($payload['mode'] ?? null) === 'cart' && ! empty($payload['selected_ids'])) {
-                    ItemKeranjang::where('session_id', $this->sessionId())
+                    ItemKeranjang::where($this->identifier())
                         ->whereIn('id', $payload['selected_ids'])
                         ->delete();
                 }
@@ -363,6 +364,11 @@ class CheckoutController extends Controller
         session()->forget(['checkout_payload', 'checkout_voucher_code']);
 
         $pesanan->sendOrderPlacedNotification();
+
+        // Generate Midtrans Core API payment for online methods
+        if ($this->isMidtransPayment($pesanan->metode_pembayaran)) {
+            $this->processMidtransPayment($pesanan);
+        }
 
         return response()->json([
             'success' => true,
@@ -439,5 +445,210 @@ class CheckoutController extends Controller
         ])->save();
 
         return redirect($this->signedOrderUrl($pesanan).'#after-sales')->with('status', 'Permintaan after-sales berhasil dikirim. Tim kami akan meninjau pesanan Anda.');
+    }
+
+    /**
+     * Midtrans callback/notification handler.
+     */
+    public function midtransCallback(Request $request)
+    {
+        $serverKey = config('services.midtrans.server_key');
+
+        // Verify notification authenticity
+        $hashed = hash('sha512', $request->input('order_id') . $request->input('status_code') . $request->input('gross_amount') . $serverKey);
+        $signature = $request->input('signature_key');
+
+        if ($hashed !== $signature) {
+            Log::warning('Midtrans: Invalid signature', ['order_id' => $request->input('order_id')]);
+            return response()->json(['status' => 'invalid signature'], 403);
+        }
+
+        $orderId = $request->input('order_id');
+        $pesanan = Pesanan::where('kode_pesanan', $orderId)->first();
+
+        if (! $pesanan) {
+            Log::warning('Midtrans: Order not found', ['order_id' => $orderId]);
+            return response()->json(['status' => 'order not found'], 404);
+        }
+
+        $transactionStatus = $request->input('transaction_status');
+        $fraudStatus = $request->input('fraud_status');
+
+        $pesanan->forceFill([
+            'midtrans_status' => $transactionStatus,
+            'midtrans_raw_response' => json_encode($request->all()),
+        ])->save();
+
+        // Map Midtrans status to our status
+        if ($transactionStatus === 'capture' && $fraudStatus === 'accept') {
+            $pesanan->transitionTo(Pesanan::STATUS_PAID, 'midtrans');
+        } elseif ($transactionStatus === 'settlement') {
+            $pesanan->transitionTo(Pesanan::STATUS_PAID, 'midtrans');
+        } elseif ($transactionStatus === 'pending') {
+            // Still pending, no status change
+        } elseif (in_array($transactionStatus, ['deny', 'cancel', 'expire'], true)) {
+            if ($pesanan->status === Pesanan::STATUS_PENDING_PAYMENT) {
+                $pesanan->transitionTo(Pesanan::STATUS_CANCELLED, 'midtrans');
+            }
+        } elseif ($transactionStatus === 'refund') {
+            $pesanan->transitionTo(Pesanan::STATUS_REFUNDED, 'midtrans');
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    /**
+     * Regenerate Payment for pending order (e.g. "Bayar Sekarang" button).
+     */
+    public function retryPayment(Request $request, string $kode)
+    {
+        $pesanan = $this->authorizedOrder($request, $kode);
+
+        if ($pesanan->status !== Pesanan::STATUS_PENDING_PAYMENT) {
+            return back()->with('error', 'Pesanan ini sudah tidak bisa dibayar.');
+        }
+
+        $this->processMidtransPayment($pesanan);
+
+        return redirect($this->signedOrderUrl($pesanan))->with('status', 'Metode pembayaran diperbarui.');
+    }
+
+    private function isMidtransPayment(string $metode): bool
+    {
+        $metode = strtolower($metode);
+
+        // Match checkout form values
+        if (in_array($metode, ['qris', 'snap', 'va', 'gopay', 'ovo', 'dana', 'shopeepay', 'linkaja'], true)) {
+            return true;
+        }
+
+        // Match "Transfer Bank BCA", "Transfer Bank Mandiri", etc.
+        if (str_contains($metode, 'transfer')) {
+            return true;
+        }
+
+        // Match anything with qris/va in it
+        return str_contains($metode, 'qris') || str_contains($metode, 'va');
+    }
+
+    private function getEnabledPayments(string $metode): array
+    {
+        $metode = strtolower($metode);
+
+        // QRIS — use gopay only so QR code shows directly (universal QRIS, bisa discan semua app)
+        if (str_contains($metode, 'qris')) {
+            return ['gopay'];
+        }
+
+        // Transfer Bank BCA
+        if (str_contains($metode, 'bca')) {
+            return ['bca_va'];
+        }
+
+        // Transfer Bank Mandiri
+        if (str_contains($metode, 'mandiri')) {
+            return ['mandiri_va'];
+        }
+
+        // Transfer Bank BRI
+        if (str_contains($metode, 'bri')) {
+            return ['bri_va'];
+        }
+
+        // Transfer Bank BSI
+        if (str_contains($metode, 'bsi')) {
+            return ['bsi_va'];
+        }
+
+        // Fallback — show VA options
+        return ['bca_va', 'mandiri_va', 'bri_va', 'bni_va', 'bsi_va', 'permata_va'];
+    }
+
+    private function processMidtransPayment(Pesanan $pesanan): void
+    {
+        try {
+            // Configure Midtrans
+            \Midtrans\Config::$isProduction = config('services.midtrans.is_production', false);
+            \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+            \Midtrans\Config::$clientKey = config('services.midtrans.client_key');
+
+            // Build item details
+            $itemDetails = $pesanan->items->map(function ($item) {
+                return [
+                    'id' => (string) $item->produk_id,
+                    'price' => (int) $item->harga,
+                    'quantity' => (int) $item->jumlah,
+                    'name' => mb_substr($item->nama_produk . ' ' . $item->varian_label, 0, 50),
+                ];
+            })->toArray();
+
+            // Add shipping cost
+            $itemDetails[] = [
+                'id' => 'ongkir',
+                'price' => (int) $pesanan->ongkir,
+                'quantity' => 1,
+                'name' => 'Ongkos Kirim',
+            ];
+
+            // Discount
+            if ($pesanan->diskon > 0) {
+                $itemDetails[] = [
+                    'id' => 'diskon',
+                    'price' => -(int) $pesanan->diskon,
+                    'quantity' => 1,
+                    'name' => 'Diskon',
+                ];
+            }
+
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $pesanan->kode_pesanan,
+                    'gross_amount' => (int) $pesanan->total,
+                ],
+                'item_details' => $itemDetails,
+                'customer_details' => [
+                    'first_name' => mb_substr($pesanan->nama_penerima, 0, 255),
+                    'phone' => $pesanan->telepon,
+                    'email' => $pesanan->customerEmail() ?: 'customer@example.com',
+                ],
+            ];
+
+            $metode = strtolower($pesanan->metode_pembayaran);
+
+            // Set payment type based on method
+            if (str_contains($metode, 'qris') || str_contains($metode, 'gopay')) {
+                $params['payment_type'] = 'gopay';
+            } elseif (str_contains($metode, 'bca')) {
+                $params['payment_type'] = 'bank_transfer';
+                $params['bank_transfer'] = ['bank' => 'bca'];
+            } elseif (str_contains($metode, 'mandiri')) {
+                $params['payment_type'] = 'echannel'; // Mandiri uses echannel (Bill Payment)
+                $params['echannel'] = ['bill_info1' => 'Payment', 'bill_info2' => 'Auraquina'];
+            } elseif (str_contains($metode, 'bri')) {
+                $params['payment_type'] = 'bank_transfer';
+                $params['bank_transfer'] = ['bank' => 'bri'];
+            } elseif (str_contains($metode, 'bni')) {
+                $params['payment_type'] = 'bank_transfer';
+                $params['bank_transfer'] = ['bank' => 'bni'];
+            } elseif (str_contains($metode, 'permata')) {
+                $params['payment_type'] = 'bank_transfer';
+                $params['bank_transfer'] = ['bank' => 'permata'];
+            } else {
+                $params['payment_type'] = 'gopay'; // Fallback to QRIS/GoPay
+            }
+
+            $response = \Midtrans\CoreApi::charge($params);
+
+            $pesanan->forceFill([
+                'midtrans_raw_response' => json_encode($response),
+                'midtrans_status' => $response->transaction_status ?? null,
+            ])->save();
+
+        } catch (\Exception $e) {
+            Log::error('Midtrans Core API Error', [
+                'order_id' => $pesanan->kode_pesanan,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }
