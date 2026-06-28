@@ -5,7 +5,6 @@ namespace App\Filament\Admin\Resources\Produks;
 use App\Filament\Admin\Resources\Produks\Pages\CreateProduk;
 use App\Filament\Admin\Resources\Produks\Pages\EditProduk;
 use App\Filament\Admin\Resources\Produks\Pages\ListProduks;
-use App\Filament\Admin\Resources\Produks\RelationManagers\GambarsRelationManager;
 use App\Filament\Admin\Resources\Produks\RelationManagers\VariansRelationManager;
 use App\Filament\Admin\Resources\Produks\Schemas\ProdukForm;
 use App\Filament\Admin\Resources\Produks\Tables\ProduksTable;
@@ -48,7 +47,6 @@ class ProdukResource extends Resource
     {
         return [
             VariansRelationManager::class,
-            GambarsRelationManager::class,
         ];
     }
 

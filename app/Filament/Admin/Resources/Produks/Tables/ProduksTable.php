@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -20,55 +21,64 @@ class ProduksTable
     {
         return $table
             ->deferLoading()
+            ->modifyQueryUsing(fn ($query) => $query->withCount('varians')->with('varians'))
             ->paginationMode(PaginationMode::Simple)
             ->columns([
                 ImageColumn::make('gambarUtama.url')
                     ->label('')
+                    ->disk('public')
                     ->square()
-                    ->size(48),
+                    ->size(48)
+                    ->extraImgAttributes(['class' => 'rounded-lg']),
+
                 TextColumn::make('nama')
-                    ->label('Nama')
+                    ->label('Nama Produk')
                     ->searchable()
                     ->sortable()
-                    ->wrap(),
+                    ->weight('bold')
+                    ->wrap()
+                    ->tooltip(fn ($record) => $record->nama),
+
                 TextColumn::make('kategori.nama')
                     ->label('Kategori')
                     ->sortable()
-                    ->badge(),
-                TextColumn::make('sku')
-                    ->label('SKU')
-                    ->searchable()
-                    ->toggleable(),
+                    ->badge()
+                    ->color('gray'),
+
                 TextColumn::make('harga')
                     ->label('Harga')
                     ->money('IDR', divideBy: 1)
-                    ->sortable(),
-                TextColumn::make('varians_count')
-                    ->counts('varians')
-                    ->label('Varian')
-                    ->badge(),
-                TextColumn::make('badge')
-                    ->label('Label Produk')
+                    ->sortable()
+                    ->weight('bold'),
+
+                TextColumn::make('totalStok')
+                    ->label('Stok')
+                    ->state(fn ($record) => $record->totalStok())
                     ->badge()
-                    ->color(fn ($state) => match ($state) {
-                        'baru' => 'success',
-                        'terlaris' => 'warning',
-                        'terbatas' => 'danger',
-                        'preorder' => 'info',
-                        default => 'gray',
+                    ->color(fn ($state) => match (true) {
+                        $state === null || $state <= 0 => 'danger',
+                        $state < 10 => 'warning',
+                        default => 'success',
                     })
-                    ->toggleable(),
-                IconColumn::make('aktif')->boolean(),
-                IconColumn::make('unggulan')->label('Unggulan')->boolean()->toggleable(),
-                TextColumn::make('urutan')->label('Urutan')->numeric()->sortable()->toggleable(),
+                    ->tooltip(fn ($record) => $record->totalStok() . ' unit tersedia dari ' . $record->varians()->count() . ' varian'),
+
+                TextColumn::make('aktif')
+                    ->label('Status')
+                    ->badge()
+                    ->state(fn ($record) => $record->aktif ? 'Aktif' : 'Nonaktif')
+                    ->color(fn ($record) => $record->aktif ? 'success' : 'danger'),
             ])
             ->defaultSort('urutan')
             ->filters([
                 SelectFilter::make('kategori_id')
                     ->relationship('kategori', 'nama')
                     ->label('Kategori'),
-                TernaryFilter::make('aktif')->label('Aktif'),
-                TernaryFilter::make('unggulan')->label('Unggulan'),
+                TernaryFilter::make('aktif')
+                    ->label('Status')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Nonaktif'),
+                TernaryFilter::make('unggulan')
+                    ->label('Unggulan'),
             ])
             ->recordActions([
                 EditAction::make(),
