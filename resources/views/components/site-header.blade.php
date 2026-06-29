@@ -33,12 +33,12 @@
         '<circle cx="9" cy="20" r="1.5" /><circle cx="17" cy="20" r="1.5" /><path d="M3.5 4h2.1l2.2 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 8H7" />' => 'Cart',
       ] as $icon => $label)
         @if ($label === 'Cart')
-          <button type="button" onclick="openCart()" aria-label="Cart" class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
+          <button type="button" onclick="openCart()" aria-label="Cart" class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition">
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">{!! $icon !!}</svg>
             <span data-cart-count-badge class="icon-count-badge is-hidden">0</span>
           </button>
         @else
-          <a href="{{ $label === 'Account' ? $accountHref : '#' }}" @if ($label === 'Search') data-search-trigger @endif aria-label="{{ $label }}" class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
+          <a href="{{ $label === 'Account' ? $accountHref : '#' }}" @if ($label === 'Search') data-search-trigger @endif aria-label="{{ $label }}" class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition">
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">{!! $icon !!}</svg>
           </a>
         @endif
@@ -52,7 +52,7 @@
   <div class="relative flex h-[72px] items-center justify-between px-4">
     {{-- Left: hamburger --}}
     <div class="flex items-center" style="width:80px;">
-      <button type="button" id="menu-open" aria-label="Menu" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
+      <button type="button" id="menu-open" aria-label="Menu" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition">
         <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.8]"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
       </button>
     </div>
@@ -60,10 +60,10 @@
     <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[22px] leading-none font-medium tracking-[0.03em] text-[var(--ink)]" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif;">Auraquina</a>
     {{-- Right: search + cart --}}
     <div class="flex items-center gap-1" style="width:80px;justify-content:flex-end;">
-      <button type="button" data-search-trigger aria-label="Search" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
+      <button type="button" data-search-trigger aria-label="Search" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition">
         <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.7]"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
       </button>
-      <button type="button" onclick="openCart()" aria-label="Cart" class="relative flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
+      <button type="button" onclick="openCart()" aria-label="Cart" class="relative flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition">
         <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.7]"><circle cx="9" cy="20" r="1.5" /><circle cx="17" cy="20" r="1.5" /><path d="M3.5 4h2.1l2.2 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 8H7" /></svg>
         <span data-cart-count-badge class="icon-count-badge is-hidden">0</span>
       </button>
@@ -78,10 +78,10 @@
 <div id="mobile-menu-backdrop" class="fixed inset-0 bg-[rgba(32,25,22,0.38)] opacity-0 pointer-events-none transition-opacity duration-300" style="z-index: 11000;"></div>
 <div id="mobile-menu" class="fixed top-0 left-0 bottom-0 w-[70%] max-w-[300px] -translate-x-full bg-[var(--white)] text-[var(--ink)] shadow-[4px_0_24px_rgba(0,0,0,0.12)] transition-transform duration-300" style="z-index: 12000;">
   <div class="flex h-16 items-center justify-between border-b border-[var(--border)] px-4">
-    <button type="button" data-search-trigger aria-label="Search" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
+    <button type="button" data-search-trigger aria-label="Search" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition">
       <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.7]"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
     </button>
-    <button id="menu-close" type="button" aria-label="Close" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
+    <button id="menu-close" type="button" aria-label="Close" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition">
       <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.7]"><path d="M6 6l12 12M18 6 6 18" /></svg>
     </button>
   </div>

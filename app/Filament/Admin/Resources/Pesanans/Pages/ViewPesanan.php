@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Pesanans\Pages;
 
 use App\Filament\Admin\Resources\Pesanans\Actions\PesananActions;
 use App\Filament\Admin\Resources\Pesanans\PesananResource;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -12,10 +13,10 @@ class ViewPesanan extends ViewRecord
     protected static string $resource = PesananResource::class;
 
     /**
-     * Header actions = semua tombol workflow + edit.
-     * Inilah alasan utama redesign: sebelumnya tombol-tombol ini HANYA
-     * ada di list table. Begitu admin masuk halaman pesanan, mereka hilang.
-     * Sekarang mereka ada di setiap pesanan yang dibuka.
+     * Header actions.
+     *
+     * Semua tombol workflow di-group ke dalam dropdown "Tindakan" supaya header
+     * tidak sesak. Tombol Edit Manual tetap standalone di luar group.
      *
      * Urutan = alur fulfillment natural:
      * Konfirmasi Bayar → Proses → Kemas → Kirim → (Refund/After-Sales/Batal).
@@ -24,8 +25,16 @@ class ViewPesanan extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            ...PesananActions::workflow(),
-            PesananActions::editAddress(),
+            ActionGroup::make([
+                ...PesananActions::workflow(),
+                PesananActions::editAddress(),
+            ])
+                ->label('Tindakan')
+                ->icon('heroicon-o-bolt')
+                ->color('primary')
+                ->button()
+                ->dropdownWidth('lg'),
+
             EditAction::make()
                 ->label('Edit Manual')
                 ->color('gray'),

@@ -5,12 +5,12 @@ namespace App\Filament\Admin\Pages;
 use App\Models\VarianProduk;
 use BackedEnum;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -20,7 +20,9 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\Activitylog\Facades\Activity;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
+use Livewire\Attributes\Computed;
 
 class StokManagement extends Page implements HasTable
 {
@@ -43,6 +45,25 @@ class StokManagement extends Page implements HasTable
         return auth()->user()?->can('view_stok') ?? false;
     }
 
+    /**
+     * Stat cards — dihitung sekali per request.
+     */
+    #[Computed]
+    public function stokStats(): array
+    {
+        return (array) DB::table('varian_produks')->selectRaw('
+            COUNT(*) as total,
+            SUM(CASE WHEN stok >= 5 THEN 1 ELSE 0 END) as aman,
+            SUM(CASE WHEN stok > 0 AND stok < 5 THEN 1 ELSE 0 END) as rendah,
+            SUM(CASE WHEN stok <= 0 THEN 1 ELSE 0 END) as habis
+        ')->first() ?: [
+            'total' => 0,
+            'aman' => 0,
+            'rendah' => 0,
+            'habis' => 0,
+        ];
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -53,11 +74,24 @@ class StokManagement extends Page implements HasTable
                     ->with('produk')
             )
             ->columns([
-                TextColumn::make('produk.nama')->label('Produk')->searchable()->wrap(),
-                TextColumn::make('warna')->searchable(),
-                TextColumn::make('ukuran'),
-                TextColumn::make('sku')->label('SKU')->copyable(),
+                TextColumn::make('produk.nama')
+                    ->label('Produk')
+                    ->searchable()
+                    ->wrap()
+                    ->weight(FontWeight::SemiBold),
+                TextColumn::make('varian_label')
+                    ->label('Varian')
+                    ->state(fn ($record): string => trim("{$record->warna} / {$record->ukuran}"))
+                    ->badge()
+                    ->color('gray')
+                    ->searchable(),
+                TextColumn::make('sku')
+                    ->label('SKU')
+                    ->copyable()
+                    ->tooltip('Klik untuk menyalin kode')
+                    ->color('gray'),
                 TextColumn::make('stok')
+                    ->label('Stok')
                     ->numeric()
                     ->badge()
                     ->color(fn ($state) => match (true) {
@@ -65,6 +99,9 @@ class StokManagement extends Page implements HasTable
                         $state < 5 => 'warning',
                         default => 'success',
                     })
+                    ->tooltip(fn ($state) => $state <= 0
+                        ? '⚠️ Stok habis!'
+                        : ($state < 5 ? "Sisa {$state} unit" : "Stok aman: {$state} unit"))
                     ->sortable(),
             ])
             ->defaultSort('stok')
@@ -84,22 +121,51 @@ class StokManagement extends Page implements HasTable
             ])
             ->recordActions([
                 Action::make('adjust')
-                    ->label('Sesuaikan')
+                    ->label('Sesuaikan Stok')
                     ->icon('heroicon-o-pencil-square')
+                    ->color('primary')
+                    ->slideOver()
                     ->visible(fn () => auth()->user()?->can('adjust_stok'))
-                    ->schema([
-                        Select::make('mode')
-                            ->label('Mode')
+                    ->schema(fn (VarianProduk $record): array => [
+                        // ── Custom View Preview Box ──
+                        \Filament\Forms\Components\ViewField::make('stok_preview')
+                            ->view('filament.admin.components.stok-preview-box')
+                            ->viewData([
+                                'stok' => $record->stok,
+                            ])
+                            ->columnSpanFull()
+                            ->dehydrated(false),
+
+                        // ── Pilih Aksi ──
+                        Radio::make('mode')
+                            ->label('Pilih Aksi')
                             ->options([
-                                'set' => 'Set Stok',
-                                'add' => 'Tambah',
-                                'sub' => 'Kurangi',
+                                'add' => 'Tambah Stok',
+                                'sub' => 'Kurangi Stok',
+                                'set' => 'Atur Menjadi',
                             ])
                             ->default('add')
-                            ->required(),
-                        TextInput::make('jumlah')->numeric()->required()->minValue(1),
-                        Textarea::make('alasan')->required(),
+                            ->required()
+                            ->inline()
+                            ->columnSpanFull()
+                            ->descriptions([
+                                'add' => 'Tambahkan barang baru yang masuk',
+                                'sub' => 'Kurangi barang yang rusak/hilang',
+                                'set' => 'Timpa stok dengan angka saat ini',
+                            ]),
+
+                        // ── Jumlah ──
+                        TextInput::make('jumlah')
+                            ->label('Jumlah')
+                            ->numeric()
+                            ->required()
+                            ->minValue(0)
+                            ->default(1)
+                            ->live(debounce: '300ms')
+                            ->columnSpanFull()
+                            ->helperText(fn ($state, $get) => self::previewStok($record->stok, $get('mode'), (int) $state)),
                     ])
+                    ->modalFooterActionsAlignment('start')
                     ->action(function (VarianProduk $record, array $data) {
                         $before = $record->stok;
                         $record->stok = match ($data['mode']) {
@@ -109,23 +175,34 @@ class StokManagement extends Page implements HasTable
                         };
                         $record->save();
 
-                        activity('stok')
-                            ->performedOn($record)
-                            ->causedBy(auth()->user())
-                            ->withProperties([
-                                'mode' => $data['mode'],
-                                'jumlah' => $data['jumlah'],
-                                'before' => $before,
-                                'after' => $record->stok,
-                                'alasan' => $data['alasan'],
-                            ])
-                            ->log('stok_adjusted');
-
                         Notification::make()
-                            ->title("Stok diperbarui {$before} → {$record->stok}")
+                            ->title("Stok diperbarui: {$before} → {$record->stok}")
                             ->success()
                             ->send();
                     }),
             ]);
+    }
+
+    /**
+     * Preview stok hasil perubahan untuk helper text.
+     */
+    private static function previewStok(int $current, ?string $mode, int $jumlah): string
+    {
+        if (!$mode || $jumlah <= 0 && $mode !== 'set') {
+            return 'Masukkan jumlah yang ingin diubah.';
+        }
+
+        $result = match ($mode) {
+            'set' => $jumlah,
+            'add' => $current + $jumlah,
+            'sub' => max(0, $current - $jumlah),
+            default => $current,
+        };
+
+        $diff = $result - $current;
+        $sign = $diff >= 0 ? '+' : '';
+        $color = $result <= 0 ? 'color: #dc2626;' : 'color: #16a34a;';
+
+        return new HtmlString("<span style=\"{$color} font-weight: 600;\">📊 Hasil Akhir: {$current} → {$result} ({$sign}{$diff})</span>");
     }
 }

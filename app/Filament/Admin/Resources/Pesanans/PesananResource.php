@@ -5,7 +5,6 @@ namespace App\Filament\Admin\Resources\Pesanans;
 use App\Filament\Admin\Resources\Pesanans\Pages\EditPesanan;
 use App\Filament\Admin\Resources\Pesanans\Pages\ListPesanans;
 use App\Filament\Admin\Resources\Pesanans\Pages\ViewPesanan;
-use App\Filament\Admin\Resources\Pesanans\RelationManagers\ItemsRelationManager;
 use App\Filament\Admin\Resources\Pesanans\Schemas\PesananForm;
 use App\Filament\Admin\Resources\Pesanans\Schemas\PesananInfolist;
 use App\Filament\Admin\Resources\Pesanans\Tables\PesanansTable;
@@ -53,7 +52,9 @@ class PesananResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ItemsRelationManager::class,
+            // ItemsRelationManager dihapus dari sini — items sudah dirender
+            // sebagai custom blade view di PesananInfolist (Baris 3: Item Pesanan).
+            // Relation manager menyebabkan duplikat section "Item Pesanan" di halaman View.
         ];
     }
 

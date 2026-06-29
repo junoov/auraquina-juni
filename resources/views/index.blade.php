@@ -133,7 +133,7 @@
             id="menu-open"
             type="button"
             aria-label="Menu"
-            class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]"
+            class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition"
           >
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.8]"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
           </button>
@@ -175,12 +175,12 @@
             '<circle cx="9" cy="20" r="1.5" /><circle cx="17" cy="20" r="1.5" /><path d="M3.5 4h2.1l2.2 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 8H7" />' => 'Cart',
           ] as $icon => $label)
             @if ($label === 'Cart')
-              <button type="button" onclick="openCart()" aria-label="Cart" class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
+              <button type="button" onclick="openCart()" aria-label="Cart" class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">{!! $icon !!}</svg>
                 <span data-cart-count-badge class="icon-count-badge is-hidden">0</span>
               </button>
             @else
-              <a href="{{ $label === 'Account' ? (auth()->check() ? route('account.show') : route('login')) : '#' }}" @if ($label === 'Search') data-search-trigger @endif aria-label="{{ $label }}" class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
+              <a href="{{ $label === 'Account' ? (auth()->check() ? route('account.show') : route('login')) : '#' }}" @if ($label === 'Search') data-search-trigger @endif aria-label="{{ $label }}" class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">{!! $icon !!}</svg>
               </a>
             @endif

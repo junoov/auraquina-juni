@@ -362,6 +362,9 @@
       }
 
       function placeOrder() {
+        const btn = document.querySelector('button[onclick="placeOrder()"]');
+        if (btn && btn.disabled) return;
+
         const name = document.getElementById('inp-name')?.value?.trim();
         const phone = document.getElementById('inp-phone')?.value?.trim();
         if (document.getElementById('address-form').style.display !== 'none') {
@@ -386,6 +389,13 @@
 
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
+        // Disable button to prevent double-click
+        if (btn) {
+          btn.textContent = 'Memproses...';
+          btn.disabled = true;
+          btn.style.opacity = '0.7';
+        }
+
         fetch('/checkout/place-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
@@ -405,9 +415,21 @@
             window.location.href = data.redirect;
           } else {
             alert(data.error || 'Terjadi kesalahan. Silakan coba lagi.');
+            if (btn) {
+              btn.textContent = 'Pesan Sekarang';
+              btn.disabled = false;
+              btn.style.opacity = '1';
+            }
           }
         })
-        .catch(() => alert('Terjadi kesalahan jaringan. Silakan coba lagi.'));
+        .catch(() => {
+          alert('Terjadi kesalahan jaringan. Silakan coba lagi.');
+          if (btn) {
+            btn.textContent = 'Pesan Sekarang';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+          }
+        });
       }
     </script>
   </body>

@@ -44,6 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 'primary' => '#4f46e5',
+                'gray' => Color::Zinc,
             ])
             ->resources([
                 KategoriResource::class,

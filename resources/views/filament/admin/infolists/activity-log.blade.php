@@ -1,11 +1,8 @@
 @php
     /**
      * Custom Infolist view: timeline aktivitas pesanan.
-     * Membaca dari spatie/activitylog yang SUDAH ditulis oleh Pesanan::transitionTo().
-     *
-     * Tampilan: vertical timeline, event terbaru di atas.
-     * Tujuan: admin (terutama pemula) bisa lihat "siapa ngapain kapan"
-     * untuk audit, dispute, atau troubleshooting.
+     * Vertical timeline yang clean, event terbaru di atas.
+     * Semua styling ada di theme.css (.activity-* classes).
      *
      * State yang masuk = collection of Activity.
      */
@@ -13,44 +10,54 @@
 @endphp
 
 @if ($activities && $activities->isNotEmpty())
-    <ol class="relative border-l border-gray-200 dark:border-gray-700 ml-3 space-y-4">
-        @foreach ($activities as $activity)
+    <div class="activity-timeline">
+
+        @foreach ($activities as $index => $activity)
             @php
                 $props = $activity->properties ?? collect();
                 $from = $props->get('from_status');
                 $to = $props->get('to_status');
                 $actor = $props->get('actor');
                 $causer = $activity->causer?->name ?? ($actor ? ucfirst($actor) : 'Sistem');
+                $isFirst = $index === 0;
             @endphp
-            <li class="ml-4">
-                <span class="absolute -left-[9px] mt-1 flex h-4 w-4 items-center justify-center rounded-full ring-4 ring-white bg-primary-500 dark:ring-gray-900"></span>
-                <div class="flex flex-col">
-                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+
+            <div class="activity-entry {{ $isFirst ? 'activity-entry--latest' : '' }}">
+                {{-- Dot --}}
+                <div class="activity-dot">
+                    <span></span>
+                </div>
+
+                {{-- Content --}}
+                <div class="activity-body">
+                    <p class="activity-desc">
                         @if ($from && $to)
-                            Status: {{ ucfirst(str_replace('_', ' ', $from)) }} → {{ ucfirst(str_replace('_', ' ', $to)) }}
+                            <span class="activity-desc-label">{{ ucfirst(str_replace('_', ' ', $from)) }}</span>
+                            <span class="activity-desc-arrow">→</span>
+                            <span class="activity-desc-label">{{ ucfirst(str_replace('_', ' ', $to)) }}</span>
                         @elseif ($props->get('field') === 'shipping_address')
                             Alamat pengiriman diubah
                         @else
                             {{ ucfirst(str_replace('_', ' ', (string) $activity->description)) }}
                         @endif
-                    </span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                        Oleh <strong>{{ $causer }}</strong> · {{ optional($activity->created_at)->diffForHumans() }}
+                    </p>
+                    <p class="activity-meta">
+                        <strong>{{ $causer }}</strong> · {{ optional($activity->created_at)->diffForHumans() }}
                         @if ($activity->created_at)
                             ({{ $activity->created_at->format('d M Y, H:i') }})
                         @endif
-                    </span>
+                    </p>
 
-                    {{-- Catatan tambahan (mis. alasan batal) --}}
+                    {{-- Catatan tambahan --}}
                     @if ($props->has('alasan'))
-                        <span class="mt-1 inline-block rounded bg-red-50 px-2 py-1 text-xs text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                        <div class="activity-reason">
                             Alasan: {{ $props->get('alasan') }}
-                        </span>
+                        </div>
                     @endif
                 </div>
-            </li>
+            </div>
         @endforeach
-    </ol>
+    </div>
 @else
-    <p class="text-sm text-gray-400 italic">Belum ada aktivitas tercatat untuk pesanan ini.</p>
+    <p class="activity-empty">Belum ada aktivitas tercatat untuk pesanan ini.</p>
 @endif
