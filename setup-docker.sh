@@ -24,23 +24,27 @@ sudo docker-compose down --remove-orphans
 echo "🐳 Starting Docker containers..."
 sudo docker-compose up -d --build
 
-# 4. Wait for MySQL to be ready
-echo "⏳ Waiting for MySQL to be ready..."
-sleep 10
+# 4. Wait for MySQL and App to be ready
+echo "⏳ Waiting for services to be ready..."
+sleep 15
 
-# 5. Generate Application Key (composer install runs automatically via compose entrypoint)
+# 5. Generate Application Key (entrypoint handles composer install)
 echo "🔑 Generating Laravel Application Key..."
 sudo docker-compose exec -u root app php artisan key:generate
 
-# 6. Fix Storage Permissions
-echo "🔒 Fixing storage permissions..."
-sudo docker-compose exec -u root app chmod -R 777 storage bootstrap/cache
-
-# 8. Build Frontend Assets
+# 6. Build Frontend Assets
 echo "⚡ Building frontend assets (Vite)..."
 sudo docker-compose exec node npm run build
 
 echo ""
+echo "============================================="
+echo "🎉 Setup selesai! Aplikasi siap digunakan."
+echo "🌐 Web: http://localhost:8000"
+echo "🔐 Admin: http://localhost:8000/admin"
+echo "---------------------------------------------"
+echo "💡 Perintah Sehari-hari:"
+echo "   - Mematikan : docker-compose stop"
+echo "   - Menyalakan: docker-compose start"
 echo "============================================="
 echo "🎉 Setup selesai! Aplikasi siap digunakan."
 echo "🌐 Web: http://localhost:8000"

@@ -1,11 +1,16 @@
 #!/bin/bash
 set -e
 
-# Fix ownership of all files to www-data
+echo "[entrypoint] Fixing permissions..."
 chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-
-# Ensure storage and cache are writable
 chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Start PHP-FPM
-exec php-fpm
+if [ ! -d "/var/www/vendor" ]; then
+    echo "[entrypoint] vendor not found, running composer install..."
+    composer install --no-interaction --optimize-autoloader
+else
+    echo "[entrypoint] vendor exists, skipping composer install."
+fi
+
+echo "[entrypoint] Starting Laravel development server..."
+exec php artisan serve --host=0.0.0.0 --port=8000
