@@ -1,68 +1,53 @@
 # Auraquina — Docker Setup Guide
 
-Dokumentasi ini menjelaskan cara menjalankan project **Auraquina** di lingkungan lokal menggunakan Docker.
-
 ## Prasyarat
-Pastikan laptop kamu sudah terinstall **Docker Desktop**.
-- [Download Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows/macOS/Linux)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows/macOS/Linux)
 
 ---
 
-## Langkah Setup & Instalasi (Pertama Kali)
+## 1-Klik Setup
 
-Ikuti urutan langkah di bawah ini:
+### Windows
+Double-click **`setup-docker.bat`**
 
-### 1. Salin Environment (.env)
-Buka terminal/CMD di folder project, jalankan:
+### Linux / macOS
+```bash
+chmod +x setup-docker.sh
+./setup-docker.sh
+```
+
+Selesai! Buka browser:
+- **Web**: http://localhost:8000
+- **Admin**: http://localhost:8000/admin
+
+---
+
+## Manual Setup (jika script gagal)
+
 ```bash
 cp .env.example .env
-```
-*(Di Windows PowerShell, gunakan `Copy-Item .env.example .env`)*
-
-### 2. Nyalakan Docker Services
-Jalankan perintah berikut untuk mengunduh image dan menyalakan container:
-```bash
 docker compose up -d --build
+docker compose exec -u root app composer install
+docker compose exec -u root app php artisan key:generate
+docker compose exec -u root app chmod -R 777 storage bootstrap/cache
+docker compose exec node npm run build
 ```
-> ⚠️ **Catatan**: Proses pertama kali akan memakan waktu beberapa menit karena harus mendownload image PHP, MySQL, Nginx, dan Node.js. 
-> MySQL otomatis akan mengimport file database awal (`auraquina-db-export.sql`) saat container database dinyalakan.
-
-### 3. Install Dependensi PHP (Composer) & Generate Key
-Jalankan composer install dan generate application key di dalam container app:
-```bash
-docker compose exec app composer install
-docker compose exec app php artisan key:generate
-```
-
-### 4. Buka Aplikasi di Browser
-- **Aplikasi**: [http://localhost:8000](http://localhost:8000)
-- **Admin Panel**: [http://localhost:8000/admin](http://localhost:8000/admin)
 
 ---
 
-## Perintah Penting Sehari-hari
+## Perintah Penting
 
-- **Mematikan Docker**:
-  ```bash
-  docker compose down
-  ```
-- **Menyalakan Docker Kembali** (Tanpa build ulang):
-  ```bash
-  docker compose up -d
-  ```
-- **Menjalankan Perintah Artisan**:
-  Format: `docker compose exec app [perintah]`
-  Contoh:
-  ```bash
-  docker compose exec app php artisan migrate
-  docker compose exec app php artisan db:seed
-  ```
-- **Melihat Log Aplikasi**:
-  ```bash
-  docker compose logs -f app
-  ```
+| Perintah | Fungsi |
+|---|---|
+| `docker compose up -d` | Nyalakan semua container |
+| `docker compose down` | Matikan semua container |
+| `docker compose exec app php artisan migrate` | Jalankan migrasi |
+| `docker compose exec app php artisan db:seed` | Seed database |
+| `docker compose logs -f app` | Lihat log aplikasi |
+| `docker compose exec node npm run build` | Build ulang aset frontend |
 
 ---
 
-## Mengapa Menggunakan Docker?
-Dengan setup ini, kamu **tidak perlu** menginstall XAMPP, Laragon, PHP, Node.js, Composer, atau MySQL secara lokal di komputermu. Semua *environment* berjalan terisolasi di dalam container dengan versi yang sama persis seperti yang digunakan developer lain.
+## Mengapa Docker?
+
+Tidak perlu install PHP, MySQL, Node.js, Composer, atau Laragon secara lokal. Semua jalan di dalam container terisolasi dengan versi yang sama persis.
