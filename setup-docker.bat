@@ -1,10 +1,11 @@
 @echo off
+chcp 65001 >nul
 echo 🚀 Starting Auraquina Docker 1-Click Setup...
 
 :: 1. Copy env if not exists
 if not exist .env (
     echo 📋 Copying .env.example to .env...
-    copy .env.example .env
+    copy .env.example .env >nul
 )
 
 :: 2. Clean up orphan containers and start Docker Compose
@@ -15,8 +16,8 @@ echo 🐳 Starting Docker containers...
 docker compose up -d --build
 
 :: 3. Wait for app container to be fully running
-echo ⏳ Menunggu container siap...
-timeout /t 30 /nobreak >nul
+echo ⏳ Menunggu container siap dan menginstall library (bisa memakan waktu 1-2 menit)...
+timeout /t 60 /nobreak >nul
 
 :: 4. Generate Application Key (if not exists)
 echo 🔑 Checking Application Key...
@@ -41,3 +42,4 @@ echo    - Mematikan : docker compose stop
 echo    - Menyalakan: docker compose start
 echo =============================================
 pause
+
