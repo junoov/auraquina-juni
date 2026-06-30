@@ -63,6 +63,8 @@ Desktop.ini
 /database/*.sqlite
 # allow export db specifically for docker setup
 !auraquina-db-export.sql
+!setup-docker.sh
+!setup-docker.bat
 
 # ========================
 # Screenshots & temp files (dr AI tools)
