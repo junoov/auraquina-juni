@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libzip-dev \
-    mariadb-client
+    mariadb-client \
+    dos2unix
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -30,10 +31,13 @@ WORKDIR /var/www
 
 # Copy entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
 # Copy existing application directory permissions
 COPY --chown=www-data:www-data . /var/www
+
+# Allow composer to run as root
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Run as root so entrypoint can fix permissions
 USER root

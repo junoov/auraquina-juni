@@ -16,13 +16,9 @@ docker compose up -d --build
 
 :: 3. Wait for services to be ready
 echo ⏳ Waiting for services to be ready...
-timeout /t 15 /nobreak >nul
+timeout /t 20 /nobreak >nul
 
-:: 4. Generate Application Key (entrypoint handles composer install)
-echo 🔑 Generating Laravel Application Key...
-docker compose exec -u root app php artisan key:generate
-
-:: 5. Build Frontend Assets
+:: 4. Build Frontend Assets
 echo ⚡ Building frontend assets (Vite)...
 docker compose exec node npm run build
 

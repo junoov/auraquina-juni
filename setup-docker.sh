@@ -26,13 +26,9 @@ sudo docker-compose up -d --build
 
 # 4. Wait for MySQL and App to be ready
 echo "⏳ Waiting for services to be ready..."
-sleep 15
+sleep 20
 
-# 5. Generate Application Key (entrypoint handles composer install)
-echo "🔑 Generating Laravel Application Key..."
-sudo docker-compose exec -u root app php artisan key:generate
-
-# 6. Build Frontend Assets
+# 5. Build Frontend Assets
 echo "⚡ Building frontend assets (Vite)..."
 sudo docker-compose exec node npm run build
 
