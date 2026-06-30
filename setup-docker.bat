@@ -18,19 +18,15 @@ docker compose up -d --build
 echo ⏳ Waiting for MySQL to be ready...
 timeout /t 10 /nobreak >nul
 
-:: 4. Install PHP Dependencies
-echo 📦 Installing Composer dependencies...
-docker compose exec -u root app composer install
-
-:: 5. Generate Application Key
+:: 4. Generate Application Key
 echo 🔑 Generating Laravel Application Key...
 docker compose exec -u root app php artisan key:generate
 
-:: 6. Fix Storage Permissions
+:: 5. Fix Storage Permissions
 echo 🔒 Fixing storage permissions...
 docker compose exec -u root app chmod -R 777 storage bootstrap/cache
 
-:: 7. Build Frontend Assets
+:: 6. Build Frontend Assets
 echo ⚡ Building frontend assets (Vite)...
 docker compose exec node npm run build
 

@@ -28,15 +28,11 @@ sudo docker-compose up -d --build
 echo "⏳ Waiting for MySQL to be ready..."
 sleep 10
 
-# 5. Install PHP Dependencies
-echo "📦 Installing Composer dependencies..."
-sudo docker-compose exec -u root app composer install
-
-# 6. Generate Application Key
+# 5. Generate Application Key (composer install runs automatically via compose entrypoint)
 echo "🔑 Generating Laravel Application Key..."
 sudo docker-compose exec -u root app php artisan key:generate
 
-# 7. Fix Storage Permissions
+# 6. Fix Storage Permissions
 echo "🔒 Fixing storage permissions..."
 sudo docker-compose exec -u root app chmod -R 777 storage bootstrap/cache
 
