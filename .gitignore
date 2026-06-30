@@ -58,10 +58,11 @@ Desktop.ini
 # ========================
 # Database dumps & data
 # ========================
-*.sql
 *.sqlite
 *.sqlite-journal
 /database/*.sqlite
+# allow export db specifically for docker setup
+!auraquina-db-export.sql
 
 # ========================
 # Screenshots & temp files (dr AI tools)
