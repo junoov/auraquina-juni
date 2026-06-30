@@ -18,21 +18,35 @@ fi
 echo "🧹 Cleaning up old containers..."
 sudo docker-compose down --remove-orphans 2>/dev/null || true
 
-echo "🐳 Starting Docker containers..."
+echo "🐳 Starting MySQL container first..."
+sudo docker-compose up -d mysql
+
+echo "⏳ Waiting for MySQL to be ready..."
+sleep 10
+
+echo "📦 Installing Composer dependencies..."
+sudo docker-compose run --rm --entrypoint bash app -c "composer install --no-interaction --optimize-autoloader"
+
+echo "🚀 Starting all containers..."
 sudo docker-compose up -d --build
 
 # 4. Wait for app container to be fully running (not restarting)
 echo "⏳ Menunggu container siap..."
-MAX_WAIT=60
+MAX_WAIT=90
 COUNT=0
 while [ $COUNT -lt $MAX_WAIT ]; do
     STATUS=$(sudo docker inspect --format='{{.State.Status}}' auraquina-app 2>/dev/null || echo "unknown")
-    if [ "$STATUS" = "running" ]; then
+    RESTARTS=$(sudo docker inspect --format='{{.RestartCount}}' auraquina-app 2>/dev/null || echo "0")
+    if [ "$STATUS" = "running" ] && [ "$RESTARTS" -lt 3 ]; then
         # Extra check: try to run a simple command
         if sudo docker-compose exec -T app php artisan --version >/dev/null 2>&1; then
             echo "✅ Container app sudah siap!"
             break
         fi
+    fi
+    if [ "$RESTARTS" -ge 3 ]; then
+        echo "❌ Container terlalu banyak restart. Cek logs: sudo docker-compose logs app"
+        exit 1
     fi
     COUNT=$((COUNT + 2))
     echo "   Menunggu... (${COUNT}s)"

@@ -29,6 +29,12 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
+# Set git safe.directory for volume mounts
+RUN git config --global --add safe.directory /var/www
+
+# Create vendor directory with proper permissions
+RUN mkdir -p /var/www/vendor && chmod 777 /var/www/vendor
+
 # Copy entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
