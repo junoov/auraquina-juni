@@ -1,0 +1,69 @@
+services:
+  # PHP Application (Laravel)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: auraquina-app
+    container_name: auraquina-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    networks:
+      - auraquina-network
+
+  # Web Server (Nginx)
+  webserver:
+    image: nginx:alpine
+    container_name: auraquina-webserver
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - auraquina-network
+    depends_on:
+      - app
+
+  # Database (MySQL)
+  mysql:
+    image: mysql:8.0
+    container_name: auraquina-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: auraquina
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - auraquina-db:/var/lib/mysql
+      # Auto-import DB dump on startup
+      - ./auraquina-db-export.sql:/docker-entrypoint-initdb.d/auraquina-db-export.sql
+    networks:
+      - auraquina-network
+
+  # Node.js for Vite (Hot Reloading / Dev)
+  node:
+    image: node:20-alpine
+    container_name: auraquina-node
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host
+    networks:
+      - auraquina-network
+    depends_on:
+      - app
+
+networks:
+  auraquina-network:
+    driver: bridge
+
+volumes:
+  auraquina-db:
+    driver: local
