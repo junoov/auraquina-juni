@@ -17,7 +17,10 @@ if ! sudo systemctl is-active --quiet docker; then
     sudo systemctl start docker
 fi
 
-# 3. Start Docker Compose (MySQL + App + Node)
+# 3. Clean up orphan containers and start Docker Compose
+echo "🧹 Cleaning up old containers..."
+sudo docker-compose down --remove-orphans
+
 echo "🐳 Starting Docker containers..."
 sudo docker-compose up -d --build
 
@@ -37,7 +40,7 @@ sudo docker-compose exec -u root app php artisan key:generate
 echo "🔒 Fixing storage permissions..."
 sudo docker-compose exec -u root app chmod -R 777 storage bootstrap/cache
 
-# 8. Build Frontend Assets (Node container auto-installs npm on start)
+# 8. Build Frontend Assets
 echo "⚡ Building frontend assets (Vite)..."
 sudo docker-compose exec node npm run build
 

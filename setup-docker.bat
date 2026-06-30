@@ -7,7 +7,10 @@ if not exist .env (
     copy .env.example .env
 )
 
-:: 2. Start Docker Compose (MySQL + App + Node)
+:: 2. Clean up orphan containers and start Docker Compose
+echo 🧹 Cleaning up old containers...
+docker compose down --remove-orphans
+
 echo 🐳 Starting Docker containers...
 docker compose up -d --build
 
