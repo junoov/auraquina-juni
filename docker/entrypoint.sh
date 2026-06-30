@@ -16,10 +16,16 @@ chmod -R 777 storage bootstrap/cache 2>/dev/null || true
 # Install dependencies if vendor missing
 if [ ! -f "vendor/autoload.php" ]; then
     echo "[entrypoint] Running composer install..."
+    # Make sure cache dir is writable or bypassed
+    export COMPOSER_CACHE_DIR=/dev/null
     composer install --no-interaction --optimize-autoloader 2>&1
     if [ $? -ne 0 ]; then
         echo "[entrypoint] ERROR: Composer install failed!"
-        exit 1
+        # Fallback: try without cache and as superuser again just in case
+        COMPOSER_ALLOW_SUPERUSER=1 composer install --no-interaction --no-cache 2>&1
+        if [ $? -ne 0 ]; then
+             exit 1
+        fi
     fi
 fi
 

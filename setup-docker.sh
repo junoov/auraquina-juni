@@ -16,45 +16,42 @@ fi
 
 # 3. Clean up orphan containers and start Docker Compose
 echo "🧹 Cleaning up old containers..."
-sudo docker-compose down --remove-orphans 2>/dev/null || true
+sudo docker-compose down --remove-orphans -v 2>/dev/null || true
 
-echo "🐳 Starting MySQL container first..."
-sudo docker-compose up -d mysql
-
-echo "⏳ Waiting for MySQL to be ready..."
-sleep 10
-
-echo "📦 Installing Composer dependencies..."
-sudo docker-compose run --rm --entrypoint bash app -c "composer install --no-interaction --optimize-autoloader"
-
-echo "🚀 Starting all containers..."
+echo "🐳 Starting Docker containers..."
 sudo docker-compose up -d --build
 
-# 4. Wait for app container to be fully running (not restarting)
-echo "⏳ Menunggu container siap..."
-MAX_WAIT=90
+# 4. Wait for app container to be fully running
+echo "⏳ Menunggu container app siap (ini mungkin agak lama karena Composer install berjalan di background)..."
+echo "   Untuk melihat progress: sudo docker-compose logs -f app"
+MAX_WAIT=120
 COUNT=0
 while [ $COUNT -lt $MAX_WAIT ]; do
     STATUS=$(sudo docker inspect --format='{{.State.Status}}' auraquina-app 2>/dev/null || echo "unknown")
     RESTARTS=$(sudo docker inspect --format='{{.RestartCount}}' auraquina-app 2>/dev/null || echo "0")
-    if [ "$STATUS" = "running" ] && [ "$RESTARTS" -lt 3 ]; then
-        # Extra check: try to run a simple command
-        if sudo docker-compose exec -T app php artisan --version >/dev/null 2>&1; then
-            echo "✅ Container app sudah siap!"
-            break
+    
+    if [ "$STATUS" = "running" ] && [ "$RESTARTS" -lt 5 ]; then
+        # Check if composer finished by looking for vendor/autoload.php
+        if sudo docker-compose exec -T app ls vendor/autoload.php >/dev/null 2>&1; then
+            if sudo docker-compose exec -T app php artisan --version >/dev/null 2>&1; then
+                echo "✅ Container app sudah siap!"
+                break
+            fi
         fi
     fi
-    if [ "$RESTARTS" -ge 3 ]; then
+    
+    if [ "$RESTARTS" -ge 5 ]; then
         echo "❌ Container terlalu banyak restart. Cek logs: sudo docker-compose logs app"
         exit 1
     fi
-    COUNT=$((COUNT + 2))
-    echo "   Menunggu... (${COUNT}s)"
-    sleep 2
+    
+    COUNT=$((COUNT + 5))
+    echo "   Menunggu... (${COUNT}s) - Status: $STATUS, Restarts: $RESTARTS"
+    sleep 5
 done
 
 if [ $COUNT -ge $MAX_WAIT ]; then
-    echo "❌ Container gagal start. Cek logs: sudo docker-compose logs app"
+    echo "❌ Timeout menunggu container. Cek logs: sudo docker-compose logs app"
     exit 1
 fi
 
@@ -82,6 +79,7 @@ echo "🌐 Web: http://localhost:8000"
 echo "🔐 Admin: http://localhost:8000/admin"
 echo "---------------------------------------------"
 echo "💡 Perintah Sehari-hari:"
-echo "   - Mematikan : docker-compose stop"
-echo "   - Menyalakan: docker-compose start"
+echo "   - Mematikan : sudo docker-compose stop"
+echo "   - Menyalakan: sudo docker-compose start"
+echo "   - Lihat Log : sudo docker-compose logs -f app"
 echo "============================================="
