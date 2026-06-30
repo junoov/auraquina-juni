@@ -24,12 +24,21 @@ sudo docker-compose down --remove-orphans
 echo "🐳 Starting Docker containers..."
 sudo docker-compose up -d --build
 
-# 4. Wait for MySQL and App to be ready
-echo "⏳ Waiting for services to be ready..."
-sleep 20
+# 4. Tunggu beberapa detik agar container App & MySQL hidup
+echo "⏳ Menunggu container hidup..."
+sleep 5
 
-# 5. Build Frontend Assets
-echo "⚡ Building frontend assets (Vite)..."
+# 5. Jalankan perintah manual di luar background
+echo "📦 Menginstall dependencies (Composer)..."
+sudo docker-compose exec -u root app composer install --no-interaction
+
+echo "🔑 Generate Application Key..."
+sudo docker-compose exec -u root app php artisan key:generate
+
+echo "🔒 Memperbaiki hak akses file..."
+sudo docker-compose exec -u root app chmod -R 777 storage bootstrap/cache
+
+echo "⚡ Membangun frontend assets (Vite)..."
 sudo docker-compose exec node npm run build
 
 echo ""

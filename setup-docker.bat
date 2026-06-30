@@ -14,12 +14,22 @@ docker compose down --remove-orphans
 echo 🐳 Starting Docker containers...
 docker compose up -d --build
 
-:: 3. Wait for services to be ready
-echo ⏳ Waiting for services to be ready...
-timeout /t 20 /nobreak >nul
+:: 3. Tunggu beberapa detik agar container hidup
+echo ⏳ Menunggu container hidup...
+timeout /t 5 /nobreak >nul
 
-:: 4. Build Frontend Assets
-echo ⚡ Building frontend assets (Vite)...
+:: 4. Jalankan perintah secara eksplisit agar muncul di terminal
+echo 📦 Menginstall dependencies (Composer)...
+docker compose exec -u root app composer install --no-interaction
+
+echo 🔑 Generate Application Key...
+docker compose exec -u root app php artisan key:generate
+
+echo 🔒 Memperbaiki hak akses file...
+docker compose exec -u root app chmod -R 777 storage bootstrap/cache
+
+:: 5. Build Frontend Assets
+echo ⚡ Membangun frontend assets (Vite)...
 docker compose exec node npm run build
 
 echo.
