@@ -39,5 +39,9 @@ echo =============================================
 echo 🎉 Setup selesai! Aplikasi siap digunakan.
 echo 🌐 Web: http://localhost:8000
 echo 🔐 Admin: http://localhost:8000/admin
+echo ---------------------------------------------
+echo 💡 Perintah Sehari-hari:
+echo    - Mematikan : docker compose stop
+echo    - Menyalakan: docker compose start
 echo =============================================
 pause
