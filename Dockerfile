@@ -33,11 +33,11 @@ WORKDIR /var/www
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
-# Copy existing application directory permissions
-COPY --chown=www-data:www-data . /var/www
-
 # Allow composer to run as root
 ENV COMPOSER_ALLOW_SUPERUSER=1
+
+# Copy existing application directory permissions
+COPY . /var/www
 
 # Run as root so entrypoint can fix permissions
 USER root
@@ -46,4 +46,4 @@ USER root
 EXPOSE 8000
 
 # Use entrypoint to handle composer install + start server
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
