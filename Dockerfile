@@ -17,10 +17,10 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+RUN apt-get update && apt-get install -y libicu-dev && docker-php-ext-configure intl && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
 # Install sodium
-RUN apt-get update && apt-get install -y libsodium-dev && docker-php-ext-install sodium
+RUN apt-get install -y libsodium-dev && docker-php-ext-install sodium
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
