@@ -350,81 +350,43 @@ h1, h2, h3, blockquote {
   display: none;
 }
 
-/* --- Premium Sticky Header System --- */
-header.sticky {
+/* --- Unified Sticky Header --- */
+.site-header {
   position: sticky !important;
   top: 0 !important;
   z-index: 1000 !important;
   width: 100%;
 }
 
-/* Base header transitions */
-header.sticky > div,
-header.sticky #nav-row {
-  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              height 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+/* Default: solid background for non-transparent headers */
+.site-header:not(.site-header--transparent) .site-header__inner {
+  background-color: rgba(247, 242, 233, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
 }
 
-/* Default state for non-transparent header */
-header.sticky > div {
-  background-color: rgba(247, 242, 233, 0.94) !important; /* var(--soft-cream) at 0.94 opacity */
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  border-bottom: 1px solid var(--border) !important;
+/* Transparent mode: start invisible, JS adds solid on scroll */
+.site-header--transparent .site-header__inner {
+  transition: background-color 0.35s ease, backdrop-filter 0.35s ease, box-shadow 0.35s ease, color 0.35s ease;
 }
 
-/* Homepage Transparent Header initial state */
-header.header-transparent > div,
-header.header-transparent #nav-row {
-  background-color: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
-  border-bottom: 1px solid transparent !important;
-}
-
-/* Mobile: solid white header for better readability */
+/* Mobile: transparent header gets solid white on mobile for readability */
 @media (max-width: 1023px) {
-  header.header-transparent > div,
-  header.header-transparent #nav-row {
-    background-color: var(--white) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border-bottom: 1px solid var(--border) !important;
+  .site-header--transparent .site-header__inner {
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
   }
 }
 
-/* Scrolled state for all sticky headers */
-header.is-scrolled > div,
-header.is-scrolled #nav-row {
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
-  border-bottom: 1px solid rgba(211, 192, 172, 0.15) !important;
-}
-
-/* Smooth shrink height on scroll to look premium */
-@media (min-width: 1024px) {
-  header.sticky > div,
-  header.sticky #nav-row {
-    height: 86px;
-  }
-  header.is-scrolled > div,
-  header.is-scrolled #nav-row {
-    height: 70px !important;
-  }
-}
+/* Mobile: transparent header gets solid white on mobile for readability */
 @media (max-width: 1023px) {
-  header.sticky > div,
-  header.sticky #nav-row {
-    height: 72px;
-  }
-  header.is-scrolled > div,
-  header.is-scrolled #nav-row {
-    height: 60px !important;
+  .site-header--transparent .site-header__inner {
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
   }
 }

@@ -19,7 +19,6 @@
           asset('images/hero-baru/hero-3.png'),
           asset('images/hero-baru/hero-4.png'),
       ];
-
       $homeProductCards = ($produkUnggulan ?? collect())->map(fn ($produk) => [
           'name' => $produk->nama,
           'price' => $produk->hargaFormatted(),
@@ -28,16 +27,12 @@
           'desc' => $produk->deskripsi_singkat ?: Str::limit((string) $produk->deskripsi, 130),
           'badge' => $produk->badge ? Str::title($produk->badge) : 'New Arrival',
       ])->values();
-
       $featuredProduct = $homeProductCards->first();
       $products = $homeProductCards->skip(1)->take(6)->values();
       if ($products->isEmpty()) {
           $products = $homeProductCards->take(6)->values();
       }
       $bestSellers = $homeProductCards->take(4)->values();
-
-
-
       $serviceItems = [
           [
               'title' => 'Premium Fabric',
@@ -60,14 +55,12 @@
               'icon' => '<path d="M7 18a5 5 0 1 1 .8-9.9A6.5 6.5 0 0 1 20 11.5a3.5 3.5 0 0 1-.5 6.5H7Z" />',
           ],
       ];
-
       $socialIcons = [
           ['label' => 'Instagram', 'href' => 'https://www.instagram.com/auraquina/', 'icon' => '<rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><path d="M17 7h.01" />'],
           ['label' => 'TikTok', 'href' => '#', 'icon' => '<path d="M14 3v11.5a4 4 0 1 1-4-4" /><path d="M14 6a6 6 0 0 0 5 3" />'],
           ['label' => 'YouTube', 'href' => '#', 'icon' => '<path d="M4 8.5A3 3 0 0 1 7 6h10a3 3 0 0 1 3 2.5 18 18 0 0 1 0 7A3 3 0 0 1 17 18H7a3 3 0 0 1-3-2.5 18 18 0 0 1 0-7Z" /><path d="m10 9 5 3-5 3Z" />'],
           ['label' => 'Email', 'href' => '#', 'icon' => '<path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" />'],
       ];
-
       $payments = [
           [
               'name' => 'QRIS',
@@ -115,160 +108,7 @@
       $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-28px)]';
       $arrowIcon = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-[18px] w-[18px] stroke-[1.8]"><path d="M5 12h14M13 6l6 6-6 6" /></svg>';
     @endphp
-
-    <header id="appbar" class="sticky top-0 z-50 h-0 text-[var(--ink)] header-transparent">
-      <div
-        id="nav-row"
-        class="absolute top-0 right-0 left-0 flex h-[86px] items-center px-12 text-[var(--ink)] max-lg:h-[72px] max-lg:px-4"
-      >
-        <a
-          class="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:flex text-[28px] lg:text-[32px] leading-none font-medium tracking-[0.03em] text-[var(--ink)]"
-          href="/"
-          aria-label="Auraquina"
-          style="font-family: 'Cormorant Garamond', Georgia, serif;"
-        >Auraquina</a>
-
-        <div class="flex items-center lg:hidden" style="width:80px;">
-          <button
-            id="menu-open"
-            type="button"
-            aria-label="Menu"
-            class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition"
-          >
-            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.8]"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
-          </button>
-        </div>
-
-        <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[22px] leading-none font-medium tracking-[0.03em] text-[var(--ink)] lg:hidden" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif;">Auraquina</a>
-
-        <div class="flex items-center gap-0.5 lg:hidden" style="width:80px;justify-content:flex-end;">
-          <button type="button" data-search-trigger aria-label="Search" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
-            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.7]"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-          </button>
-          <button type="button" onclick="openCart()" aria-label="Cart" class="relative flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
-            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.7]"><circle cx="9" cy="20" r="1.5" /><circle cx="17" cy="20" r="1.5" /><path d="M3.5 4h2.1l2.2 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 8H7" /></svg>
-            <span data-cart-count-badge class="icon-count-badge is-hidden">0</span>
-          </button>
-        </div>
-
-        <nav class="mr-auto hidden items-center gap-1 lg:flex" aria-label="Primary navigation">
-          <a class="flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap {{ request()->is('/') ? 'font-bold text-[var(--brown)]' : 'text-[var(--ink)]' }}" href="/">Home</a>
-          <a class="flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap {{ request()->is('shop') ? 'font-bold text-[var(--brown)]' : 'text-[var(--ink)]' }}" href="/shop">All Product</a>
-          <div class="group relative flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap text-[var(--ink)]">
-            Collection
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="ml-0.5 h-4 w-4 stroke-[1.7]"><path d="m6 9 6 6 6-6" /></svg>
-            <div class="pointer-events-none absolute top-9 left-1/2 z-80 min-w-[214px] -translate-x-1/2 translate-y-2 border border-[var(--border)] bg-[var(--white)] py-2 opacity-0 shadow-[0_8px_24px_rgba(131,81,61,0.12)] transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
-              <a class="block px-4 py-2 text-[13px] leading-[18px] text-[var(--ink)] hover:bg-[var(--cream)]" href="/shop">New Arrival</a>
-              @foreach ($kategoris as $kategori)
-                <a class="block px-4 py-2 text-[13px] leading-[18px] text-[var(--ink)] hover:bg-[var(--cream)]" href="/shop?category={{ urlencode($kategori->slug) }}">{{ $kategori->nama }}</a>
-              @endforeach
-            </div>
-          </div>
-          <a class="flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap {{ request()->is('sale') ? 'font-bold text-[var(--brown)]' : 'text-[var(--ink)]' }}" href="/sale">Sale</a>
-          <a class="flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap {{ request()->is('about') ? 'font-bold text-[var(--brown)]' : 'text-[var(--ink)]' }}" href="/about">About</a>
-        </nav>
-
-        <div class="ml-3 hidden items-center gap-1 lg:flex">
-          @foreach ([
-            '<circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" />' => 'Account',
-            '<circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />' => 'Search',
-            '<circle cx="9" cy="20" r="1.5" /><circle cx="17" cy="20" r="1.5" /><path d="M3.5 4h2.1l2.2 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 8H7" />' => 'Cart',
-          ] as $icon => $label)
-            @if ($label === 'Cart')
-              <button type="button" onclick="openCart()" aria-label="Cart" class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition">
-                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">{!! $icon !!}</svg>
-                <span data-cart-count-badge class="icon-count-badge is-hidden">0</span>
-              </button>
-            @else
-              <a href="{{ $label === 'Account' ? (auth()->check() ? route('account.show') : route('login')) : '#' }}" @if ($label === 'Search') data-search-trigger @endif aria-label="{{ $label }}" class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition">
-                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">{!! $icon !!}</svg>
-              </a>
-            @endif
-          @endforeach
-        </div>
-      </div>
-    </header>
-
-    @include('components.search-overlay', ['searchValue' => ''])
-    @include('components.cart-drawer')
-
-    {{-- Mobile Menu Drawer --}}
-    <div id="mobile-menu-backdrop" class="fixed inset-0 bg-[rgba(32,25,22,0.38)] opacity-0 pointer-events-none transition-opacity duration-300" style="z-index: 11000;"></div>
-    <div id="mobile-menu" class="fixed top-0 left-0 bottom-0 w-[70%] max-w-[300px] -translate-x-full bg-[var(--white)] text-[var(--ink)] shadow-[4px_0_24px_rgba(0,0,0,0.12)] transition-transform duration-300" style="z-index: 12000;">
-      <div class="flex h-16 items-center justify-between border-b border-[var(--border)] px-4">
-        <button type="button" data-search-trigger aria-label="Search" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
-          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.7]"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-        </button>
-        <button id="menu-close" type="button" aria-label="Close" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
-          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.7]"><path d="M6 6l12 12M18 6 6 18" /></svg>
-        </button>
-      </div>
-      <nav class="flex flex-col px-5 py-4 text-[15px] leading-[22px]">
-        <a class="border-b border-[var(--border)] py-4 {{ request()->is('/') ? 'font-bold text-[var(--brown)]' : '' }}" href="/">Home</a>
-        <a class="border-b border-[var(--border)] py-4 {{ request()->is('shop') ? 'font-bold text-[var(--brown)]' : '' }}" href="/shop">All Product</a>
-        <a class="border-b border-[var(--border)] py-4" href="/shop">Collection</a>
-        <a class="border-b border-[var(--border)] py-4 {{ request()->is('sale') ? 'font-bold text-[var(--brown)]' : '' }}" href="/sale">Sale</a>
-        <a class="border-b border-[var(--border)] py-4 {{ request()->is('about') ? 'font-bold text-[var(--brown)]' : '' }}" href="/about">About</a>
-        <a class="border-b border-[var(--border)] py-4 font-bold text-[var(--brown)]" href="{{ auth()->check() ? route('account.show') : route('login') }}">{{ auth()->check() ? 'Akun Saya' : 'Masuk' }}</a>
-      </nav>
-    </div>
-
-    <script>
-      // Mobile menu open/close
-      (function() {
-        const menu = document.getElementById('mobile-menu');
-        const backdrop = document.getElementById('mobile-menu-backdrop');
-        const openBtn = document.getElementById('menu-open');
-        const closeBtn = document.getElementById('menu-close');
-        if (!menu || !openBtn) return;
-
-        let scrollY = 0;
-
-        function openMenu() {
-          scrollY = window.scrollY;
-          menu.classList.remove('-translate-x-full');
-          menu.classList.add('translate-x-0');
-          if (backdrop) {
-            backdrop.classList.remove('opacity-0', 'pointer-events-none');
-            backdrop.classList.add('opacity-100', 'pointer-events-auto');
-          }
-          openBtn.style.display = 'none';
-          document.documentElement.style.overflow = 'hidden';
-          document.body.style.overflow = 'hidden';
-          document.body.style.touchAction = 'none';
-        }
-
-        function closeMenu() {
-          menu.classList.add('-translate-x-full');
-          menu.classList.remove('translate-x-0');
-          if (backdrop) {
-            backdrop.classList.add('opacity-0', 'pointer-events-none');
-            backdrop.classList.remove('opacity-100', 'pointer-events-auto');
-          }
-          openBtn.style.display = '';
-          document.documentElement.style.overflow = '';
-          document.body.style.overflow = '';
-          document.body.style.touchAction = '';
-          window.scrollTo(0, scrollY);
-        }
-
-        if (backdrop) {
-          backdrop.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
-        }
-
-        openBtn.addEventListener('click', openMenu);
-        if (closeBtn) closeBtn.addEventListener('click', closeMenu);
-        if (backdrop) backdrop.addEventListener('click', closeMenu);
-
-        // Close menu when search is triggered inside drawer
-        menu.querySelectorAll('[data-search-trigger]').forEach(function(btn) {
-          btn.addEventListener('click', function() {
-            closeMenu();
-          });
-        });
-      })();
-    </script>
-
+    @include('components.site-header', ['transparent' => true, 'kategoris' => $kategoris])
     <main>
       <section class="relative z-[1] -mt-[86px] overflow-hidden bg-[var(--warm)] max-lg:-mt-[72px]" aria-label="Featured collections">
         <div class="hero-frame relative w-full" style="aspect-ratio: 1672 / 941;">
@@ -298,14 +138,12 @@
           @endforeach
         </div>
       </section>
-
       <div class="bg-[var(--warm)] text-[var(--ink)]">
         {{-- New Collection — horizontal scroll carousel --}}
         <section aria-labelledby="new-collection-title" class="{{ $containerClass }} py-16 pb-14 max-lg:py-12 max-sm:py-10">
           <div class="mb-10 text-center max-lg:mb-8 max-sm:mb-7">
             <h2 id="new-collection-title" class="text-[13px] leading-5 font-bold tracking-[0.18em] uppercase text-[var(--ink)]" style="font-family:'Lato',sans-serif">New Collection: Auraquina</h2>
           </div>
-
           <div class="product-carousel-wrapper">
             <button id="product-carousel-prev" type="button" aria-label="Previous" class="carousel-arrow carousel-arrow--prev">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-[18px] w-[18px] stroke-[1.8]"><path d="M19 12H5M12 5l-7 7 7 7" /></svg>
@@ -313,7 +151,6 @@
             <button id="product-carousel-next" type="button" aria-label="Next" class="carousel-arrow carousel-arrow--next">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-[18px] w-[18px] stroke-[1.8]"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
             </button>
-
             <div id="product-carousel-track" class="product-carousel-track">
               @foreach ($homeProductCards as $product)
                 <a href="{{ $product['href'] }}" class="product-carousel-item clean-product-card">
@@ -330,9 +167,6 @@
             </div>
           </div>
         </section>
-
-
-
         <section class="bg-[var(--cream)] py-20 max-sm:py-14" aria-label="Brand philosophy">
           <div class="{{ $containerClass }} text-center">
             <p class="mb-6 text-[11px] font-bold tracking-[0.22em] uppercase text-[var(--sand)]">Our Philosophy</p>
@@ -343,7 +177,6 @@
             <p class="mt-6 text-[14px] leading-[1.75] text-[var(--muted)] max-w-[480px] mx-auto max-sm:text-[13px]">Setiap helai kain dipilih dengan hati, setiap jahitan dibuat dengan niat — untuk menemani langkahmu dengan tenang dan percaya diri.</p>
           </div>
         </section>
-
         {{-- Best Seller / Customer Picks --}}
         <section aria-labelledby="bestseller-title" class="{{ $containerClass }} py-14 max-sm:py-8">
           <div class="mb-7 flex items-center justify-between gap-5 max-sm:mb-5 max-sm:flex-col max-sm:items-start">
@@ -353,7 +186,6 @@
             </div>
             <a class="inline-flex items-center gap-7 whitespace-nowrap text-[14px] leading-5 font-bold text-[var(--brown)]" href="/shop">View All {!! $arrowIcon !!}</a>
           </div>
-
           <div class="grid grid-cols-4 gap-5 max-lg:grid-cols-2 max-lg:gap-[14px] max-sm:grid-cols-2 max-sm:auto-rows-fr max-sm:gap-4">
             @foreach ($bestSellers as $index => $item)
               <a class="group flex h-full flex-col overflow-hidden bg-[var(--white)] text-[var(--ink)]" href="{{ $item['href'] }}">
@@ -369,7 +201,6 @@
             @endforeach
           </div>
         </section>
-
         {{-- Instagram Feed Section --}}
         <section aria-labelledby="instagram-title" class="border-t border-[var(--border)] bg-[var(--warm)] pt-12 pb-0 max-sm:pt-8 max-sm:pb-0">
           <div class="{{ $containerClass }} mb-7 flex items-center justify-between gap-5 max-sm:mb-5 max-sm:flex-col max-sm:items-start">
@@ -383,7 +214,6 @@
               @auraquina
             </a>
           </div>
-
           @php
             $igFeed = [
                 'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1777252109529-nujayl_tas_resized2048-jpg.webp',
@@ -393,7 +223,6 @@
                 'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1770794734994-Maida_series_atas_resized2048-jpg.webp',
             ];
           @endphp
-
           <div class="grid grid-cols-5 gap-0 max-lg:grid-cols-4 max-sm:hidden">
             @foreach ($igFeed as $index => $igImg)
               <a href="https://www.instagram.com/auraquina/" target="_blank" rel="noopener" class="group relative block overflow-hidden bg-[var(--sand)] aspect-square {{ $index === 4 ? 'max-lg:hidden' : '' }}">
@@ -404,7 +233,6 @@
               </a>
             @endforeach
           </div>
-
           {{-- Mobile: horizontal scroll --}}
           <div class="hidden max-sm:flex gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 pb-4 scrollbar-hide">
             @foreach ($igFeed as $igImg)
@@ -417,7 +245,6 @@
             @endforeach
           </div>
         </section>
-
         <section class="border-y border-[var(--border)] bg-[var(--cream)] py-[34px] max-sm:py-6" aria-label="Store benefits">
           <div class="{{ $containerClass }} grid grid-cols-4 gap-0 max-lg:grid-cols-2 max-lg:gap-y-[26px] max-sm:grid-cols-1 max-sm:gap-y-5">
             @foreach ($serviceItems as $service)
@@ -432,9 +259,7 @@
           </div>
         </section>
       </div>
-
       {{-- Newsletter removed --}}
-
       <footer class="bg-[var(--white)] text-[var(--ink)]">
         <div class="{{ $containerClass }} grid grid-cols-[1.35fr_0.8fr_0.8fr_1.4fr] gap-[52px] border-b border-[var(--border)] py-9 pb-[22px] text-[13px] leading-5 max-lg:grid-cols-2 max-lg:gap-7 max-sm:grid-cols-1 max-sm:gap-y-8 max-sm:pt-[30px]">
           <div>
@@ -449,21 +274,18 @@
               @endforeach
             </div>
           </div>
-
           <div>
             <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Customer Care</p>
             @foreach ($footerLinks1 as $link => $href)
               <a class="mb-2 block text-[var(--ink)] hover:text-[var(--brown)] transition" href="{{ $href }}">{{ $link }}</a>
             @endforeach
           </div>
-
           <div>
             <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Information</p>
             @foreach ($footerLinks2 as $link => $href)
               <a class="mb-2 block text-[var(--ink)] hover:text-[var(--brown)] transition" href="{{ $href }}">{{ $link }}</a>
             @endforeach
           </div>
-
           <div>
             <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Payment Method</p>
             <div class="flex flex-wrap items-center gap-2">
@@ -475,22 +297,16 @@
             </div>
           </div>
         </div>
-
         <div class="{{ $containerClass }} flex justify-between gap-5 py-[18px] pb-5 text-[12px] leading-[18px] text-[var(--muted)] max-lg:flex-col max-sm:pb-[72px]">
           <span>© 2024 AURAQUINA. All Rights Reserved.</span>
           <span class="flex items-center gap-3 font-bold text-[var(--ink)]">We Accept <b>VISA</b><b>Mastercard</b><b>BCA</b><b>mandiri</b><b>BRI</b><b>BSI</b></span>
         </div>
       </footer>
-
       <a class="fixed right-[22px] bottom-[18px] z-[90] flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brown)] text-[var(--white)] max-lg:right-3 max-lg:bottom-3" href="https://wa.me/6287711516373" aria-label="WhatsApp">
         <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12a11.93 11.93 0 0 0 1.64 6.06L0 24l6.16-1.61A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.25-6.2-3.48-8.52zM12 21.8a9.78 9.78 0 0 1-5-1.37l-.36-.21-3.66.96.98-3.57-.23-.37A9.8 9.8 0 1 1 21.8 12 9.8 9.8 0 0 1 12 21.8zm5.36-7.34c-.29-.15-1.74-.86-2-.96s-.46-.15-.66.15-.76.96-.93 1.16-.34.22-.63.07a8.06 8.06 0 0 1-2.36-1.46 8.86 8.86 0 0 1-1.63-2.04c-.17-.29 0-.45.13-.6s.29-.34.43-.5a2 2 0 0 0 .29-.5.55.55 0 0 0 0-.5c-.07-.15-.66-1.6-.91-2.18s-.48-.5-.66-.5h-.57a1.1 1.1 0 0 0-.8.37 3.36 3.36 0 0 0-1.05 2.5 5.83 5.83 0 0 0 1.22 3.1 13.34 13.34 0 0 0 5.13 4.53c.71.31 1.27.5 1.7.64a4.13 4.13 0 0 0 1.88.12 3.07 3.07 0 0 0 2-1.42 2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.56-.34z" />
         </svg>
       </a>
-    <script>
-      // Sticky header scroll behavior handled globally in resources/js/app.js
 
-    </script>
-    @include('components.sticky-navbar-assets')
   </body>
 </html>

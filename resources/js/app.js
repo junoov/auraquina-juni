@@ -25,7 +25,6 @@ function setSlide(next) {
   if (slide === heroSlides.length - 1) {
     heroCarouselComplete = true;
     window.clearInterval(heroTimer);
-    syncHeader();
   }
 }
 
@@ -44,29 +43,6 @@ heroDots.forEach((dot) => {
     }
   });
 });
-
-const appbar = document.getElementById('appbar');
-const navRow = document.getElementById('nav-row');
-const heroSection = heroTrack?.closest('section');
-
-function syncHeader() {
-  if (!appbar || !navRow) {
-    return;
-  }
-
-  const heroBottom = heroSection
-    ? heroSection.offsetTop + heroSection.offsetHeight
-    : 20;
-  const isSolid = heroCarouselComplete || window.scrollY >= heroBottom - navRow.offsetHeight;
-
-  appbar.classList.toggle('is-solid', isSolid);
-  navRow.classList.toggle('bg-[rgba(255,254,252,0.94)]', isSolid);
-  navRow.classList.toggle('shadow-[0_1px_0_var(--border)]', isSolid);
-  navRow.classList.toggle('backdrop-blur-[10px]', isSolid);
-}
-
-syncHeader();
-window.addEventListener('scroll', syncHeader, { passive: true });
 
 // --- Product Carousel (horizontal scroll with arrows) ---
 function initProductCarousel() {
