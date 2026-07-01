@@ -25,7 +25,6 @@
           @endforeach
         </div>
       </div>
-      <a class="flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap {{ request()->is('sale') ? 'font-bold' : '' }}" href="/sale">Sale</a>
     </nav>
 
     <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[28px] lg:text-[32px] leading-none font-medium tracking-[0.03em]" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif;">Auraquina</a>
@@ -96,7 +95,6 @@
     <a class="border-b border-[var(--border)] py-4 {{ request()->is('/') ? 'font-bold text-[var(--brown)]' : '' }}" href="/">Home</a>
     <a class="border-b border-[var(--border)] py-4 {{ request()->is('shop') ? 'font-bold text-[var(--brown)]' : '' }}" href="/shop">All Product</a>
     <a class="border-b border-[var(--border)] py-4" href="/shop">Collection</a>
-    <a class="border-b border-[var(--border)] py-4 {{ request()->is('sale') ? 'font-bold text-[var(--brown)]' : '' }}" href="/sale">Sale</a>
     <a class="border-b border-[var(--border)] py-4 font-bold text-[var(--brown)]" href="{{ $accountHref }}">{{ auth()->check() ? 'Akun Saya' : 'Masuk' }}</a>
   </nav>
 </div>
