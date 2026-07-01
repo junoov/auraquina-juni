@@ -237,12 +237,7 @@
     </main>
 
     {{-- Footer --}}
-    <footer class="mt-12 border-t border-[var(--border)] bg-[var(--white)] text-[var(--ink)]">
-      <div class="{{ $containerClass }} flex justify-between gap-5 py-[18px] pb-5 text-[12px] leading-[18px] text-[var(--muted)] max-lg:flex-col max-sm:pb-[72px]">
-        <span>© 2024 AURAQUINA. All Rights Reserved.</span>
-        <span class="flex items-center gap-3 font-bold text-[var(--ink)]">We Accept <b>VISA</b><b>Mastercard</b><b>BCA</b><b>mandiri</b><b>BRI</b><b>BSI</b></span>
-      </div>
-    </footer>
+    @include('components.site-footer')
 
     {{-- WhatsApp FAB --}}
     <a class="fixed right-[22px] bottom-[18px] z-[90] flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brown)] text-[var(--white)] max-lg:right-3 max-lg:bottom-3" href="https://wa.me/628113662636" aria-label="WhatsApp">

@@ -1,10 +1,14 @@
+// ─── Hero Banner Carousel with Swipe / Drag / Loop ───
 const heroTrack = document.getElementById('hero-track');
 const heroSlides = heroTrack ? Array.from(heroTrack.children) : [];
 const heroDots = Array.from(document.querySelectorAll('[data-hero-dot]'));
+const heroPrev = document.getElementById('hero-arrow-prev');
+const heroNext = document.getElementById('hero-arrow-next');
 
 let slide = 0;
-let heroCarouselComplete = false;
 let heroTimer;
+const HERO_INTERVAL = 5600;
+const SWIPE_THRESHOLD = 40; // min px to count as a swipe
 
 function updateHeroDots(index) {
   heroDots.forEach((dot, i) => {
@@ -13,36 +17,108 @@ function updateHeroDots(index) {
 }
 
 function setSlide(next) {
-  if (!heroTrack || heroSlides.length === 0) {
-    return;
-  }
-
-  slide = Math.max(0, Math.min(next, heroSlides.length - 1));
+  if (!heroTrack || heroSlides.length === 0) return;
+  // Wrap around (loop)
+  const total = heroSlides.length;
+  slide = ((next % total) + total) % total;
   heroTrack.style.transform = `translateX(-${slide * 100}%)`;
-  heroSlides.forEach((heroSlide, index) => heroSlide.classList.toggle('active', index === slide));
+  heroSlides.forEach((s, i) => s.classList.toggle('active', i === slide));
   updateHeroDots(slide);
+}
 
-  if (slide === heroSlides.length - 1) {
-    heroCarouselComplete = true;
-    window.clearInterval(heroTimer);
+function resetHeroTimer() {
+  window.clearInterval(heroTimer);
+  if (heroSlides.length > 1) {
+    heroTimer = window.setInterval(() => setSlide(slide + 1), HERO_INTERVAL);
   }
 }
 
 setSlide(slide);
+resetHeroTimer();
 
-if (heroSlides.length > 1) {
-  heroTimer = window.setInterval(() => setSlide(slide + 1), 5600);
-}
+// Arrow buttons
+heroPrev?.addEventListener('click', () => { setSlide(slide - 1); resetHeroTimer(); });
+heroNext?.addEventListener('click', () => { setSlide(slide + 1); resetHeroTimer(); });
 
-// Hero dots click navigation
+// Dots click navigation
 heroDots.forEach((dot) => {
   dot.addEventListener('click', () => {
     const index = parseInt(dot.dataset.heroDot, 10);
-    if (!isNaN(index)) {
-      setSlide(index);
-    }
+    if (!isNaN(index)) { setSlide(index); resetHeroTimer(); }
   });
 });
+
+// ─── Touch Swipe support ───
+(function initHeroSwipe() {
+  if (!heroTrack || heroSlides.length < 2) return;
+
+  let startX = 0, startY = 0, diffX = 0, isDragging = false, isScrolling = null;
+
+  function onStart(x, y) {
+    startX = x; startY = y; diffX = 0; isDragging = true; isScrolling = null;
+    heroTrack.style.transition = 'none';
+  }
+
+  function onMove(x, y) {
+    if (!isDragging) return;
+    diffX = x - startX;
+    const diffY = y - startY;
+    // Determine intent: horizontal swipe vs vertical scroll
+    if (isScrolling === null && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) {
+      isScrolling = Math.abs(diffY) > Math.abs(diffX);
+    }
+    if (isScrolling) return;
+    // Dampen at edges
+    const trackWidth = heroTrack.parentElement?.offsetWidth || window.innerWidth;
+    const offset = -(slide * trackWidth) + diffX * 0.65;
+    heroTrack.style.transform = `translateX(${offset}px)`;
+  }
+
+  function onEnd() {
+    if (!isDragging) return;
+    isDragging = false;
+    heroTrack.style.transition = '';
+    if (!isScrolling && Math.abs(diffX) > SWIPE_THRESHOLD) {
+      setSlide(diffX < 0 ? slide + 1 : slide - 1);
+      resetHeroTimer();
+    } else {
+      setSlide(slide); // snap back
+    }
+  }
+
+  // Touch events
+  heroTrack.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    onStart(t.clientX, t.clientY);
+  }, { passive: true });
+
+  heroTrack.addEventListener('touchmove', (e) => {
+    const t = e.touches[0];
+    onMove(t.clientX, t.clientY);
+    if (!isScrolling) e.preventDefault();
+  }, { passive: false });
+
+  heroTrack.addEventListener('touchend', onEnd, { passive: true });
+  heroTrack.addEventListener('touchcancel', onEnd, { passive: true });
+
+  // Mouse drag events (desktop)
+  heroTrack.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    onStart(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    onMove(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('mouseup', onEnd);
+
+  // Prevent ghost drag on images
+  heroTrack.querySelectorAll('img').forEach(img => {
+    img.addEventListener('dragstart', (e) => e.preventDefault());
+  });
+})();
 
 // --- Product Carousel (horizontal scroll with arrows) ---
 function initProductCarousel() {

@@ -114,10 +114,10 @@
         <div class="hero-frame relative w-full" style="aspect-ratio: 1672 / 941;">
           {{-- Gradient overlay for header readability on mobile only --}}
           <div class="absolute inset-0 pointer-events-none z-10 hero-gradient-overlay"></div>
-          <div id="hero-track" class="absolute inset-0 flex transition-transform duration-[450ms] ease-out">
+          <div id="hero-track" class="absolute inset-0 flex transition-transform duration-[450ms] ease-out cursor-grab active:cursor-grabbing select-none">
             @foreach ($heroImages as $index => $src)
               <div class="hero-slide relative h-full min-w-full shrink-0 grow-0 basis-full">
-                <img src="{{ $src }}" alt="" @if ($index > 2) loading="lazy" @endif class="hero-slide-image absolute inset-0 h-full w-full" draggable="false" />
+                <img src="{{ $src }}" alt="" @if ($index > 2) loading="lazy" @endif class="hero-slide-image absolute inset-0 h-full w-full pointer-events-none" draggable="false" />
                 {{-- Aesthetic overlay untuk Banner Auraquina (slide pertama): hapus logo sparkle + warm cinematic tone --}}
                 @if ($index === 0)
                   {{-- Warm cinematic vignette overlay --}}
@@ -260,48 +260,7 @@
         </section>
       </div>
       {{-- Newsletter removed --}}
-      <footer class="bg-[var(--white)] text-[var(--ink)]">
-        <div class="{{ $containerClass }} grid grid-cols-[1.35fr_0.8fr_0.8fr_1.4fr] gap-[52px] border-b border-[var(--border)] py-9 pb-[22px] text-[13px] leading-5 max-lg:grid-cols-2 max-lg:gap-7 max-sm:grid-cols-1 max-sm:gap-y-8 max-sm:pt-[30px]">
-          <div>
-            <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Auraquina Official</p>
-            <p class="mb-2 text-[var(--muted)]">Admin : +62 877-1151-6373</p>
-            <p class="mb-2 text-[var(--muted)]">Yogyakarta, Indonesia.</p>
-            <div class="mt-7 flex items-center gap-[18px]">
-              @foreach ($socialIcons as $social)
-                <a href="{{ $social['href'] ?? '#' }}" @if(($social['href'] ?? '#') !== '#') target="_blank" rel="noopener" @endif aria-label="{{ $social['label'] }}">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" class="h-[18px] w-[18px] fill-none stroke-[var(--ink)] stroke-[1.9]">{!! $social['icon'] !!}</svg>
-                </a>
-              @endforeach
-            </div>
-          </div>
-          <div>
-            <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Customer Care</p>
-            @foreach ($footerLinks1 as $link => $href)
-              <a class="mb-2 block text-[var(--ink)] hover:text-[var(--brown)] transition" href="{{ $href }}">{{ $link }}</a>
-            @endforeach
-          </div>
-          <div>
-            <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Information</p>
-            @foreach ($footerLinks2 as $link => $href)
-              <a class="mb-2 block text-[var(--ink)] hover:text-[var(--brown)] transition" href="{{ $href }}">{{ $link }}</a>
-            @endforeach
-          </div>
-          <div>
-            <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Payment Method</p>
-            <div class="flex flex-wrap items-center gap-2">
-              @foreach ($payments as $payment)
-                <div class="inline-flex items-center justify-center rounded-[6px] border border-[var(--border)] bg-[var(--white)]" style="height: 32px; background-color: #ffffff; border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; padding: 4px 10px;" title="{{ $payment['name'] }}">
-                  {!! $payment['svg'] !!}
-                </div>
-              @endforeach
-            </div>
-          </div>
-        </div>
-        <div class="{{ $containerClass }} flex justify-between gap-5 py-[18px] pb-5 text-[12px] leading-[18px] text-[var(--muted)] max-lg:flex-col max-sm:pb-[72px]">
-          <span>© 2024 AURAQUINA. All Rights Reserved.</span>
-          <span class="flex items-center gap-3 font-bold text-[var(--ink)]">We Accept <b>VISA</b><b>Mastercard</b><b>BCA</b><b>mandiri</b><b>BRI</b><b>BSI</b></span>
-        </div>
-      </footer>
+      @include('components.site-footer')
       <a class="fixed right-[22px] bottom-[18px] z-[90] flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brown)] text-[var(--white)] max-lg:right-3 max-lg:bottom-3" href="https://wa.me/6287711516373" aria-label="WhatsApp">
         <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12a11.93 11.93 0 0 0 1.64 6.06L0 24l6.16-1.61A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.25-6.2-3.48-8.52zM12 21.8a9.78 9.78 0 0 1-5-1.37l-.36-.21-3.66.96.98-3.57-.23-.37A9.8 9.8 0 1 1 21.8 12 9.8 9.8 0 0 1 12 21.8zm5.36-7.34c-.29-.15-1.74-.86-2-.96s-.46-.15-.66.15-.76.96-.93 1.16-.34.22-.63.07a8.06 8.06 0 0 1-2.36-1.46 8.86 8.86 0 0 1-1.63-2.04c-.17-.29 0-.45.13-.6s.29-.34.43-.5a2 2 0 0 0 .29-.5.55.55 0 0 0 0-.5c-.07-.15-.66-1.6-.91-2.18s-.48-.5-.66-.5h-.57a1.1 1.1 0 0 0-.8.37 3.36 3.36 0 0 0-1.05 2.5 5.83 5.83 0 0 0 1.22 3.1 13.34 13.34 0 0 0 5.13 4.53c.71.31 1.27.5 1.7.64a4.13 4.13 0 0 0 1.88.12 3.07 3.07 0 0 0 2-1.42 2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.56-.34z" />

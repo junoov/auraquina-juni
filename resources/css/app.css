@@ -161,6 +161,52 @@ h1, h2, h3, blockquote {
   background: var(--brown);
 }
 
+/* Hero arrow buttons */
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.hero-frame:hover .hero-arrow {
+  opacity: 1;
+}
+
+.hero-arrow:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.hero-arrow--prev {
+  left: 20px;
+}
+
+.hero-arrow--next {
+  right: 20px;
+}
+
+@media (max-width: 640px) {
+  .hero-arrow {
+    display: none;
+  }
+}
+
 /* Product horizontal carousel */
 .product-carousel-wrapper {
   position: relative;
