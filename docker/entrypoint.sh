@@ -23,20 +23,28 @@ if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
 fi
 
 # Sync vendor from image to named volume every boot
-# (ensures new packages from git pull are always picked up)
+# (ensures new packages from git pull are always picked up, removes deleted packages)
 if [ ! -f "vendor/autoload.php" ]; then
     echo "[entrypoint] First boot: copying vendor from image..."
-    cp -a /tmp/vendor/. /var/www/vendor/ 2>/dev/null || \
+    rsync -a /tmp/vendor/ /var/www/vendor/ 2>/dev/null || \
     composer install --no-interaction --optimize-autoloader 2>&1
 else
-    echo "[entrypoint] Syncing vendor from image (incremental)..."
-    cp -ru /tmp/vendor/. /var/www/vendor/ 2>/dev/null || true
+    echo "[entrypoint] Syncing vendor from image..."
+    rsync -a --delete /tmp/vendor/ /var/www/vendor/ 2>/dev/null || true
 fi
 
-# Wait for MySQL to be ready
+# Wait for MySQL to be ready (max 60s timeout, then continue)
 echo "[entrypoint] Waiting for MySQL..."
+RETRIES=0
+MAX_RETRIES=12
 until php artisan db:monitor > /dev/null 2>&1; do
-    sleep 1
+    RETRIES=$((RETRIES + 1))
+    if [ $RETRIES -ge $MAX_RETRIES ]; then
+        echo "[entrypoint] WARNING: MySQL not ready after 60s, continuing anyway..."
+        break
+    fi
+    echo "[entrypoint] Waiting for MySQL... ($RETRIES/$MAX_RETRIES)"
+    sleep 5
 done
 
 # Run migrations (use --force for non-interactive, skip if already migrated)
