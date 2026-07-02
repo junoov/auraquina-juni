@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libzip-dev \
     mariadb-client \
     dos2unix \
-    rsync
+    rsync \
+    gosu
 
 # Install Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \

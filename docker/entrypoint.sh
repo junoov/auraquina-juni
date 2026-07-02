@@ -7,6 +7,19 @@ echo "[entrypoint] Setting up environment..."
 # Fix git ownership warning
 git config --global --add safe.directory /var/www
 
+# Detect host UID/GID from bind mount (avoids root-owned files on host)
+HOST_UID=$(stat -c '%u' /var/www 2>/dev/null || echo "0")
+HOST_GID=$(stat -c '%g' /var/www 2>/dev/null || echo "0")
+
+if [ "$HOST_UID" != "0" ]; then
+    echo "[entrypoint] Running as host user UID=$HOST_UID GID=$HOST_GID"
+    groupadd -g "$HOST_GID" -o hostgroup 2>/dev/null || true
+    useradd -u "$HOST_UID" -g "$HOST_GID" -o -m hostuser 2>/dev/null || true
+    RS_USER="hostuser"
+else
+    RS_USER="root"
+fi
+
 # Fix permissions (storage & cache only)
 chmod -R 777 storage bootstrap/cache 2>/dev/null || true
 
@@ -23,14 +36,14 @@ if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
 fi
 
 # Sync vendor from image to named volume every boot
-# (ensures new packages from git pull are always picked up, removes deleted packages)
+# Run as host user to avoid root-owned files on host filesystem
 if [ ! -f "vendor/autoload.php" ]; then
     echo "[entrypoint] First boot: copying vendor from image..."
-    rsync -a /tmp/vendor/ /var/www/vendor/ 2>/dev/null || \
-    composer install --no-interaction --optimize-autoloader 2>&1
+    gosu "$RS_USER" rsync -a /tmp/vendor/ /var/www/vendor/ 2>/dev/null || \
+    gosu "$RS_USER" composer install --no-interaction --optimize-autoloader 2>&1
 else
     echo "[entrypoint] Syncing vendor from image..."
-    rsync -a --delete /tmp/vendor/ /var/www/vendor/ 2>/dev/null || true
+    gosu "$RS_USER" rsync -a --delete /tmp/vendor/ /var/www/vendor/ 2>/dev/null || true
 fi
 
 # Wait for MySQL to be ready (max 60s timeout, then continue)
