@@ -71,12 +71,11 @@ done
 echo "[entrypoint] Running migrations..."
 php artisan migrate --force 2>&1 || true
 
-# Clear stale caches (config:cache is incompatible with Octane's facade calls in config)
+# Clear stale caches
 echo "[entrypoint] Clearing caches..."
 php artisan config:clear 2>&1 || true
 php artisan route:clear 2>&1 || true
 php artisan view:clear 2>&1 || true
 
-echo "[entrypoint] Starting Laravel Octane (FrankenPHP)..."
-# --max-requests=500 prevents memory leaks (restarts worker after 500 requests)
-exec php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=8000 --max-requests=500
+echo "[entrypoint] Starting Laravel development server..."
+exec php artisan serve --host=0.0.0.0 --port=8000

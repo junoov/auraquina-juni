@@ -1,5 +1,5 @@
-# Dockerfile for Laravel (Optimized with FrankenPHP + Octane)
-FROM dunglas/frankenphp:php8.4 AS base
+# Dockerfile for Laravel
+FROM php:8.4-cli
 
 # Install system dependencies
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,7 +23,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions (including Redis)
+# Install PHP extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
     -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
     libicu-dev && \
@@ -68,7 +68,7 @@ COPY . /var/www
 # Fix storage permissions (needed for bind mount)
 RUN chmod -R 777 storage bootstrap/cache 2>/dev/null || true
 
-# Expose port 8000 (for Octane)
+# Expose port 8000
 EXPOSE 8000
 
 # Use entrypoint to handle first-boot setup + start server

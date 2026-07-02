@@ -1,5 +1,5 @@
 services:
-  # PHP Application (Laravel) + Built-in Web Server (FrankenPHP + Octane)
+  # PHP Application (Laravel)
   app:
     build:
       context: .
@@ -23,7 +23,6 @@ services:
       CACHE_STORE: redis
       SESSION_DRIVER: redis
       REDIS_HOST: redis
-      OCTANE_SERVER: frankenphp
       COMPOSER_ALLOW_SUPERUSER: 1
     networks:
       - auraquina-network
