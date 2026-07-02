@@ -22,12 +22,15 @@ if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
     php artisan key:generate 2>&1 || true
 fi
 
-# Copy vendor from image to named volume on first boot only
-# (build-time composer install baked into image, named volume overlays it)
+# Sync vendor from image to named volume every boot
+# (ensures new packages from git pull are always picked up)
 if [ ! -f "vendor/autoload.php" ]; then
     echo "[entrypoint] First boot: copying vendor from image..."
-    cp -r /tmp/vendor /var/www/vendor 2>/dev/null || \
+    cp -a /tmp/vendor/. /var/www/vendor/ 2>/dev/null || \
     composer install --no-interaction --optimize-autoloader 2>&1
+else
+    echo "[entrypoint] Syncing vendor from image (incremental)..."
+    cp -ru /tmp/vendor/. /var/www/vendor/ 2>/dev/null || true
 fi
 
 # Wait for MySQL to be ready
@@ -36,7 +39,7 @@ until php artisan db:monitor > /dev/null 2>&1; do
     sleep 1
 done
 
-# Run migrations
+# Run migrations (use --force for non-interactive, skip if already migrated)
 echo "[entrypoint] Running migrations..."
 php artisan migrate --force 2>&1 || true
 
