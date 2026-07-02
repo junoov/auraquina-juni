@@ -14,7 +14,11 @@ storage/framework/testing/*
 storage/framework/views/*
 storage/logs/*
 storage/app/private/*
-
+storage/app/public/*
+.codegraph
+.kiro
+.playwright-mcp
+.sisyphus
 # IDE & OS
 .idea
 .vscode

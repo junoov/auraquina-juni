@@ -53,7 +53,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Layer-cached dependency install: copy lock files first, install, then copy rest
 COPY composer.json composer.lock ./
-RUN composer install --optimize-autoloader --no-interaction
+RUN composer install --optimize-autoloader --no-interaction --no-scripts
 
 # Save vendor to /tmp for first-boot copy (named volume will overlay /var/www/vendor)
 RUN cp -r /var/www/vendor /tmp/vendor
