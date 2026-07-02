@@ -22,6 +22,12 @@ if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
     php artisan key:generate 2>&1 || true
 fi
 
+# Publish Octane config if it doesn't exist
+if [ ! -f "config/octane.php" ]; then
+    echo "[entrypoint] Publishing Octane config..."
+    php artisan vendor:publish --tag=octane-config 2>&1 || true
+fi
+
 # Wait for MySQL to be ready
 echo "[entrypoint] Waiting for MySQL..."
 until php artisan db:monitor > /dev/null 2>&1; do
@@ -38,5 +44,6 @@ php artisan config:cache 2>&1 || true
 php artisan route:cache 2>&1 || true
 php artisan view:cache 2>&1 || true
 
-echo "[entrypoint] Starting Laravel server..."
-exec php artisan serve --host=0.0.0.0 --port=8000
+echo "[entrypoint] Starting Laravel Octane (FrankenPHP)..."
+# --max-requests=500 prevents memory leaks (restarts worker after 500 requests)
+exec php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=8000 --max-requests=500

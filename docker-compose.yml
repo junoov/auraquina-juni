@@ -1,5 +1,5 @@
 services:
-  # PHP Application (Laravel) + Built-in Web Server
+  # PHP Application (Laravel) + Built-in Web Server (FrankenPHP + Octane)
   app:
     build:
       context: .
@@ -14,26 +14,24 @@ services:
       - .:/var/www:cached
       - vendor:/var/www/vendor
       - node_modules:/var/www/node_modules
-    env_file:
-      - .env
     environment:
       DB_HOST: mysql
       DB_PORT: "3306"
       DB_DATABASE: auraquina
       DB_USERNAME: root
       DB_PASSWORD: root
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      REDIS_HOST: redis
+      OCTANE_SERVER: frankenphp
       COMPOSER_ALLOW_SUPERUSER: 1
     networks:
       - auraquina-network
     depends_on:
       mysql:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      redis:
+        condition: service_started
 
   # Database (MySQL) - Optimized
   mysql:
@@ -66,6 +64,18 @@ services:
       --query-cache-type=0
       --query-cache-size=0
 
+  # Redis for Cache/Sessions (In-Memory)
+  redis:
+    image: redis:alpine
+    container_name: auraquina-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - auraquina-network
+
   # Node.js (Vite Frontend) - No install needed
   node:
     image: node:20-alpine
@@ -92,4 +102,6 @@ volumes:
   vendor:
     driver: local
   node_modules:
+    driver: local
+  redis-data:
     driver: local
