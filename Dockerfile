@@ -34,6 +34,9 @@ RUN apt-get install -y --no-install-recommends \
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Copy PHP configuration
+COPY docker/php.ini /usr/local/etc/php/conf.d/auraquina.ini
+
 # Set working directory
 WORKDIR /var/www
 
