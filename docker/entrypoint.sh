@@ -29,6 +29,14 @@ if [ ! -f ".env" ]; then
     cp .env.example .env 2>/dev/null || true
 fi
 
+# Patch .env for Docker (bind-mounted .env may have localhost values)
+echo "[entrypoint] Patching .env for Docker..."
+sed -i 's/^DB_HOST=.*/DB_HOST=mysql/' .env 2>/dev/null || true
+sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=root/' .env 2>/dev/null || true
+sed -i 's/^REDIS_HOST=.*/REDIS_HOST=redis/' .env 2>/dev/null || true
+sed -i 's/^CACHE_STORE=.*/CACHE_STORE=redis/' .env 2>/dev/null || true
+sed -i 's/^SESSION_DRIVER=.*/SESSION_DRIVER=redis/' .env 2>/dev/null || true
+
 # Generate app key if needed
 if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
     echo "[entrypoint] Generating app key..."
