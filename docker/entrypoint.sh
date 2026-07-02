@@ -22,9 +22,13 @@ if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
     php artisan key:generate 2>&1 || true
 fi
 
-# Install Composer dependencies (populates named volume at runtime)
-echo "[entrypoint] Installing Composer dependencies..."
-composer install --no-interaction --optimize-autoloader 2>&1
+# Copy vendor from image to named volume on first boot only
+# (build-time composer install baked into image, named volume overlays it)
+if [ ! -f "vendor/autoload.php" ]; then
+    echo "[entrypoint] First boot: copying vendor from image..."
+    cp -r /tmp/vendor /var/www/vendor 2>/dev/null || \
+    composer install --no-interaction --optimize-autoloader 2>&1
+fi
 
 # Wait for MySQL to be ready
 echo "[entrypoint] Waiting for MySQL..."

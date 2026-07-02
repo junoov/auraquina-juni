@@ -46,24 +46,28 @@ WORKDIR /var/www
 # Set git safe.directory for volume mounts
 RUN git config --global --add safe.directory /var/www
 
-# Create vendor directory with proper permissions
-RUN mkdir -p /var/www/vendor && chmod 777 /var/www/vendor
+# Allow composer to run as root (needed for build)
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+# Layer-cached dependency install: copy lock files first, install, then copy rest
+COPY composer.json composer.lock ./
+RUN composer install --optimize-autoloader --no-interaction
+
+# Save vendor to /tmp for first-boot copy (named volume will overlay /var/www/vendor)
+RUN cp -r /var/www/vendor /tmp/vendor
 
 # Copy entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
-# Allow composer to run as root
-ENV COMPOSER_ALLOW_SUPERUSER=1
-
-# Copy existing application directory permissions
+# Copy full application code (overlays the partial copy above)
 COPY . /var/www
 
-# Run as root so entrypoint can fix permissions
-USER root
+# Fix storage permissions (needed for bind mount)
+RUN chmod -R 777 storage bootstrap/cache 2>/dev/null || true
 
 # Expose port 8000 (for Octane)
 EXPOSE 8000
 
-# Use entrypoint to handle composer install + start server
+# Use entrypoint to handle first-boot setup + start server
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
