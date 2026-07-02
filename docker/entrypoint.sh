@@ -7,22 +7,23 @@ echo "[entrypoint] Setting up environment..."
 # Fix git ownership warning
 git config --global --add safe.directory /var/www
 
-# Fix permissions for mounted volume
+# Fix permissions for storage & cache only (skip full chown - slow on volumes)
 echo "[entrypoint] Fixing permissions..."
-chown -R root:root /var/www 2>/dev/null || true
-chmod -R 755 /var/www 2>/dev/null || true
 chmod -R 777 storage bootstrap/cache 2>/dev/null || true
 
-# Install dependencies if vendor missing
+# Copy .env if missing
+if [ ! -f ".env" ]; then
+    echo "[entrypoint] Copying .env.example to .env..."
+    cp .env.example .env 2>/dev/null || true
+fi
+
+# Install composer dependencies if vendor missing
 if [ ! -f "vendor/autoload.php" ]; then
     echo "[entrypoint] Running composer install..."
-    # Make sure cache dir is writable or bypassed
-    export COMPOSER_CACHE_DIR=/dev/null
-    composer install --no-interaction --optimize-autoloader 2>&1
+    composer install --no-interaction --optimize-autoloader --no-dev 2>&1
     if [ $? -ne 0 ]; then
-        echo "[entrypoint] ERROR: Composer install failed!"
-        # Fallback: try without cache and as superuser again just in case
-        COMPOSER_ALLOW_SUPERUSER=1 composer install --no-interaction --no-cache 2>&1
+        echo "[entrypoint] Retrying composer install without cache..."
+        composer install --no-interaction --no-cache 2>&1
         if [ $? -ne 0 ]; then
              exit 1
         fi
@@ -35,15 +36,26 @@ if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
     php artisan key:generate 2>&1 || true
 fi
 
+# Run migrations
+echo "[entrypoint] Running migrations..."
+php artisan migrate --force 2>&1 || true
+
 # Build frontend assets if not built yet
 if [ ! -d "public/build" ] || [ ! -f "public/build/manifest.json" ]; then
+    echo "[entrypoint] Installing npm dependencies..."
+    npm ci --ignore-scripts 2>&1
     echo "[entrypoint] Building frontend assets..."
-    npm install 2>&1
     npm run build 2>&1
 fi
 
 # Remove hot file to use built assets
 rm -f public/hot
+
+# Cache config & routes for performance
+echo "[entrypoint] Caching config & routes..."
+php artisan config:cache 2>&1 || true
+php artisan route:cache 2>&1 || true
+php artisan view:cache 2>&1 || true
 
 echo "[entrypoint] Starting Laravel server..."
 exec php artisan serve --host=0.0.0.0 --port=8000

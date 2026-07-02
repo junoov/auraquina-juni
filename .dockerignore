@@ -2,7 +2,9 @@ node_modules
 vendor
 .git
 .env
+.env.backup
 public/storage
+public/build
 storage/*.key
 .phpunit.cache
 bootstrap/cache/*
@@ -11,3 +13,19 @@ storage/framework/sessions/*
 storage/framework/testing/*
 storage/framework/views/*
 storage/logs/*
+storage/app/private/*
+
+# IDE & OS
+.idea
+.vscode
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Dev tools
+.omo
+.opencode
+.claude
+tests
+.phpunit.result.cache
