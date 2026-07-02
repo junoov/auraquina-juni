@@ -14,6 +14,8 @@ services:
       - .:/var/www:cached
       - vendor:/var/www/vendor
       - node_modules:/var/www/node_modules
+    env_file:
+      - .env
     environment:
       DB_HOST: mysql
       DB_PORT: "3306"
@@ -47,6 +49,21 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  # Node.js (Vite Frontend)
+  node:
+    image: node:20-alpine
+    container_name: auraquina-node
+    working_dir: /var/www
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/var/www:cached
+    networks:
+      - auraquina-network
+    depends_on:
+      - app
 
 networks:
   auraquina-network:
