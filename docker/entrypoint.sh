@@ -35,5 +35,15 @@ if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
     php artisan key:generate 2>&1 || true
 fi
 
+# Build frontend assets if not built yet
+if [ ! -d "public/build" ] || [ ! -f "public/build/manifest.json" ]; then
+    echo "[entrypoint] Building frontend assets..."
+    npm install 2>&1
+    npm run build 2>&1
+fi
+
+# Remove hot file to use built assets
+rm -f public/hot
+
 echo "[entrypoint] Starting Laravel server..."
 exec php artisan serve --host=0.0.0.0 --port=8000

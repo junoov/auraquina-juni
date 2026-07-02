@@ -2,7 +2,9 @@
 FROM php:8.4-fpm
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+ENV DEBIAN_FRONTEND=noninteractive
+RUN rm -rf /var/lib/apt/lists/* && apt-get update && apt-get install -y --no-install-recommends \
+    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
     git \
     curl \
     libpng-dev \
@@ -14,14 +16,20 @@ RUN apt-get update && apt-get install -y \
     mariadb-client \
     dos2unix
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN apt-get update && apt-get install -y libicu-dev && docker-php-ext-configure intl && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+    libicu-dev && docker-php-ext-configure intl && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
 # Install sodium
-RUN apt-get install -y libsodium-dev && docker-php-ext-install sodium
+RUN apt-get install -y --no-install-recommends \
+    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+    libsodium-dev && docker-php-ext-install sodium
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
