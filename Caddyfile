@@ -1,0 +1,57 @@
+{
+	# Disable admin API
+	admin off
+
+	# FrankenPHP config
+	frankenphp
+
+	# Laravel Octane worker
+	order php_server before file_server
+}
+
+:8000 {
+	root * /var/www/public
+
+	# Encode responses
+	encode zstd gzip
+
+	# Serve static files directly
+	@static {
+		path /build/*
+		path /favicon.ico
+		path /robots.txt
+		path *.css
+		path *.js
+		path *.woff2
+		path *.woff
+		path *.ttf
+		path *.eot
+		path *.svg
+		path *.png
+		path *.jpg
+		path *.jpeg
+		path *.gif
+		path *.webp
+	}
+	file_server @static
+
+	# Laravel pretty URLs
+	try_files {path} /index.php?{query}
+
+	# PHP via FrankenPHP
+	php_server
+
+	# Security headers
+	header {
+		X-Frame-Options SAMEORIGIN
+		X-Content-Type-Options nosniff
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# Logging
+	log {
+		output stderr
+		level WARN
+	}
+}

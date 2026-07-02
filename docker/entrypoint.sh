@@ -22,6 +22,10 @@ if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
     php artisan key:generate 2>&1 || true
 fi
 
+# Install Composer dependencies (populates named volume at runtime)
+echo "[entrypoint] Installing Composer dependencies..."
+composer install --no-interaction --optimize-autoloader 2>&1
+
 # Wait for MySQL to be ready
 echo "[entrypoint] Waiting for MySQL..."
 until php artisan db:monitor > /dev/null 2>&1; do
