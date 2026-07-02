@@ -22,14 +22,6 @@ if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
     php artisan key:generate 2>&1 || true
 fi
 
-# Install Composer dependencies (ensures FrankenPHP binary exists)
-echo "[entrypoint] Installing Composer dependencies..."
-composer install --no-interaction --optimize-autoloader 2>&1
-
-# Install Octane (creates Caddyfile and binary if missing)
-echo "[entrypoint] Installing Laravel Octane..."
-php artisan octane:install --server=frankenphp --no-interaction --force 2>&1 || true
-
 # Wait for MySQL to be ready
 echo "[entrypoint] Waiting for MySQL..."
 until php artisan db:monitor > /dev/null 2>&1; do

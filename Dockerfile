@@ -59,6 +59,12 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 # Copy existing application directory permissions
 COPY . /var/www
 
+# Install Composer dependencies (build-time, not runtime)
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Install Octane (creates Caddyfile and binary at build-time)
+RUN php artisan octane:install --server=frankenphp --no-interaction
+
 # Run as root so entrypoint can fix permissions
 USER root
 
