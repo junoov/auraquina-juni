@@ -35,22 +35,21 @@ if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
     php artisan key:generate 2>&1 || true
 fi
 
-# Sync vendor from image to named volume every boot
-# Run as host user to avoid root-owned files on host filesystem
-if [ ! -f "vendor/autoload.php" ]; then
-    echo "[entrypoint] First boot: copying vendor from image..."
-    gosu "$RS_USER" rsync -a /tmp/vendor/ /var/www/vendor/ 2>/dev/null || \
-    gosu "$RS_USER" composer install --no-interaction --optimize-autoloader 2>&1
-else
-    echo "[entrypoint] Syncing vendor from image..."
-    gosu "$RS_USER" rsync -a --delete /tmp/vendor/ /var/www/vendor/ 2>/dev/null || true
-fi
+# Always run composer install to ensure all dependencies are present
+# (named volumes can be stale from previous builds)
+echo "[entrypoint] Installing/updating composer dependencies..."
+gosu "$RS_USER" composer install --no-interaction --optimize-autoloader --no-scripts 2>&1 || \
+gosu "$RS_USER" rsync -a /tmp/vendor/ /var/www/vendor/ 2>/dev/null || true
+
+# Ensure autoloader is up-to-date
+echo "[entrypoint] Rebuilding autoloader..."
+gosu "$RS_USER" composer dump-autoload --optimize --no-scripts 2>&1 || true
 
 # Wait for MySQL to be ready (max 60s timeout, then continue)
 echo "[entrypoint] Waiting for MySQL..."
 RETRIES=0
 MAX_RETRIES=12
-until php artisan db:monitor > /dev/null 2>&1; do
+until mysqladmin ping -h "${DB_HOST:-mysql}" -u "${DB_USERNAME:-root}" -p"${DB_PASSWORD:-root}" --skip-ssl --silent 2>/dev/null; do
     RETRIES=$((RETRIES + 1))
     if [ $RETRIES -ge $MAX_RETRIES ]; then
         echo "[entrypoint] WARNING: MySQL not ready after 60s, continuing anyway..."
@@ -64,11 +63,11 @@ done
 echo "[entrypoint] Running migrations..."
 php artisan migrate --force 2>&1 || true
 
-# Cache config & routes for performance
-echo "[entrypoint] Caching config & routes..."
-php artisan config:cache 2>&1 || true
-php artisan route:cache 2>&1 || true
-php artisan view:cache 2>&1 || true
+# Clear stale caches (config:cache is incompatible with Octane's facade calls in config)
+echo "[entrypoint] Clearing caches..."
+php artisan config:clear 2>&1 || true
+php artisan route:clear 2>&1 || true
+php artisan view:clear 2>&1 || true
 
 echo "[entrypoint] Starting Laravel Octane (FrankenPHP)..."
 # --max-requests=500 prevents memory leaks (restarts worker after 500 requests)
