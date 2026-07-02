@@ -1,9 +1,9 @@
-# Dockerfile for Laravel
+# Dockerfile for Laravel - Optimized
 FROM php:8.4-fpm
 
-# Install system dependencies
+# Install ALL system dependencies in ONE layer
 ENV DEBIAN_FRONTEND=noninteractive
-RUN rm -rf /var/lib/apt/lists/* && apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
     git \
     curl \
@@ -14,22 +14,17 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && apt-get install -y --no-ins
     unzip \
     libzip-dev \
     mariadb-client \
-    dos2unix
+    dos2unix \
+    libicu-dev \
+    libsodium-dev \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl sodium \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-    libicu-dev && docker-php-ext-configure intl && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
-
-# Install sodium
-RUN apt-get install -y --no-install-recommends \
-    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-    libsodium-dev && docker-php-ext-install sodium
+# Install Node.js (single layer)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -40,27 +35,33 @@ COPY docker/php.ini /usr/local/etc/php/conf.d/auraquina.ini
 # Set working directory
 WORKDIR /var/www
 
-# Set git safe.directory for volume mounts
+# Set git safe.directory
 RUN git config --global --add safe.directory /var/www
 
-# Create vendor directory with proper permissions
-RUN mkdir -p /var/www/vendor && chmod 777 /var/www/vendor
+# Copy dependency files FIRST (for layer caching)
+COPY composer.json composer.lock package.json package-lock.json ./
 
-# Copy entrypoint script
+# Install dependencies (cached if files don't change)
+RUN composer install --no-interaction --optimize-autoloader --no-dev \
+    && npm ci --ignore-scripts
+
+# Copy entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
-# Allow composer to run as root
+# Copy application code
+COPY . .
+
+# Fix permissions
+RUN chmod -R 777 storage bootstrap/cache 2>/dev/null || true
+
+# Build frontend assets during image build (not at runtime)
+RUN npm run build
+
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Copy existing application directory permissions
-COPY . /var/www
-
-# Run as root so entrypoint can fix permissions
 USER root
 
-# Expose port 8000
 EXPOSE 8000
 
-# Use entrypoint to handle composer install + start server
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
