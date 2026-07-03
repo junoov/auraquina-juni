@@ -406,7 +406,7 @@ h1, h2, h3, blockquote {
 
 /* Default: solid background for non-transparent headers */
 .site-header:not(.site-header--transparent) .site-header__inner {
-  background-color: rgba(247, 242, 233, 0.94);
+  background-color: rgba(255, 254, 252, 0.94);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
