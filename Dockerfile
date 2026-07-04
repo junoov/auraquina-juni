@@ -1,40 +1,22 @@
-# Dockerfile for Laravel
-FROM php:8.4-cli
+# Optimized Dockerfile for Laravel (Alpine-based)
+FROM php:8.4-fpm-alpine
 
-# Install system dependencies
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+# Install ALL system deps + PHP extensions in ONE layer (faster build, smaller image)
+RUN apk add --no-cache \
     git \
     curl \
     libpng-dev \
-    libonig-dev \
+    onig-dev \
     libxml2-dev \
-    zip \
-    unzip \
     libzip-dev \
+    icu-dev \
+    libsodium-dev \
     mariadb-client \
-    dos2unix \
     rsync \
-    gosu
-
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-    libicu-dev && \
-    pecl install redis && docker-php-ext-enable redis && \
-    docker-php-ext-configure intl && \
-    docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
-
-# Install sodium
-RUN apt-get install -y --no-install-recommends \
-    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-    libsodium-dev && docker-php-ext-install sodium
+    su-exec \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl sodium \
+    && pecl install redis && docker-php-ext-enable redis \
+    && apk del --no-cache .build-deps 2>/dev/null || true
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -60,7 +42,7 @@ RUN cp -r /var/www/vendor /tmp/vendor
 
 # Copy entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Copy full application code (overlays the partial copy above)
 COPY . /var/www

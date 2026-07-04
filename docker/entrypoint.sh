@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 cd /var/www
 
@@ -13,8 +13,8 @@ HOST_GID=$(stat -c '%g' /var/www 2>/dev/null || echo "0")
 
 if [ "$HOST_UID" != "0" ]; then
     echo "[entrypoint] Running as host user UID=$HOST_UID GID=$HOST_GID"
-    groupadd -g "$HOST_GID" -o hostgroup 2>/dev/null || true
-    useradd -u "$HOST_UID" -g "$HOST_GID" -o -m hostuser 2>/dev/null || true
+    addgroup -g "$HOST_GID" -o hostgroup 2>/dev/null || true
+    adduser -u "$HOST_UID" -G hostgroup -D -h /tmp hostuser 2>/dev/null || true
     RS_USER="hostuser"
 else
     RS_USER="root"
@@ -46,12 +46,12 @@ fi
 # Always run composer install to ensure all dependencies are present
 # (named volumes can be stale from previous builds)
 echo "[entrypoint] Installing/updating composer dependencies..."
-gosu "$RS_USER" composer install --no-interaction --optimize-autoloader --no-scripts 2>&1 || \
-gosu "$RS_USER" rsync -a /tmp/vendor/ /var/www/vendor/ 2>/dev/null || true
+su-exec "$RS_USER" composer install --no-interaction --optimize-autoloader --no-scripts 2>&1 || \
+su-exec "$RS_USER" rsync -a /tmp/vendor/ /var/www/vendor/ 2>/dev/null || true
 
 # Ensure autoloader is up-to-date
 echo "[entrypoint] Rebuilding autoloader..."
-gosu "$RS_USER" composer dump-autoload --optimize --no-scripts 2>&1 || true
+su-exec "$RS_USER" composer dump-autoload --optimize --no-scripts 2>&1 || true
 
 # Wait for MySQL to be ready (max 60s timeout, then continue)
 echo "[entrypoint] Waiting for MySQL..."
