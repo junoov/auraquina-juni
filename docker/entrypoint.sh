@@ -37,6 +37,18 @@ sed -i 's/^REDIS_HOST=.*/REDIS_HOST=redis/' .env 2>/dev/null || true
 sed -i 's/^CACHE_STORE=.*/CACHE_STORE=redis/' .env 2>/dev/null || true
 sed -i 's/^SESSION_DRIVER=.*/SESSION_DRIVER=redis/' .env 2>/dev/null || true
 
+# Persist object storage env from Docker into Laravel .env when provided.
+for key in R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_ENDPOINT R2_BUCKET R2_URL AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_BUCKET AWS_ENDPOINT AWS_URL; do
+    value=$(printenv "$key")
+    if [ -n "$value" ]; then
+        if grep -q "^$key=" .env 2>/dev/null; then
+            sed -i "s|^$key=.*|$key=$value|" .env 2>/dev/null || true
+        else
+            printf '\n%s=%s\n' "$key" "$value" >> .env
+        fi
+    fi
+done
+
 # Generate app key if needed
 if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
     echo "[entrypoint] Generating app key..."
