@@ -1,7 +1,8 @@
 # Optimized Dockerfile for Laravel (Alpine-based)
 FROM php:8.4-fpm-alpine
 
-# Install system deps + PHP extensions in one layer
+# Install system deps + PHP extensions in one layer.
+# PHPIZE_DEPS is required to compile intl/zip/redis on Alpine; do not mask failures.
 RUN apk add --no-cache \
     git \
     curl \
@@ -15,9 +16,10 @@ RUN apk add --no-cache \
     rsync \
     su-exec \
     $PHPIZE_DEPS \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl sodium \
     && pecl install redis \
     && docker-php-ext-enable redis \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl sodium \
+    && php -m | grep -E '^(intl|zip)$' \
     && apk del --no-cache $PHPIZE_DEPS
 
 # Get latest Composer
