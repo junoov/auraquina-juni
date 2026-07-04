@@ -1,12 +1,12 @@
 # Optimized Dockerfile for Laravel (Alpine-based)
 FROM php:8.4-fpm-alpine
 
-# Install ALL system deps + PHP extensions in ONE layer (faster build, smaller image)
+# Install system deps + PHP extensions in one layer
 RUN apk add --no-cache \
     git \
     curl \
     libpng-dev \
-    onig-dev \
+    oniguruma-dev \
     libxml2-dev \
     libzip-dev \
     icu-dev \
@@ -14,9 +14,11 @@ RUN apk add --no-cache \
     mariadb-client \
     rsync \
     su-exec \
+    $PHPIZE_DEPS \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl sodium \
-    && pecl install redis && docker-php-ext-enable redis \
-    && apk del --no-cache .build-deps 2>/dev/null || true
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del --no-cache $PHPIZE_DEPS
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
