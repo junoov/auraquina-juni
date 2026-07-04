@@ -23,19 +23,8 @@ fi
 # Fix permissions (storage & cache only)
 chmod -R 777 storage bootstrap/cache 2>/dev/null || true
 
-# Copy .env if missing
-if [ ! -f ".env" ]; then
-    echo "[entrypoint] Copying .env.example to .env..."
-    cp .env.example .env 2>/dev/null || true
-fi
-
-# Patch .env for Docker (bind-mounted .env may have localhost values)
-echo "[entrypoint] Patching .env for Docker..."
-sed -i 's/^DB_HOST=.*/DB_HOST=mysql/' .env 2>/dev/null || true
-sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=root/' .env 2>/dev/null || true
-sed -i 's/^REDIS_HOST=.*/REDIS_HOST=redis/' .env 2>/dev/null || true
-sed -i 's/^CACHE_STORE=.*/CACHE_STORE=redis/' .env 2>/dev/null || true
-sed -i 's/^SESSION_DRIVER=.*/SESSION_DRIVER=redis/' .env 2>/dev/null || true
+# Docker gets runtime configuration from docker-compose.yml and .env.docker.
+# Do not mutate the bind-mounted .env file; it belongs to the local host runtime.
 
 # Generate app key if needed
 if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
