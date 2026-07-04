@@ -28,7 +28,7 @@ COPY docker/php.ini /usr/local/etc/php/conf.d/auraquina.ini
 WORKDIR /var/www
 
 # Set git safe.directory for volume mounts
-RUN git config --global --add safe.directory /var/www
+RUN git config --global --add safe.directory /var/www 2>/dev/null || true
 
 # Allow composer to run as root (needed for build)
 ENV COMPOSER_ALLOW_SUPERUSER=1
