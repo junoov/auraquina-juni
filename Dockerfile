@@ -1,12 +1,13 @@
 # Optimized Dockerfile for Laravel (Alpine-based)
 FROM php:8.4-fpm-alpine
 
-# Install ALL system deps + PHP extensions in ONE layer (faster build, smaller image)
+# Install system deps + PHP extensions in one layer.
+# PHPIZE_DEPS is required to compile intl/zip/redis on Alpine; do not mask failures.
 RUN apk add --no-cache \
     git \
     curl \
     libpng-dev \
-    onig-dev \
+    oniguruma-dev \
     libxml2-dev \
     libzip-dev \
     icu-dev \
@@ -14,9 +15,12 @@ RUN apk add --no-cache \
     mariadb-client \
     rsync \
     su-exec \
+    $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl sodium \
-    && pecl install redis && docker-php-ext-enable redis \
-    && apk del --no-cache .build-deps 2>/dev/null || true
+    && php -m | grep -E '^(intl|zip)$' \
+    && apk del --no-cache $PHPIZE_DEPS
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
