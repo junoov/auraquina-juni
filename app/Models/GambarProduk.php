@@ -25,6 +25,6 @@ class GambarProduk extends Model
         if (str_starts_with($this->url, 'http://') || str_starts_with($this->url, 'https://')) {
             return $this->url;
         }
-        return Storage::disk('public')->url($this->url);
+        return Storage::disk('r2')->url($this->url);
     }
 }
