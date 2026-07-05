@@ -36,7 +36,10 @@ class Pesanan extends Model
         'status',
         'after_sales_status',
         'after_sales_type',
+        'after_sales_solution',
         'after_sales_reason',
+        'after_sales_items',
+        'after_sales_evidence',
         'after_sales_requested_at',
         'after_sales_resolved_at',
         'nama_penerima',
@@ -71,6 +74,8 @@ class Pesanan extends Model
         'stock_reserved_at' => 'datetime',
         'after_sales_requested_at' => 'datetime',
         'after_sales_resolved_at' => 'datetime',
+        'after_sales_items' => 'array',
+        'after_sales_evidence' => 'array',
     ];
 
     public function canRequestAfterSales(): bool
