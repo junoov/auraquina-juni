@@ -9,6 +9,8 @@ use App\Models\Produk;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ReviewTest extends TestCase
@@ -58,6 +60,59 @@ class ReviewTest extends TestCase
             'produk_id' => $produk->id,
             'rating' => 4,
         ]);
+    }
+
+    public function test_eligible_customer_can_upload_review_photos(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $produk = $this->createProduct();
+        $pesanan = $this->createDeliveredOrder($user);
+
+        ItemPesanan::create([
+            'pesanan_id' => $pesanan->id,
+            'produk_id' => $produk->id,
+            'varian_id' => null,
+            'nama_produk' => $produk->nama,
+            'varian_label' => 'Default',
+            'harga' => $produk->harga,
+            'jumlah' => 1,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('produk.reviews.store', $produk->slug), [
+                'rating' => 5,
+                'review' => 'Bahannya jatuh dengan cantik dan foto ini menunjukkan warna aslinya.',
+                'photos' => [UploadedFile::fake()->image('review.jpg', 900, 1200)],
+            ])
+            ->assertRedirect(route('produk.detail', $produk->slug));
+
+        $review = Review::firstOrFail();
+
+        $this->assertCount(1, $review->photos);
+        Storage::disk('public')->assertExists($review->photos[0]);
+    }
+
+    public function test_product_detail_displays_review_photos(): void
+    {
+        $user = User::factory()->create();
+        $produk = $this->createProduct();
+
+        Review::create([
+            'produk_id' => $produk->id,
+            'user_id' => $user->id,
+            'pesanan_id' => $this->createDeliveredOrder($user)->id,
+            'rating' => 5,
+            'review' => 'Foto pelanggan memperlihatkan warna produk dengan jelas.',
+            'photos' => ['reviews/sample.jpg'],
+            'status' => Review::STATUS_APPROVED,
+        ]);
+
+        $this->get(route('produk.detail', $produk->slug))
+            ->assertOk()
+            ->assertSee('Foto dari pelanggan')
+            ->assertSee('reviews/sample.jpg');
     }
 
     public function test_ineligible_customer_cannot_review_product(): void
