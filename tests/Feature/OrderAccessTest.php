@@ -11,6 +11,7 @@ use App\Models\VarianProduk;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
+use Mockery;
 use Tests\TestCase;
 
 class OrderAccessTest extends TestCase
@@ -187,6 +188,142 @@ class OrderAccessTest extends TestCase
         $this->assertNull($pesanan->stock_reserved_at);
     }
 
+    public function test_snap_virtual_account_checkout_uses_active_midtrans_bank_list_not_qris(): void
+    {
+        $methods = [
+            'Transfer CIMB Niaga' => 'cimb_va',
+            'Transfer SeaBank' => 'seabank_va',
+            'Transfer Danamon' => 'danamon_va',
+            'Transfer BSI' => 'bsi_va',
+            'Transfer Bank Saqu' => 'saqu_va',
+            'Other Bank' => 'other_va',
+        ];
+        $createdPayments = [];
+
+        Mockery::mock('alias:Midtrans\Snap')
+            ->shouldReceive('createTransaction')
+            ->times(count($methods))
+            ->with(Mockery::on(function (array $params) use (&$createdPayments, $methods): bool {
+                $payment = $params['enabled_payments'][0] ?? null;
+                $createdPayments[] = $payment;
+
+                return in_array($payment, array_values($methods), true)
+                    && ! isset($params['payment_type'])
+                    && ($params['transaction_details']['gross_amount'] ?? null) === 111500;
+            }))
+            ->andReturnUsing(function (array $params): object {
+                $payment = $params['enabled_payments'][0];
+
+                return (object) [
+                    'token' => $payment.'-snap-token',
+                    'redirect_url' => 'https://app.sandbox.midtrans.com/snap/v4/redirection/'.$payment.'-snap-token',
+                ];
+            });
+
+        foreach ($methods as $method => $payment) {
+            [$produk, $varian] = $this->createProductVariant(['stok' => 5]);
+
+            $this->withSession([
+                'checkout_payload' => [
+                    'mode' => 'buy_now',
+                    'items' => [$this->checkoutItem($produk, $varian, 1)],
+                ],
+            ])->postJson(route('checkout.place-order'), $this->validCheckoutPayload([
+                'metode_pembayaran' => $method,
+            ]))->assertOk()
+                ->assertJson(['success' => true]);
+
+            $pesanan = Pesanan::latest('id')->first();
+
+            $this->assertSame($method, $pesanan->metode_pembayaran);
+            $this->assertSame($payment.'-snap-token', $pesanan->midtrans_snap_token);
+            $this->assertSame('https://app.sandbox.midtrans.com/snap/v4/redirection/'.$payment.'-snap-token', $pesanan->midtrans_redirect_url);
+            $this->assertSame('pending', $pesanan->midtrans_status);
+        }
+
+        $this->assertSame(array_values($methods), $createdPayments);
+
+        $pesanan = Pesanan::where('metode_pembayaran', 'Transfer BSI')->firstOrFail();
+
+        $url = URL::temporarySignedRoute('pesanan.show', now()->addDays(30), [
+            'kode' => $pesanan->kode_pesanan,
+        ]);
+
+        $this->get($url)
+            ->assertOk()
+            ->assertSee('Transfer BSI')
+            ->assertSee('Bayar via Bank')
+            ->assertSee('Virtual Account')
+            ->assertDontSee('Scan QR code');
+    }
+
+    public function test_order_detail_shows_status_timeline_and_tracking_card(): void
+    {
+        $pesanan = $this->createOrder([
+            'session_id' => 'different-session',
+            'status' => Pesanan::STATUS_SHIPPED,
+            'kurir_pengiriman' => 'JNE',
+            'nomor_resi' => 'JNE123456789',
+            'dikirim_pada' => now(),
+        ]);
+        $url = URL::temporarySignedRoute('pesanan.show', now()->addDays(30), [
+            'kode' => $pesanan->kode_pesanan,
+        ]);
+
+        $this->get($url)
+            ->assertOk()
+            ->assertSee('Status Pesanan')
+            ->assertSee('Tracking Pengiriman')
+            ->assertSee('JNE123456789')
+            ->assertSee('Lacak di Website Kurir');
+    }
+
+    public function test_public_tracking_page_shows_lookup_form(): void
+    {
+        $this->get(route('orders.track'))
+            ->assertOk()
+            ->assertSee('Lacak Pesanan')
+            ->assertSee('Nomor Pesanan')
+            ->assertSee('Email atau Nomor HP');
+    }
+
+    public function test_public_tracking_finds_order_by_code_and_phone(): void
+    {
+        $pesanan = $this->createOrder([
+            'status' => Pesanan::STATUS_SHIPPED,
+            'email' => 'aisha@example.com',
+            'telepon' => '081234567890',
+            'kurir_pengiriman' => 'JNE',
+            'nomor_resi' => 'JNE123456789',
+            'dikirim_pada' => now(),
+        ]);
+
+        $this->post(route('orders.track.lookup'), [
+            'kode_pesanan' => $pesanan->kode_pesanan,
+            'contact' => '081234567890',
+        ])
+            ->assertOk()
+            ->assertSee($pesanan->kode_pesanan)
+            ->assertSee('Tracking Pengiriman')
+            ->assertSee('JNE123456789');
+    }
+
+    public function test_public_tracking_rejects_wrong_contact(): void
+    {
+        $pesanan = $this->createOrder([
+            'email' => 'aisha@example.com',
+            'telepon' => '081234567890',
+        ]);
+
+        $this->from(route('orders.track'))
+            ->post(route('orders.track.lookup'), [
+                'kode_pesanan' => $pesanan->kode_pesanan,
+                'contact' => 'wrong@example.com',
+            ])
+            ->assertRedirect(route('orders.track'))
+            ->assertSessionHasErrors('kode_pesanan');
+    }
+
     private function createOrder(array $overrides = []): Pesanan
     {
         return Pesanan::create(array_merge([
@@ -263,15 +400,15 @@ class OrderAccessTest extends TestCase
         ]);
     }
 
-    private function validCheckoutPayload(): array
+    private function validCheckoutPayload(array $overrides = []): array
     {
-        return [
+        return array_merge([
             'nama_penerima' => 'Aisha',
             'telepon' => '081234567890',
             'kota' => 'Malang',
             'alamat_lengkap' => 'Jl. Tenang No. 1',
             'metode_pengiriman' => 'JNE Reguler',
             'metode_pembayaran' => 'QRIS',
-        ];
+        ], $overrides);
     }
 }
