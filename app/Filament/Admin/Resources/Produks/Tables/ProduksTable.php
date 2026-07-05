@@ -26,7 +26,7 @@ class ProduksTable
             ->columns([
                 ImageColumn::make('gambarUtama.url')
                     ->label('')
-                    ->disk('public')
+                    ->disk('r2')
                     ->square()
                     ->size(48)
                     ->extraImgAttributes(['class' => 'rounded-lg']),
