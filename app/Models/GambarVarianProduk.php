@@ -25,6 +25,8 @@ class GambarVarianProduk extends Model
         if (str_starts_with($this->url, 'http://') || str_starts_with($this->url, 'https://')) {
             return $this->url;
         }
-        return Storage::disk('public')->url($this->url);
+        $disk = config('filesystems.disks.r2.bucket') ? 'r2' : 'public';
+
+        return Storage::disk($disk)->url($this->url);
     }
 }

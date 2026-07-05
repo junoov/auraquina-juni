@@ -23,19 +23,8 @@ fi
 # Fix permissions (storage & cache only)
 chmod -R 777 storage bootstrap/cache 2>/dev/null || true
 
-# Copy .env if missing
-if [ ! -f ".env" ]; then
-    echo "[entrypoint] Copying .env.example to .env..."
-    cp .env.example .env 2>/dev/null || true
-fi
-
-# Patch .env for Docker (bind-mounted .env may have localhost values)
-echo "[entrypoint] Patching .env for Docker..."
-sed -i 's/^DB_HOST=.*/DB_HOST=mysql/' .env 2>/dev/null || true
-sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=root/' .env 2>/dev/null || true
-sed -i 's/^REDIS_HOST=.*/REDIS_HOST=redis/' .env 2>/dev/null || true
-sed -i 's/^CACHE_STORE=.*/CACHE_STORE=redis/' .env 2>/dev/null || true
-sed -i 's/^SESSION_DRIVER=.*/SESSION_DRIVER=redis/' .env 2>/dev/null || true
+# Docker gets runtime configuration from docker-compose.yml and .env.docker.
+# Do not mutate the bind-mounted .env file; it belongs to the local host runtime.
 
 # Persist object storage env from Docker into Laravel .env when provided.
 for key in R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_ENDPOINT R2_BUCKET R2_URL AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_BUCKET AWS_ENDPOINT AWS_URL; do
