@@ -40,14 +40,14 @@
       ],
   ];
   $footerLinks1 = [
-      'Shipping Policy' => '/shipping-policy',
-      'Return & Exchange' => '/return-exchange',
-      'FAQ' => '/faq',
+      'Pengiriman' => '/shipping-policy',
+      'Retur & Penukaran' => '/return-exchange',
+      'Pertanyaan Umum' => '/faq',
   ];
   $footerLinks2 = [
-      'Size Guide' => '/size-guide',
-      'Privacy Policy' => '/privacy-policy',
-      'Terms & Conditions' => '/terms-conditions',
+      'Panduan Ukuran' => '/size-guide',
+      'Kebijakan Privasi' => '/privacy-policy',
+      'Syarat & Ketentuan' => '/terms-conditions',
   ];
   $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-28px)]';
 @endphp
@@ -67,13 +67,13 @@
       </div>
     </div>
     <div>
-      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Customer Care</p>
+      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Bantuan Pelanggan</p>
       @foreach ($footerLinks1 as $link => $href)
         <a class="mb-2 block text-[var(--ink)] hover:text-[var(--brown)] transition" href="{{ $href }}">{{ $link }}</a>
       @endforeach
     </div>
     <div>
-      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Information</p>
+      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Informasi</p>
       @foreach ($footerLinks2 as $link => $href)
         <a class="mb-2 block text-[var(--ink)] hover:text-[var(--brown)] transition" href="{{ $href }}">{{ $link }}</a>
       @endforeach
