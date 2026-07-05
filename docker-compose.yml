@@ -11,10 +11,10 @@ services:
     ports:
       - "8001:8000"
     env_file:
-      - .env.docker
+      - .env.docker.example
     volumes:
       - .:/var/www:cached
-      - ./.env.docker:/var/www/.env:ro
+      - ./.env.docker.example:/var/www/.env:ro
       - vendor:/var/www/vendor
       - node_modules:/var/www/node_modules
     environment:
