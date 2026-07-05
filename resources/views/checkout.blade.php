@@ -24,6 +24,7 @@
           'city' => auth()->user()?->city,
           'address' => auth()->user()?->address,
       ];
+      $savedAddresses = ($addresses ?? collect())->values();
     @endphp
 
     @include('components.site-header', ['kategoris' => collect(), 'backHref' => '/shop'])
@@ -32,10 +33,32 @@
       <div class="checkout-grid" style="display:grid;grid-template-columns:1fr 380px;gap:48px;align-items:start;">
 
         {{-- LEFT --}}
-        <div>
-          <h1 style="font-size:26px;font-weight:500;color:#201916;margin-bottom:28px;font-family:'Plus Jakarta Sans',system-ui,sans-serif;letter-spacing:-0.01em;">Alamat Pengiriman</h1>
+	        <div>
+	          <h1 style="font-size:26px;font-weight:500;color:#201916;margin-bottom:28px;font-family:'Plus Jakarta Sans',system-ui,sans-serif;letter-spacing:-0.01em;">Alamat Pengiriman</h1>
 
-          <div id="address-form" style="margin-bottom:32px;">
+          @if ($savedAddresses->isNotEmpty())
+            <div style="margin-bottom:24px;border:1.5px solid rgba(211,192,172,0.58);border-radius:12px;background:#FFFDF9;padding:16px 18px;">
+              <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px;">
+                <p style="font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#83513D;">Alamat Tersimpan</p>
+                <a href="{{ route('account.delivery') }}" style="font-size:12px;font-weight:700;color:#83513D;text-decoration:none;">Kelola</a>
+              </div>
+	              <div style="display:grid;gap:10px;">
+	                @foreach ($savedAddresses as $address)
+	                  <button type="button" data-name="{{ $address->recipient_name }}" data-email="{{ auth()->user()?->email }}" data-phone="{{ $address->phone }}" data-city="{{ $address->city }}" data-address="{{ $address->address }}" onclick="selectSavedAddress(this.dataset)" style="display:block;width:100%;text-align:left;border:1px solid {{ $address->is_default ? '#83513D' : 'rgba(211,192,172,0.58)' }};border-radius:8px;background:#FFFFFF;padding:12px 14px;cursor:pointer;">
+                    <span style="display:flex;justify-content:space-between;gap:10px;margin-bottom:4px;">
+                      <strong style="font-size:13px;color:#201916;">{{ $address->label }} · {{ $address->recipient_name }}</strong>
+                      @if ($address->is_default)
+                        <em style="font-style:normal;font-size:10px;font-weight:700;text-transform:uppercase;color:#83513D;">Utama</em>
+                      @endif
+                    </span>
+                    <span style="display:block;font-size:12px;line-height:1.55;color:#71665d;">{{ $address->phone }} · {{ $address->city }} · {{ $address->address }}</span>
+                  </button>
+                @endforeach
+              </div>
+            </div>
+          @endif
+
+	          <div id="address-form" style="margin-bottom:32px;">
             <div style="margin-bottom:14px;">
                <input type="text" id="inp-name" value="{{ $defaultAddress['name'] }}" placeholder="Nama Lengkap Penerima" style="width:100%;height:48px;border:1.5px solid rgba(211,192,172,0.58);border-radius:8px;padding:0 16px;font-size:14px;color:#201916;background:#FFFFFF;outline:none;" />
             </div>
@@ -82,8 +105,8 @@
           <h2 style="font-size:20px;font-weight:500;color:#201916;margin-bottom:16px;font-family:'Plus Jakarta Sans',system-ui,sans-serif;letter-spacing:-0.01em;">Metode Pembayaran</h2>
           <div onclick="openSheet('pay')" style="border:1.5px solid rgba(211,192,172,0.58);border-radius:10px;padding:16px 20px;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:12px;">
-              <span style="font-size:11px;font-weight:700;color:#FFFFFF;background:#83513D;padding:4px 8px;border-radius:4px;">QRIS</span>
-              <span id="pay-label" style="font-size:13px;color:#201916;">QRIS</span>
+              <span style="font-size:11px;font-weight:700;color:#FFFFFF;background:#83513D;padding:4px 8px;border-radius:4px;">VA</span>
+              <span id="pay-label" style="font-size:13px;color:#201916;">Transfer BCA</span>
             </div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71665d" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
           </div>
@@ -170,9 +193,10 @@
     </style>
 
     <script>
-      const addressStorageKey = @json($addressStorageKey);
-      const defaultAddress = @json($defaultAddress);
-      const isAuthenticated = @json(auth()->check());
+	      const addressStorageKey = @json($addressStorageKey);
+	      const defaultAddress = @json($defaultAddress);
+	      const isAuthenticated = @json(auth()->check());
+	      let selectedCheckoutAddress = null;
 
       function normalizeAddress(data) {
         return {
@@ -223,15 +247,27 @@
         document.getElementById('saved-addr').textContent = [d.email, d.city, d.address].filter(Boolean).join('\n');
       }
 
-      function editAddress() {
-        document.getElementById('address-form').style.display = 'block';
-        document.getElementById('address-saved').style.display = 'none';
+	      function editAddress() {
+	        selectedCheckoutAddress = null;
+	        document.getElementById('address-form').style.display = 'block';
+	        document.getElementById('address-saved').style.display = 'none';
         const d = loadSavedAddress();
         if (d.name) document.getElementById('inp-name').value = d.name;
         if (d.email) document.getElementById('inp-email').value = d.email;
         if (d.phone) document.getElementById('inp-phone').value = d.phone;
         if (d.city) document.getElementById('inp-city').value = d.city;
         if (d.address) document.getElementById('inp-address').value = d.address;
+	      }
+
+	      function selectSavedAddress(data) {
+	        const normalized = normalizeAddress(data);
+	        selectedCheckoutAddress = normalized;
+	        document.getElementById('inp-name').value = normalized.name;
+        document.getElementById('inp-email').value = normalized.email;
+        document.getElementById('inp-phone').value = normalized.phone;
+        document.getElementById('inp-city').value = normalized.city;
+        document.getElementById('inp-address').value = normalized.address;
+        showSaved(normalized);
       }
 
       // Sheet / Popup
@@ -269,29 +305,49 @@
         } else if (type === 'pay') {
           title.textContent = 'Pilih Metode Pembayaran';
           html = `
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('QRIS')">
-              <input type="radio" name="p" checked style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">QRIS (GoPay, OVO, Dana, dll)</span>
-            </label>
             <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer BCA')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
+              <input type="radio" name="p" checked style="accent-color:#83513D;width:16px;height:16px;">
               <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank BCA</span>
             </label>
             <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer Mandiri')">
               <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
               <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank Mandiri</span>
             </label>
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer BNI')">
+              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
+              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank BNI</span>
+            </label>
             <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer BRI')">
               <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
               <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank BRI</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer Permata')">
+              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
+              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank Permata</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer CIMB Niaga')">
+              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
+              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank CIMB Niaga</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer SeaBank')">
+              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
+              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank SeaBank</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer Danamon')">
+              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
+              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank Danamon</span>
             </label>
             <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer BSI')">
               <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
               <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank BSI</span>
             </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;cursor:pointer;" onclick="selectPay('COD')">
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer Bank Saqu')">
               <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">COD (Bayar di Tempat)</span>
+              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank Saqu</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;cursor:pointer;" onclick="selectPay('Other Bank')">
+              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
+              <span style="font-size:13px;font-weight:700;color:#201916;">Other Bank</span>
             </label>
           `;
         } else if (type === 'voucher') {
@@ -377,15 +433,21 @@
           });
         }
 
-        // Gather data
-        const savedAddr = loadSavedAddress();
+	        // Gather data
+	        const savedAddr = selectedCheckoutAddress || normalizeAddress({
+	          name,
+	          phone,
+	          email: document.getElementById('inp-email')?.value?.trim() || '',
+	          city: document.getElementById('inp-city')?.value?.trim() || '',
+	          address: document.getElementById('inp-address')?.value?.trim() || '',
+	        });
         const namaPenerima = savedAddr.name || name;
         const email = savedAddr.email || document.getElementById('inp-email')?.value?.trim() || '';
         const telepon = savedAddr.phone || phone;
         const kota = savedAddr.city || document.getElementById('inp-city')?.value?.trim() || '';
         const alamat = savedAddr.address || document.getElementById('inp-address')?.value?.trim() || '';
         const metodePengiriman = document.getElementById('ship-label')?.textContent || 'JNE Reguler';
-        const metodePembayaran = document.getElementById('pay-label')?.textContent || 'QRIS';
+        const metodePembayaran = document.getElementById('pay-label')?.textContent || 'Transfer BCA';
 
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
 

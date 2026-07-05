@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kategori;
 use App\Models\Pesanan;
+use App\Models\UserAddress;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -60,6 +61,41 @@ class AccountController extends Controller
         return redirect()->route('account.delivery')->with('status', 'Alamat pengiriman berhasil diperbarui.');
     }
 
+    public function storeAddress(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'label' => ['required', 'string', 'max:80'],
+            'recipient_name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:30'],
+            'city' => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string', 'max:1000'],
+            'is_default' => ['nullable', 'boolean'],
+        ]);
+
+        $user = $request->user();
+        $isDefault = (bool) ($validated['is_default'] ?? false) || ! $user->addresses()->exists();
+
+        if ($isDefault) {
+            $user->addresses()->update(['is_default' => false]);
+        }
+
+        $address = $user->addresses()->create([
+            ...$validated,
+            'is_default' => $isDefault,
+        ]);
+
+        if ($address->is_default) {
+            $user->fill([
+                'recipient_name' => $address->recipient_name,
+                'phone' => $address->phone,
+                'city' => $address->city,
+                'address' => $address->address,
+            ])->save();
+        }
+
+        return redirect()->route('account.delivery')->with('status', 'Alamat tersimpan berhasil ditambahkan.');
+    }
+
     private function renderAccount(Request $request, string $section): View
     {
         $user = $request->user();
@@ -85,6 +121,11 @@ class AccountController extends Controller
                 ->count(),
         ];
 
-        return view('account.show', compact('user', 'kategoris', 'pesanans', 'stats', 'section'));
+        $addresses = UserAddress::where('user_id', $user->id)
+            ->orderByDesc('is_default')
+            ->latest()
+            ->get();
+
+        return view('account.show', compact('user', 'kategoris', 'pesanans', 'stats', 'section', 'addresses'));
     }
 }

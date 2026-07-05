@@ -19,10 +19,10 @@
       $shipments = ['gosend', 'DHL', 'Lion Parcel', 'J&T'];
       $section = $section ?? 'profile';
       $settingLinks = [
-        ['label' => 'My Profile Info', 'href' => route('account.show'), 'key' => 'profile'],
-        ['label' => 'Delivery info', 'href' => route('account.delivery'), 'key' => 'delivery'],
-        ['label' => 'My Orders', 'href' => route('account.orders'), 'key' => 'orders'],
-        ['label' => 'Account Information', 'href' => route('account.information'), 'key' => 'information'],
+        ['label' => 'Info Profil Saya', 'href' => route('account.show'), 'key' => 'profile'],
+        ['label' => 'Info Pengiriman', 'href' => route('account.delivery'), 'key' => 'delivery'],
+        ['label' => 'Pesanan Saya', 'href' => route('account.orders'), 'key' => 'orders'],
+        ['label' => 'Informasi Akun', 'href' => route('account.information'), 'key' => 'information'],
       ];
       $orderStatusMap = [
         'pending_payment' => ['label' => 'Menunggu Pembayaran', 'class' => 'bg-[#FFF4E5] text-[#B45309]'],
@@ -60,13 +60,13 @@
             <h1 id="account-title" class="mb-4 text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Pengaturan Saya</h1>
             <nav class="flex flex-col gap-3">
               @foreach ($settingLinks as $link)
-                <a href="{{ $link['href'] }}" class="text-[14px] text-[#555] transition-colors hover:text-[#000] {{ $section === $link['key'] ? 'text-[#000] font-medium' : '' }}">
+                <a href="{{ $link['href'] }}" class="text-[14px] text-[#555] transition-colors hover:text-[var(--brown)] {{ $section === $link['key'] ? 'font-medium !text-[var(--brown)]' : '' }}">
                   {{ $link['label'] }}
                 </a>
               @endforeach
               <form method="POST" action="{{ route('logout') }}" class="mt-2">
                 @csrf
-                <button type="submit" class="text-left text-[14px] text-[#555] transition-colors hover:text-[#000]">Keluar</button>
+                <button type="submit" class="text-left text-[14px] text-[#555] transition-colors hover:text-[var(--brown)]">Keluar</button>
               </form>
             </nav>
           </div>
@@ -76,6 +76,40 @@
           @if ($section === 'delivery')
             <div class="rounded-[8px] bg-white p-8 shadow-sm">
               <h2 class="mb-6 text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Informasi pengiriman</h2>
+              <div class="mb-8 rounded-[8px] border border-[#eee] bg-[#fbfaf8] p-5">
+                <div class="mb-4 flex items-center justify-between gap-4">
+                  <h3 class="text-[15px] font-medium text-[#333]">Alamat Tersimpan</h3>
+                  <span class="text-[12px] text-[#888]">{{ ($addresses ?? collect())->count() }} alamat</span>
+                </div>
+                @if (($addresses ?? collect())->isEmpty())
+                  <p class="text-[13px] leading-6 text-[#777]">Belum ada alamat tersimpan. Tambahkan alamat rumah, kantor, atau tujuan pengiriman favorit.</p>
+                @else
+                  <div class="space-y-3">
+                    @foreach ($addresses as $address)
+                      <div class="rounded-[6px] border border-[#e8ded4] bg-white p-4">
+                        <div class="mb-2 flex items-center justify-between gap-3">
+                          <strong class="text-[14px] text-[#333]">{{ $address->label }} · {{ $address->recipient_name }}</strong>
+                          @if ($address->is_default)
+                            <span class="rounded-full bg-[var(--cream)] px-2.5 py-1 text-[11px] font-bold text-[var(--brown)]">Alamat utama</span>
+                          @endif
+                        </div>
+                        <p class="text-[13px] leading-6 text-[#666]">{{ $address->phone }} · {{ $address->city }}<br>{{ $address->address }}</p>
+                      </div>
+                    @endforeach
+                  </div>
+                @endif
+              </div>
+              <form method="POST" action="{{ route('account.addresses.store') }}" class="mb-8 grid gap-3 rounded-[8px] border border-[#eee] p-5">
+                @csrf
+                <h3 class="text-[15px] font-medium text-[#333]">Tambah Alamat Baru</h3>
+                <input type="text" name="label" placeholder="Label alamat, contoh: Rumah" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
+                <input type="text" name="recipient_name" placeholder="Nama penerima" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
+                <input type="tel" name="phone" placeholder="Nomor telepon" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
+                <input type="text" name="city" placeholder="Kota / Wilayah" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
+                <textarea name="address" rows="3" placeholder="Alamat lengkap" class="block w-full rounded-[4px] border border-[#ddd] bg-white px-3 py-2 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required></textarea>
+                <label class="flex items-center gap-2 text-[13px] text-[#666]"><input type="checkbox" name="is_default" value="1" class="accent-[var(--brown)]" /> Jadikan alamat utama</label>
+                <button type="submit" class="inline-flex h-10 items-center justify-center rounded-[4px] bg-[var(--brown)] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[var(--ink)]">Simpan Alamat</button>
+              </form>
               <form method="POST" action="{{ route('account.delivery.update') }}" class="space-y-4">
                 @csrf
                 @method('PATCH')
@@ -92,7 +126,7 @@
                   <textarea name="address" rows="3" class="block w-full rounded-[4px] border border-[#ddd] bg-white px-3 py-2 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required>{{ old('address', $user->address) }}</textarea>
                 </div>
                 <div class="pt-2">
-                  <button type="submit" class="inline-flex h-10 items-center justify-center rounded-[4px] bg-[#333] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[#000]">Simpan Pengiriman</button>
+                  <button type="submit" class="inline-flex h-10 items-center justify-center rounded-[4px] bg-[var(--brown)] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[var(--ink)]">Simpan Pengiriman</button>
                 </div>
               </form>
             </div>
@@ -140,7 +174,7 @@
               <div class="py-12 text-center">
                 <h3 class="mb-2 text-[18px] text-[#333]">Belum ada pesanan</h3>
                 <p class="mb-6 text-[14px] text-[#888]">Anda belum melakukan pemesanan.</p>
-                <a href="/shop" class="inline-flex h-10 items-center justify-center rounded-[4px] bg-[#333] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[#000]">Mulai Belanja</a>
+                <a href="/shop" class="inline-flex h-10 items-center justify-center rounded-[4px] bg-[var(--brown)] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[var(--ink)]">Mulai Belanja</a>
               </div>
             @else
               <div class="space-y-6">
@@ -168,7 +202,7 @@
                         @if ($pesanan->canRequestAfterSales())
                           <a href="{{ route('pesanan.show', $pesanan->kode_pesanan) }}#after-sales" class="text-[13px] text-[#666] hover:underline">After-Sales</a>
                         @endif
-                        <a href="{{ route('pesanan.show', $pesanan->kode_pesanan) }}" class="inline-flex h-8 items-center justify-center rounded-[4px] border border-[#ddd] bg-[#f8f8f8] px-4 text-[12px] font-medium text-[#333] hover:bg-[#eee]">Detail</a>
+                        <a href="{{ route('pesanan.show', $pesanan->kode_pesanan) }}" class="inline-flex h-8 items-center justify-center rounded-[4px] border border-[var(--brown)] bg-[var(--brown)] px-4 text-[12px] font-medium text-white transition-colors hover:bg-[var(--ink)]">Detail</a>
                       </div>
                     </div>
 
@@ -205,7 +239,7 @@
                   <input type="tel" name="phone" value="{{ old('phone', $user->phone) }}" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" />
                 </div>
                 <div class="pt-2">
-                  <button type="submit" class="inline-flex h-10 items-center justify-center rounded-[4px] bg-[#333] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[#000]">Simpan Profil</button>
+                  <button type="submit" class="inline-flex h-10 items-center justify-center rounded-[4px] bg-[var(--brown)] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[var(--ink)]">Simpan Profil</button>
                 </div>
               </form>
             </div>
