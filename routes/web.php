@@ -8,6 +8,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\KeranjangController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ProdukController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,7 @@ Route::get('/', [ProdukController::class, 'home'])->name('home');
 // Shop
 Route::get('/shop', [ProdukController::class, 'index'])->name('shop.index');
 Route::get('/api/search', [ProdukController::class, 'search'])->name('produk.search');
+Route::get('/image/product-card/{path}', [ProductImageController::class, 'card'])->where('path', '.*')->name('image.product-card');
 Route::get('/shop/{slug}', [ProdukController::class, 'show'])->name('produk.detail');
 
 // Keranjang (API-style, JSON responses)
@@ -36,6 +38,8 @@ Route::post('/checkout/voucher', [CheckoutController::class, 'applyVoucher'])->n
 Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place-order');
 
 // Pesanan (Order)
+Route::get('/track-order', [CheckoutController::class, 'trackOrder'])->name('orders.track');
+Route::post('/track-order', [CheckoutController::class, 'lookupOrder'])->name('orders.track.lookup');
 Route::get('/pesanan/{kode}', [CheckoutController::class, 'showOrder'])->name('pesanan.show');
 Route::get('/pesanan/{kode}/invoice', [CheckoutController::class, 'showInvoice'])->name('pesanan.invoice');
 Route::post('/pesanan/{kode}/cancel', [CheckoutController::class, 'cancelOrder'])->name('pesanan.cancel');
@@ -46,6 +50,12 @@ Route::post('/payment/midtrans/callback', [CheckoutController::class, 'midtransC
 Route::get('/pesanan/{kode}/pay', [CheckoutController::class, 'retryPayment'])->name('pesanan.pay');
 
 // Trust & information pages
+Route::redirect('/shipping-policy', '/pages/shipping-policy');
+Route::redirect('/return-exchange', '/pages/return-exchange');
+Route::redirect('/faq', '/pages/faq');
+Route::redirect('/size-guide', '/pages/size-guide');
+Route::redirect('/privacy-policy', '/pages/privacy-policy');
+Route::redirect('/terms-conditions', '/pages/terms-conditions');
 Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
 
 // Auth
@@ -75,12 +85,15 @@ Route::post('/logout', [LoginController::class, 'logout'])
     ->name('logout');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/account', [AccountController::class, 'show'])->name('account.show');
-    Route::get('/account/delivery', [AccountController::class, 'delivery'])->name('account.delivery');
-    Route::get('/account/information', [AccountController::class, 'information'])->name('account.information');
-    Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
-    Route::patch('/account/profile', [AccountController::class, 'updateProfile'])->name('account.profile.update');
-    Route::patch('/account/delivery', [AccountController::class, 'updateDelivery'])->name('account.delivery.update');
+    Route::get('/akun', [AccountController::class, 'show'])->name('account.show');
+    Route::get('/akun/pengiriman', [AccountController::class, 'delivery'])->name('account.delivery');
+    Route::get('/akun/informasi', [AccountController::class, 'information'])->name('account.information');
+    Route::get('/akun/pesanan', [AccountController::class, 'orders'])->name('account.orders');
+    Route::patch('/akun/profil', [AccountController::class, 'updateProfile'])->name('account.profile.update');
+    Route::patch('/akun/pengiriman', [AccountController::class, 'updateDelivery'])->name('account.delivery.update');
+    Route::post('/akun/alamat', [AccountController::class, 'storeAddress'])->name('account.addresses.store');
+
+
     Route::post('/shop/{slug}/reviews', [ProdukController::class, 'storeReview'])->name('produk.reviews.store');
 });
 
