@@ -19,10 +19,14 @@
           asset('images/hero-baru/hero-3.png'),
           asset('images/hero-baru/hero-4.png'),
       ];
+      $imageVariants = app(\App\Services\ProductImageVariantService::class);
+      $productImageUrl = fn (?string $path) => $imageVariants->url($path, 'card');
+      $productImageSrcset = fn (?string $path) => $imageVariants->srcset($path, ['card' => 600, 'detail' => 1200]);
       $homeProductCards = ($produkUnggulan ?? collect())->map(fn ($produk) => [
           'name' => $produk->nama,
           'price' => $produk->hargaFormatted(),
-          'img' => $produk->gambarUtama?->full_url ?? '',
+          'img' => $productImageUrl($produk->gambarUtama?->url) ?? '',
+          'srcset' => $productImageSrcset($produk->gambarUtama?->url),
           'href' => '/shop/'.$produk->slug,
           'desc' => $produk->deskripsi_singkat ?: Str::limit((string) $produk->deskripsi, 130),
           'badge' => $produk->badge ? Str::title($produk->badge) : 'New Arrival',
@@ -96,14 +100,14 @@
           ],
       ];
       $footerLinks1 = [
-          'Shipping Policy' => '/shipping-policy',
-          'Return & Exchange' => '/return-exchange',
-          'FAQ' => '/faq',
+          'Pengiriman' => '/shipping-policy',
+          'Retur & Penukaran' => '/return-exchange',
+          'Pertanyaan Umum' => '/faq',
       ];
       $footerLinks2 = [
-          'Size Guide' => '/size-guide',
-          'Privacy Policy' => '/privacy-policy',
-          'Terms & Conditions' => '/terms-conditions',
+          'Panduan Ukuran' => '/size-guide',
+          'Kebijakan Privasi' => '/privacy-policy',
+          'Syarat & Ketentuan' => '/terms-conditions',
       ];
       $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-28px)]';
       $arrowIcon = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-[18px] w-[18px] stroke-[1.8]"><path d="M5 12h14M13 6l6 6-6 6" /></svg>';
@@ -155,7 +159,7 @@
               @foreach ($homeProductCards as $product)
                 <a href="{{ $product['href'] }}" class="product-carousel-item clean-product-card">
                   <span class="clean-product-card__image">
-                    <img src="{{ $product['img'] }}" alt="{{ $product['name'] }}" loading="{{ $loop->index < 4 ? 'eager' : 'lazy' }}" />
+                    <img src="{{ $product['img'] }}" @if (! empty($product['srcset'])) srcset="{{ $product['srcset'] }}" sizes="(max-width: 640px) 72vw, (max-width: 1024px) 36vw, 280px" @endif alt="{{ $product['name'] }}" loading="{{ $loop->index < 4 ? 'eager' : 'lazy' }}" />
                     <span class="clean-product-card__badge">{{ $product['badge'] }}</span>
                   </span>
                   <span class="clean-product-card__info">
@@ -167,6 +171,7 @@
             </div>
           </div>
         </section>
+
         <section class="bg-[var(--cream)] py-20 max-sm:py-14" aria-label="Brand philosophy">
           <div class="{{ $containerClass }} text-center">
             <p class="mb-6 text-[11px] font-bold tracking-[0.22em] uppercase text-[var(--sand)]">Our Philosophy</p>
@@ -177,6 +182,7 @@
             <p class="mt-6 text-[14px] leading-[1.75] text-[var(--muted)] max-w-[480px] mx-auto max-sm:text-[13px]">Setiap helai kain dipilih dengan hati, setiap jahitan dibuat dengan niat — untuk menemani langkahmu dengan tenang dan percaya diri.</p>
           </div>
         </section>
+
         {{-- Best Seller / Customer Picks --}}
         <section aria-labelledby="bestseller-title" class="{{ $containerClass }} py-14 max-sm:py-8">
           <div class="mb-7 flex items-center justify-between gap-5 max-sm:mb-5 max-sm:flex-col max-sm:items-start">
@@ -190,7 +196,7 @@
             @foreach ($bestSellers as $index => $item)
               <a class="group flex h-full flex-col overflow-hidden bg-[var(--white)] text-[var(--ink)]" href="{{ $item['href'] }}">
                 <span class="relative block aspect-[4/5] overflow-hidden rounded-[4px]" style="background:#f5f5f5">
-                  <img src="{{ $item['img'] }}" alt="{{ $item['name'] }}" loading="lazy" class="h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.03]" />
+                  <img src="{{ $item['img'] }}" @if (! empty($item['srcset'])) srcset="{{ $item['srcset'] }}" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw" @endif alt="{{ $item['name'] }}" loading="lazy" class="h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.03]" />
                   <span class="clean-product-card__badge">{{ $item['badge'] }}</span>
                 </span>
                 <span class="pt-3">
@@ -201,6 +207,7 @@
             @endforeach
           </div>
         </section>
+
         {{-- Instagram Feed Section --}}
         <section aria-labelledby="instagram-title" class="border-t border-[var(--border)] bg-[var(--warm)] pt-12 pb-0 max-sm:pt-8 max-sm:pb-0">
           <div class="{{ $containerClass }} mb-7 flex items-center justify-between gap-5 max-sm:mb-5 max-sm:flex-col max-sm:items-start">
@@ -245,6 +252,7 @@
             @endforeach
           </div>
         </section>
+
         <section class="border-y border-[var(--border)] bg-[var(--cream)] py-[34px] max-sm:py-6" aria-label="Store benefits">
           <div class="{{ $containerClass }} grid grid-cols-4 gap-0 max-lg:grid-cols-2 max-lg:gap-y-[26px] max-sm:grid-cols-1 max-sm:gap-y-5">
             @foreach ($serviceItems as $service)

@@ -15,20 +15,31 @@
     @php
       $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-28px)]';
 
-      $images = $produk->gambars->pluck('full_url')->toArray();
+      $imageVariants = app(\App\Services\ProductImageVariantService::class);
+      $productImageUrl = fn (?string $path, string $variant = 'detail') => $imageVariants->url($path, $variant);
+      $productImageSrcset = fn (?string $path) => $imageVariants->srcset($path, ['card' => 600, 'detail' => 1200]);
+      $images = $produk->gambars->pluck('url')->map(fn ($path) => $productImageUrl($path, 'detail'))->filter()->values()->toArray();
       $sizes = $produk->varians->pluck('ukuran')->unique()->values()->toArray();
       $variantGalleries = $produk->varians->mapWithKeys(fn($varian) => [
-          $varian->id => $varian->gambarVarians->pluck('full_url')->values()->toArray(),
+          $varian->id => $varian->gambarVarians->pluck('url')->map(fn ($path) => $productImageUrl($path, 'detail'))->filter()->values()->toArray(),
       ])->toArray();
       $colors = $produk->varians->unique('warna')->map(fn($v) => [
           'name' => $v->warna,
           'hex' => $v->kode_warna,
-          'image' => $v->gambarVarianUtama?->full_url ?? ($variantGalleries[$v->id][0] ?? null),
-      ])->values()->toArray();
+          'image' => $productImageUrl(
+              $produk->varians
+                  ->where('warna', $v->warna)
+	                  ->flatMap(fn ($varian) => $varian->gambarVarians->pluck('url'))
+	                  ->filter()
+	                  ->first(),
+	              'swatch'
+	          ),
+	      ])->values()->toArray();
       $defaultVarian = $produk->varians->firstWhere('warna', $colors[0]['name'] ?? null) ?? $produk->varians->first();
       $initialVariantImages = $defaultVarian ? ($variantGalleries[$defaultVarian->id] ?? []) : [];
       $initialImages = array_values(array_unique(array_merge($initialVariantImages, $images)));
       $initialImageIndex = 0;
+      $blankImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
       $approvedReviews = $reviews ?? collect();
       $ratingCount = $approvedReviews->count();
       $ratingAverage = $ratingCount > 0
@@ -53,7 +64,7 @@
         {{-- Main Image + Thumbnails below (desktop) --}}
         <div class="product-main-img" style="min-width:0;">
           <div class="product-main-img__zoom" style="position:relative;overflow:hidden;background:#F5F0EA;border-radius:4px;max-width:600px;margin:0 auto;min-height:520px;display:flex;align-items:center;justify-content:center;">
-            <img id="main-img" src="{{ $initialImages[$initialImageIndex] ?? $initialImages[0] ?? '' }}" alt="{{ $produk->nama }}" style="width:100%;max-height:740px;height:auto;object-fit:contain;display:block;" />
+            <img id="main-img" src="{{ $initialImages[$initialImageIndex] ?? $initialImages[0] ?? '' }}" alt="{{ $produk->nama }}" loading="eager" fetchpriority="high" decoding="async" style="width:100%;max-height:740px;height:auto;object-fit:contain;display:block;" />
             <div id="main-img-error" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;padding:28px;color:#83513D;font-size:13px;line-height:1.7;background:#F5F0EA;">
               Gambar produk belum bisa dimuat dari R2. Coba refresh halaman atau buka ulang beberapa saat lagi.
             </div>
@@ -64,7 +75,7 @@
           <div class="product-thumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">
             @foreach ($initialImages as $i => $img)
               <button type="button" onclick="switchImage({{ $i }})" style="width:56px;height:56px;border:2px solid {{ $i === $initialImageIndex ? '#83513D' : 'rgba(211,192,172,0.58)' }};border-radius:4px;overflow:hidden;cursor:pointer;padding:0;background:none;flex-shrink:0;">
-	                <img src="{{ $img }}" loading="lazy" decoding="async" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                <img src="{{ $i === $initialImageIndex ? $img : $blankImage }}" @if ($i !== $initialImageIndex) data-src="{{ $img }}" @endif loading="lazy" decoding="async" alt="" style="width:100%;height:100%;object-fit:cover;display:block;background:#F5F0EA;" />
               </button>
             @endforeach
           </div>
@@ -75,7 +86,7 @@
           <div id="mobile-gallery" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;width:100%;">
             @foreach ($initialImages as $i => $img)
               <div class="product-mobile-gallery__slide" style="width:100%;min-width:100%;max-width:100%;flex:0 0 100%;scroll-snap-align:start;flex-shrink:0;">
-	                <img src="{{ $img }}" loading="lazy" decoding="async" alt="{{ $produk->nama }}" style="width:100%;max-width:100%;height:auto;object-fit:contain;object-position:center;display:block;" />
+                <img src="{{ $i === $initialImageIndex ? $img : $blankImage }}" @if ($i !== $initialImageIndex) data-src="{{ $img }}" @endif loading="lazy" decoding="async" alt="{{ $produk->nama }}" style="width:100%;max-width:100%;height:auto;object-fit:contain;object-position:center;display:block;background:#F5F0EA;" />
               </div>
             @endforeach
           </div>
@@ -115,17 +126,23 @@
           {{-- Color --}}
           <div style="margin-bottom:28px;">
             <p style="font-size:13px;margin-bottom:10px;color:#71665d;">Warna: <strong id="sel-color" style="color:#201916;">{{ $colors[0]['name'] ?? '' }}</strong></p>
-            <div data-color-options style="display:flex;gap:10px;flex-wrap:wrap;max-width:100%;">
-              @foreach ($colors as $i => $color)
-                <button type="button" title="{{ $color['name'] }}" data-color-name="{{ $color['name'] }}" onclick="selectColor(this,'{{ $color['name'] }}')" style="width:40px;height:40px;padding:0;border-radius:999px;border:1.5px solid {{ $i === 0 ? '#83513D' : 'rgba(211,192,172,0.58)' }};cursor:pointer;background:#FFFFFF;transition:border-color 0.15s, transform 0.15s;overflow:hidden;flex-shrink:0;">
-                  @if (! empty($color['image']))
-                    <img src="{{ $color['image'] }}" alt="{{ $color['name'] }}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;" />
-                  @else
-                    <span style="display:block;width:100%;height:100%;background:{{ $color['hex'] ?: '#F5F0EA' }};"></span>
-                  @endif
-                </button>
-              @endforeach
-            </div>
+	            <div data-color-options style="display:flex;gap:10px;flex-wrap:wrap;max-width:100%;">
+	              @foreach ($colors as $i => $color)
+	                @php
+	                  $fallbackHue = crc32($color['name']) % 360;
+	                  $fallbackBackground = $color['hex']
+	                      ?: "linear-gradient(135deg, hsl({$fallbackHue}, 28%, 92%), hsl({$fallbackHue}, 24%, 78%))";
+	                  $fallbackLabel = mb_strtoupper(mb_substr($color['name'], 0, 1));
+	                @endphp
+	                <button type="button" title="{{ $color['name'] }}" data-color-name="{{ $color['name'] }}" onclick="selectColor(this,'{{ $color['name'] }}')" style="width:40px;height:40px;padding:0;border-radius:999px;border:1.5px solid {{ $i === 0 ? '#83513D' : 'rgba(211,192,172,0.58)' }};cursor:pointer;background:#FFFFFF;transition:border-color 0.15s, transform 0.15s;overflow:hidden;flex-shrink:0;">
+	                  @if (! empty($color['image']))
+	                    <img src="{{ $color['image'] }}" alt="{{ $color['name'] }}" loading="eager" fetchpriority="low" decoding="async" width="40" height="40" style="width:100%;height:100%;object-fit:cover;display:block;background:#F5F0EA;" />
+	                  @else
+	                    <span aria-hidden="true" style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;background:{{ $fallbackBackground }};color:#83513D;font-size:10px;font-weight:800;letter-spacing:0.02em;text-transform:uppercase;box-shadow:inset 0 0 0 1px rgba(131,81,61,0.08);">{{ $fallbackLabel }}</span>
+	                  @endif
+	                </button>
+	              @endforeach
+	            </div>
           </div>
 
           {{-- Qty + Cart --}}
@@ -162,7 +179,7 @@
         </div>
 
         @if (auth()->check() && $eligibleOrder)
-          <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" style="margin-bottom:24px;border:1px solid rgba(211,192,172,0.4);border-radius:8px;background:#FFFFFF;padding:18px 18px 16px;">
+          <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" enctype="multipart/form-data" style="margin-bottom:24px;border:1px solid rgba(211,192,172,0.4);border-radius:8px;background:#FFFFFF;padding:18px 18px 16px;">
             @csrf
             <div style="margin-bottom:12px;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#201916;">{{ $existingReview ? 'Perbarui Ulasan Anda' : 'Tulis Ulasan' }}</div>
             <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -174,6 +191,10 @@
               </select>
             </div>
             <textarea name="review" rows="4" style="width:100%;border:1.5px solid rgba(211,192,172,0.58);border-radius:6px;padding:12px 14px;background:#FFFFFF;color:#201916;font-size:13px;line-height:1.7;outline:none;resize:vertical;" placeholder="Ceritakan pengalaman Anda memakai produk ini." required>{{ old('review', $existingReview?->review) }}</textarea>
+            <label style="display:block;margin-top:12px;">
+              <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#201916;">Foto dari pelanggan</span>
+              <input type="file" name="photos[]" accept="image/*" multiple style="width:100%;border:1.5px dashed rgba(211,192,172,0.8);border-radius:6px;padding:12px;background:#FFFDF9;color:#71665d;font-size:12px;" />
+            </label>
             <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
               <span style="font-size:12px;color:#71665d;">Hanya pelanggan dengan pesanan diterima/selesai yang bisa memberi ulasan.</span>
               <button type="submit" style="height:42px;padding:0 18px;border:none;border-radius:6px;background:#83513D;color:#FFFFFF;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Simpan Ulasan</button>
@@ -201,6 +222,16 @@
                   @endfor
                 </div>
                 <p style="margin:0;font-size:13px;line-height:1.8;color:#71665d;">{{ $review->review }}</p>
+                @if (! empty($review->photos))
+                  <div style="margin-top:12px;">
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#83513D;">Foto dari pelanggan</p>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                      @foreach ($review->photos as $photo)
+                        <img src="{{ str_starts_with($photo, 'http') ? $photo : Storage::disk('public')->url($photo) }}" alt="Foto ulasan pelanggan" style="width:74px;height:92px;object-fit:cover;border-radius:6px;background:#F5F0EA;border:1px solid rgba(211,192,172,0.4);" loading="lazy" />
+                      @endforeach
+                    </div>
+                  </div>
+                @endif
               </article>
             @endforeach
           </div>
@@ -217,9 +248,13 @@
 
         <div class="related-edit__rail" aria-label="Koleksi produk terkait">
           @foreach ($terkait as $item)
+            @php
+              $relatedImage = $productImageUrl($item->gambarUtama?->url, 'card') ?? '';
+              $relatedSrcset = $productImageSrcset($item->gambarUtama?->url);
+            @endphp
             <a class="related-edit__item" href="/shop/{{ $item->slug }}">
               <figure class="related-edit__frame">
-	                <img src="{{ $item->gambarUtama?->full_url ?? '' }}" alt="{{ $item->nama }}" loading="lazy" decoding="async" />
+                <img src="{{ $blankImage }}" data-src="{{ $relatedImage }}" @if ($relatedSrcset) data-srcset="{{ $relatedSrcset }}" sizes="(max-width: 640px) 55vw, 220px" @endif alt="{{ $item->nama }}" loading="lazy" decoding="async" />
               </figure>
               <span class="related-edit__name">{{ $item->nama }}</span>
               <span class="related-edit__price">{{ $item->hargaFormatted() }}</span>
@@ -644,9 +679,10 @@
       const defaultImages = @json($images);
 	      const colorOrder = @json(array_column($colors, 'name'));
 	      const variantGalleries = @json($variantGalleries);
-		      const produkId = {{ $produk->id }};
-		      const varians = @json($produk->varians);
-		      let images = @json($initialImages);
+	      const produkId = {{ $produk->id }};
+	      const varians = @json($produk->varians);
+	      const blankImage = @json($blankImage);
+	      let images = @json($initialImages);
 		      let activeImageIndex = {{ $initialImageIndex }};
 		      let qty = 1;
 		      let selectedSize = '{{ $sizes[0] ?? '' }}';
@@ -831,13 +867,10 @@
 
         activeImageIndex = ((i % images.length) + images.length) % images.length;
 
-        const mainImg = document.getElementById('main-img');
-        if (mainImg && images[activeImageIndex]) {
-          setMainImageError(false);
-          mainImg.src = images[activeImageIndex];
-        }
-
         const thumbButtons = document.querySelectorAll('.product-thumbs button');
+        hydrateDeferredImages(thumbButtons[activeImageIndex]);
+        updateMainImage(images[activeImageIndex]);
+
         thumbButtons.forEach((button, idx) => {
           button.style.borderColor = idx === activeImageIndex ? '#83513D' : 'rgba(211,192,172,0.58)';
         });
@@ -892,24 +925,77 @@
         return [...new Set(merged)].filter(Boolean);
       }
 
+      function hydrateDeferredImages(root = document) {
+        if (!root) return;
+
+        root.querySelectorAll('img[data-src]').forEach((img) => {
+          if (img.dataset.srcset) {
+            img.srcset = img.dataset.srcset;
+            img.removeAttribute('data-srcset');
+          }
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+        });
+      }
+
+      function hydrateSoon(root = document, delay = 0) {
+        if (!root) return;
+
+        const run = () => hydrateDeferredImages(root);
+        window.setTimeout(() => {
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(run, { timeout: 1600 });
+            return;
+          }
+
+          run();
+        }, delay);
+      }
+
+      function observeDeferredImages(selector) {
+        const imagesToObserve = document.querySelectorAll(selector);
+        if (!imagesToObserve.length) return;
+
+        if (!('IntersectionObserver' in window)) {
+          imagesToObserve.forEach((img) => hydrateDeferredImages(img.parentElement || document));
+          return;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+
+            const img = entry.target;
+            if (img.dataset.srcset) {
+              img.srcset = img.dataset.srcset;
+              img.removeAttribute('data-srcset');
+            }
+            if (img.dataset.src) {
+              img.src = img.dataset.src;
+              img.removeAttribute('data-src');
+            }
+            observer.unobserve(img);
+          });
+        }, { rootMargin: '300px 0px' });
+
+        imagesToObserve.forEach((img) => observer.observe(img));
+      }
+
       function renderGallery(nextImages, startIndex = 0) {
         images = nextImages.length ? nextImages : defaultImages;
         activeImageIndex = startIndex;
 
-        const mainImg = document.getElementById('main-img');
-        if (mainImg) {
-          setMainImageError(false);
-          mainImg.src = images[startIndex] || '';
-        }
+        updateMainImage(images[startIndex] || '');
 
-	        const thumbs = document.querySelector('.product-thumbs');
-	        if (thumbs) {
-	          thumbs.innerHTML = images.map((img, i) => `
-	            <button type="button" onclick="switchImage(${i})" style="width:56px;height:56px;border:2px solid ${i === startIndex ? '#83513D' : 'rgba(211,192,172,0.58)'};border-radius:4px;overflow:hidden;cursor:pointer;padding:0;background:none;flex-shrink:0;">
-		              <img src="${img}" loading="lazy" decoding="async" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" />
-	            </button>
-	          `).join('');
-	        }
+        const thumbs = document.querySelector('.product-thumbs');
+        if (thumbs) {
+		          thumbs.innerHTML = images.map((img, i) => `
+		            <button type="button" onclick="switchImage(${i})" style="width:56px;height:56px;border:2px solid ${i === startIndex ? '#83513D' : 'rgba(211,192,172,0.58)'};border-radius:4px;overflow:hidden;cursor:pointer;padding:0;background:none;flex-shrink:0;">
+			              <img src="${i === startIndex ? img : blankImage}" ${i === startIndex ? '' : `data-src="${img}"`} loading="lazy" decoding="async" alt="" style="width:100%;height:100%;object-fit:cover;display:block;background:#F5F0EA;" />
+		            </button>
+		          `).join('');
+          bindThumbnailHydration(thumbs);
+        }
 
         const mobileGallery = document.getElementById('mobile-gallery');
         if (mobileGallery) {
@@ -918,14 +1004,18 @@
           mobileGallery._swapToken = swapToken;
           const isSwap = images.length && mobileGallery.children.length;
 
-	          const doSwap = () => {
-	            mobileGallery.innerHTML = images.map((img) => `
-	              <div class="product-mobile-gallery__slide" style="width:100%;min-width:100%;max-width:100%;flex:0 0 100%;scroll-snap-align:start;flex-shrink:0;">
-		                <img src="${img}" loading="lazy" decoding="async" alt="{{ $produk->nama }}" style="width:100%;max-width:100%;height:auto;object-fit:contain;object-position:center;display:block;" />
-	              </div>
-	            `).join('');
+		          const doSwap = () => {
+		            mobileGallery.innerHTML = images.map((img) => `
+		              <div class="product-mobile-gallery__slide" style="width:100%;min-width:100%;max-width:100%;flex:0 0 100%;scroll-snap-align:start;flex-shrink:0;">
+			                <img src="${blankImage}" data-src="${img}" loading="lazy" decoding="async" alt="{{ $produk->nama }}" style="width:100%;max-width:100%;height:auto;object-fit:contain;object-position:center;display:block;background:#F5F0EA;" />
+		              </div>
+		            `).join('');
 
-		            // Reset posisi dulu tanpa animasi (masih invisible), lalu fade-in.
+            if (window.matchMedia('(max-width: 1023px)').matches) {
+              hydrateDeferredImages(mobileGallery);
+            }
+
+			            // Reset posisi dulu tanpa animasi (masih invisible), lalu fade-in.
 		            mobileGallery.scrollTo({ left: mobileGallery.clientWidth * startIndex, behavior: 'auto' });
 		            mobileGallery.classList.remove('is-swapping');
 		          };
@@ -1001,6 +1091,8 @@
           return;
         }
 
+        hydrateDeferredImages(activeButton);
+
         activeButton.parentElement.querySelectorAll('button').forEach((button) => {
           button.style.borderColor = 'rgba(211,192,172,0.58)';
         });
@@ -1028,20 +1120,69 @@
         errorBox.style.display = isError ? 'flex' : 'none';
       }
 
+      function resolveImageSrc(src) {
+        if (!src) return '';
+
+	        try {
+          return new URL(src, window.location.href).href;
+        } catch (_) {
+          return src;
+        }
+      }
+
+      function updateMainImage(nextSrc) {
+        const mainImg = document.getElementById('main-img');
+        if (!mainImg) return;
+
+        mainImg.dataset.requestedSrc = resolveImageSrc(nextSrc);
+        setMainImageError(false);
+        mainImg.src = nextSrc || '';
+
+        if (mainImg.complete) {
+          setMainImageError(mainImg.naturalWidth === 0);
+        }
+      }
+
       const mainImage = document.getElementById('main-img');
       if (mainImage) {
-        mainImage.addEventListener('load', () => setMainImageError(false));
-        mainImage.addEventListener('error', () => setMainImageError(true));
+        mainImage.dataset.requestedSrc = resolveImageSrc(mainImage.currentSrc || mainImage.src);
+
+        mainImage.addEventListener('load', () => {
+          if (mainImage.currentSrc !== mainImage.dataset.requestedSrc && mainImage.src !== mainImage.dataset.requestedSrc) return;
+          setMainImageError(false);
+        });
+
+        mainImage.addEventListener('error', () => {
+          if (mainImage.currentSrc !== mainImage.dataset.requestedSrc && mainImage.src !== mainImage.dataset.requestedSrc) return;
+          setMainImageError(true);
+        });
+
         if (mainImage.complete && mainImage.naturalWidth === 0) {
           setMainImageError(true);
         }
       }
 
+      document.querySelectorAll('[data-color-options] button').forEach((button) => {
+        button.addEventListener('mouseenter', () => hydrateDeferredImages(button), { once: true });
+        button.addEventListener('focus', () => hydrateDeferredImages(button), { once: true });
+      });
+
+      function bindThumbnailHydration(root = document) {
+        root.querySelectorAll('.product-thumbs button').forEach((button) => {
+          button.addEventListener('mouseenter', () => hydrateDeferredImages(button), { once: true });
+          button.addEventListener('focus', () => hydrateDeferredImages(button), { once: true });
+        });
+      }
+
+      bindThumbnailHydration();
+
+      observeDeferredImages('.related-edit img[data-src]');
+
       ensureValidSizeForColor(selectedColor);
-		      syncSizeButtons();
-		      document.getElementById('sel-size').textContent = selectedSize;
-	
-		      // Mobile gallery
+      syncSizeButtons();
+      document.getElementById('sel-size').textContent = selectedSize;
+
+      // Mobile gallery
       const gallery = document.getElementById('mobile-gallery');
 
       // Mobile gallery dots - scroll based
