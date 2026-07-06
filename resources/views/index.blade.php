@@ -13,12 +13,11 @@
   </head>
   <body class="min-h-full overflow-x-clip bg-[var(--warm)] text-[var(--text)] antialiased [text-rendering:geometricPrecision]">
     @php
-      $heroImages = [
-          asset('images/hero-baru/hero-1.png'),
-          asset('images/hero-baru/hero-2.png'),
-          asset('images/hero-baru/hero-3.png'),
-          asset('images/hero-baru/hero-4.png'),
-      ];
+      $heroImages = collect(range(1, 4))->map(fn ($index) => [
+          'desktop' => asset("images/hero-baru/hero-{$index}-desktop.webp"),
+          'mobile' => asset("images/hero-baru/hero-{$index}-mobile.webp"),
+          'fallback' => asset("images/hero-baru/hero-{$index}.png"),
+      ]);
       $imageVariants = app(\App\Services\ProductImageVariantService::class);
       $productImageUrl = fn (?string $path) => $imageVariants->url($path, 'card');
       $productImageSrcset = fn (?string $path) => $imageVariants->srcset($path, ['card' => 600, 'detail' => 1200]);
@@ -119,9 +118,23 @@
           {{-- Gradient overlay for header readability on mobile only --}}
           <div class="absolute inset-0 pointer-events-none z-10 hero-gradient-overlay"></div>
           <div id="hero-track" class="absolute inset-0 flex transition-transform duration-[450ms] ease-out cursor-grab active:cursor-grabbing select-none">
-            @foreach ($heroImages as $index => $src)
+            @foreach ($heroImages as $index => $image)
               <div class="hero-slide relative h-full min-w-full shrink-0 grow-0 basis-full">
-                <img src="{{ $src }}" alt="" @if ($index > 2) loading="lazy" @endif class="hero-slide-image absolute inset-0 h-full w-full pointer-events-none" draggable="false" />
+                <picture>
+                  <source srcset="{{ $image['mobile'] }}" media="(max-width: 767px)" type="image/webp" />
+                  <source srcset="{{ $image['desktop'] }}" type="image/webp" />
+                  <img
+                    src="{{ $image['fallback'] }}"
+                    alt=""
+                    loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                    fetchpriority="{{ $index === 0 ? 'high' : 'auto' }}"
+                    decoding="async"
+                    width="1672"
+                    height="941"
+                    class="hero-slide-image absolute inset-0 h-full w-full pointer-events-none"
+                    draggable="false"
+                  />
+                </picture>
                 {{-- Aesthetic overlay untuk Banner Auraquina (slide pertama): hapus logo sparkle + warm cinematic tone --}}
                 @if ($index === 0)
                   {{-- Warm cinematic vignette overlay --}}
@@ -137,7 +150,7 @@
         </div>
         {{-- Hero dots pagination --}}
         <div id="hero-dots" class="hero-dots">
-          @foreach ($heroImages as $i => $src)
+          @foreach ($heroImages as $i => $image)
             <button type="button" class="hero-dot {{ $i === 0 ? 'is-active' : '' }}" data-hero-dot="{{ $i }}" aria-label="Go to slide {{ $i + 1 }}"></button>
           @endforeach
         </div>
@@ -220,36 +233,6 @@
               <svg aria-hidden="true" viewBox="0 0 24 24" class="h-[18px] w-[18px] fill-none stroke-[var(--brown)] stroke-[1.8]"><rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><path d="M17 7h.01" /></svg>
               @auraquina
             </a>
-          </div>
-          @php
-            $igFeed = [
-                'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1777252109529-nujayl_tas_resized2048-jpg.webp',
-                'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1776151010398-zeya_atass_resized2048-jpg.webp',
-                'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1771832642504-rayon_1_resized2048-jpg.webp',
-                'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1771547798609-fajraa_atas_resized2048-jpg.webp',
-                'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1770794734994-Maida_series_atas_resized2048-jpg.webp',
-            ];
-          @endphp
-          <div class="grid grid-cols-5 gap-0 max-lg:grid-cols-4 max-sm:hidden">
-            @foreach ($igFeed as $index => $igImg)
-              <a href="https://www.instagram.com/auraquina/" target="_blank" rel="noopener" class="group relative block overflow-hidden bg-[var(--sand)] aspect-square {{ $index === 4 ? 'max-lg:hidden' : '' }}">
-                <img src="{{ $igImg }}" alt="Instagram post" loading="lazy" class="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]" />
-                <span class="absolute inset-0 flex items-center justify-center bg-[var(--ink)]/0 transition duration-200 group-hover:bg-[var(--ink)]/30">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" class="h-6 w-6 fill-none stroke-[var(--white)] stroke-[1.8] opacity-0 transition duration-200 group-hover:opacity-100"><rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><path d="M17 7h.01" /></svg>
-                </span>
-              </a>
-            @endforeach
-          </div>
-          {{-- Mobile: horizontal scroll --}}
-          <div class="hidden max-sm:flex gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 pb-4 scrollbar-hide">
-            @foreach ($igFeed as $igImg)
-              <a href="https://www.instagram.com/auraquina/" target="_blank" rel="noopener" class="group relative block min-w-[60vw] max-w-[60vw] shrink-0 snap-center overflow-hidden rounded-[6px] bg-[var(--sand)] aspect-square">
-                <img src="{{ $igImg }}" alt="Instagram post" loading="lazy" class="h-full w-full object-cover" />
-                <span class="absolute inset-0 flex items-center justify-center bg-[var(--ink)]/0 transition duration-200 group-hover:bg-[var(--ink)]/30">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" class="h-6 w-6 fill-none stroke-[var(--white)] stroke-[1.8] opacity-0 transition duration-200 group-hover:opacity-100"><rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><path d="M17 7h.01" /></svg>
-                </span>
-              </a>
-            @endforeach
           </div>
         </section>
 
