@@ -15,10 +15,11 @@
     @php
       $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-28px)]';
 
-      $imageVariants = app(\App\Services\ProductImageVariantService::class);
-      $productImageUrl = fn (?string $path, string $variant = 'detail') => $imageVariants->url($path, $variant);
-      $productImageSrcset = fn (?string $path) => $imageVariants->srcset($path, ['card' => 600, 'detail' => 1200]);
-      $images = $produk->gambars->pluck('url')->map(fn ($path) => $productImageUrl($path, 'detail'))->filter()->values()->toArray();
+	      $imageVariants = app(\App\Services\ProductImageVariantService::class);
+	      $productImageUrl = fn (?string $path, string $variant = 'detail') => $imageVariants->url($path, $variant);
+	      $productImageSrcset = fn (?string $path) => $imageVariants->srcset($path, ['card' => 600, 'detail' => 1200]);
+	      $productThumbUrl = fn (?string $url) => $url ? str_replace('/detail/', '/thumb/', $url) : '';
+	      $images = $produk->gambars->pluck('url')->map(fn ($path) => $productImageUrl($path, 'detail'))->filter()->values()->toArray();
       $sizes = $produk->varians->pluck('ukuran')->unique()->values()->toArray();
       $variantGalleries = $produk->varians->mapWithKeys(fn($varian) => [
           $varian->id => $varian->gambarVarians->pluck('url')->map(fn ($path) => $productImageUrl($path, 'detail'))->filter()->values()->toArray(),
@@ -72,13 +73,13 @@
             <button type="button" onclick="stepImage(1)" aria-label="Gambar berikutnya" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;border-radius:999px;background:rgba(255,255,255,0.86);color:#201916;box-shadow:0 6px 18px rgba(32,25,22,0.14);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.96)'" onmouseout="this.style.background='rgba(255,255,255,0.86)'"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
           </div>
           {{-- Thumbnails below main image --}}
-          <div class="product-thumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">
-            @foreach ($initialImages as $i => $img)
-              <button type="button" onclick="switchImage({{ $i }})" style="width:56px;height:56px;border:2px solid {{ $i === $initialImageIndex ? '#83513D' : 'rgba(211,192,172,0.58)' }};border-radius:4px;overflow:hidden;cursor:pointer;padding:0;background:none;flex-shrink:0;">
-                <img src="{{ $i === $initialImageIndex ? $img : $blankImage }}" @if ($i !== $initialImageIndex) data-src="{{ $img }}" @endif loading="lazy" decoding="async" alt="" style="width:100%;height:100%;object-fit:cover;display:block;background:#F5F0EA;" />
-              </button>
-            @endforeach
-          </div>
+	          <div class="product-thumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">
+	            @foreach ($initialImages as $i => $img)
+	              <button type="button" onclick="switchImage({{ $i }})" style="width:56px;height:56px;border:2px solid {{ $i === $initialImageIndex ? '#83513D' : 'rgba(211,192,172,0.58)' }};border-radius:4px;overflow:hidden;cursor:pointer;padding:0;background:none;flex-shrink:0;">
+	                <img src="{{ $productThumbUrl($img) }}" loading="eager" fetchpriority="low" decoding="async" alt="" width="56" height="56" style="width:100%;height:100%;object-fit:cover;display:block;background:#F5F0EA;" />
+	              </button>
+	            @endforeach
+	          </div>
         </div>
 
         {{-- Mobile Gallery (hidden on desktop) --}}
@@ -919,10 +920,14 @@
         switchImage(nextIndex);
       }
 
-      function galleryForVariant(varianId, includeDefaultImages = true) {
-        const variantImages = variantGalleries[varianId] || [];
-        const merged = includeDefaultImages ? [...variantImages, ...defaultImages] : [...variantImages];
-        return [...new Set(merged)].filter(Boolean);
+	      function galleryForVariant(varianId, includeDefaultImages = true) {
+	        const variantImages = variantGalleries[varianId] || [];
+	        const merged = includeDefaultImages ? [...variantImages, ...defaultImages] : [...variantImages];
+	        return [...new Set(merged)].filter(Boolean);
+	      }
+
+      function thumbForImage(src) {
+        return src ? src.replace('/detail/', '/thumb/') : '';
       }
 
       function hydrateDeferredImages(root = document) {
@@ -987,15 +992,14 @@
 
         updateMainImage(images[startIndex] || '');
 
-        const thumbs = document.querySelector('.product-thumbs');
-        if (thumbs) {
+	        const thumbs = document.querySelector('.product-thumbs');
+	        if (thumbs) {
 		          thumbs.innerHTML = images.map((img, i) => `
 		            <button type="button" onclick="switchImage(${i})" style="width:56px;height:56px;border:2px solid ${i === startIndex ? '#83513D' : 'rgba(211,192,172,0.58)'};border-radius:4px;overflow:hidden;cursor:pointer;padding:0;background:none;flex-shrink:0;">
-			              <img src="${i === startIndex ? img : blankImage}" ${i === startIndex ? '' : `data-src="${img}"`} loading="lazy" decoding="async" alt="" style="width:100%;height:100%;object-fit:cover;display:block;background:#F5F0EA;" />
+			              <img src="${thumbForImage(img)}" loading="eager" fetchpriority="low" decoding="async" alt="" width="56" height="56" style="width:100%;height:100%;object-fit:cover;display:block;background:#F5F0EA;" />
 		            </button>
 		          `).join('');
-          bindThumbnailHydration(thumbs);
-        }
+	        }
 
         const mobileGallery = document.getElementById('mobile-gallery');
         if (mobileGallery) {
