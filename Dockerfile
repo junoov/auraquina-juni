@@ -7,6 +7,9 @@ RUN apk add --no-cache \
     git \
     curl \
     libpng-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    freetype-dev \
     oniguruma-dev \
     libxml2-dev \
     libzip-dev \
@@ -18,7 +21,9 @@ RUN apk add --no-cache \
     $PHPIZE_DEPS \
     && pecl install redis \
     && docker-php-ext-enable redis \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl sodium \
+    && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
+    && docker-php-ext-install gd \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath zip intl sodium \
     && php -m | grep -E '^(intl|zip)$' \
     && apk del --no-cache $PHPIZE_DEPS
 
