@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: auraquina-app
-    container_name: auraquina-app
+    # container_name: auraquina-app
     restart: on-failure:5
     working_dir: /var/www
     ports:
@@ -40,7 +40,7 @@ services:
   # Database (MySQL) - Optimized
   mysql:
     image: mysql:8.0
-    container_name: auraquina-mysql
+    # container_name: auraquina-mysql
     restart: unless-stopped
     ports:
       - "3307:3306"
@@ -71,10 +71,10 @@ services:
   # Redis for Cache/Sessions (In-Memory)
   redis:
     image: redis:alpine
-    container_name: auraquina-redis
+    # container_name: auraquina-redis
     restart: unless-stopped
     ports:
-      - "6380:6379"
+      - "6381:6379"
     volumes:
       - redis-data:/data
     networks:
@@ -84,7 +84,7 @@ services:
   # Node.js (Vite Frontend) - Skip npm install if modules exist
   node:
     image: node:20-alpine
-    container_name: auraquina-node
+    # container_name: auraquina-node
     working_dir: /var/www
     command: sh -c "[ -d node_modules/.package-lock.json ] && npm run dev -- --host 0.0.0.0 --port 5174 || (npm install && npm run dev -- --host 0.0.0.0 --port 5174)"
     ports:
