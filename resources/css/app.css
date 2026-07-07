@@ -21,13 +21,33 @@ html {
   width: 100%;
   max-width: 100%;
   overflow-x: clip;
+  scrollbar-gutter: stable;
   font-family: Lato, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
 body {
   width: 100%;
   max-width: 100%;
+  min-height: 100vh;
   overflow-x: clip;
+}
+
+.site-footer summary::-webkit-details-marker {
+  display: none;
+}
+
+.site-footer summary::marker {
+  content: '';
+}
+
+.site-footer details[open] .site-footer__accordion-icon {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 639px) {
+  .site-footer__payments svg {
+    max-height: 14px;
+  }
 }
 
 /* Elegant serif headings */

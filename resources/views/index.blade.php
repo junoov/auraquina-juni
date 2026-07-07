@@ -13,16 +13,19 @@
   </head>
   <body class="min-h-full overflow-x-clip bg-[var(--warm)] text-[var(--text)] antialiased [text-rendering:geometricPrecision]">
     @php
-      $heroImages = [
-          asset('images/hero-baru/hero-1.png'),
-          asset('images/hero-baru/hero-2.png'),
-          asset('images/hero-baru/hero-3.png'),
-          asset('images/hero-baru/hero-4.png'),
-      ];
+      $heroImages = collect(range(1, 4))->map(fn ($index) => [
+          'desktop' => asset("images/hero-baru/hero-{$index}-desktop.webp"),
+          'mobile' => asset("images/hero-baru/hero-{$index}-mobile.webp"),
+          'fallback' => asset("images/hero-baru/hero-{$index}.png"),
+      ]);
+      $imageVariants = app(\App\Services\ProductImageVariantService::class);
+      $productImageUrl = fn (?string $path) => $imageVariants->url($path, 'card');
+      $productImageSrcset = fn (?string $path) => $imageVariants->srcset($path, ['card' => 600, 'detail' => 1200]);
       $homeProductCards = ($produkUnggulan ?? collect())->map(fn ($produk) => [
           'name' => $produk->nama,
           'price' => $produk->hargaFormatted(),
-          'img' => $produk->gambarUtama?->full_url ?? '',
+          'img' => $productImageUrl($produk->gambarUtama?->url) ?? '',
+          'srcset' => $productImageSrcset($produk->gambarUtama?->url),
           'href' => '/shop/'.$produk->slug,
           'desc' => $produk->deskripsi_singkat ?: Str::limit((string) $produk->deskripsi, 130),
           'badge' => $produk->badge ? Str::title($produk->badge) : 'New Arrival',
@@ -95,14 +98,14 @@
           ],
       ];
       $footerLinks1 = [
-          'Shipping Policy' => '/pages/shipping-policy',
-          'Return & Exchange' => '/pages/return-exchange',
-          'FAQ' => '/pages/faq',
+          'Pengiriman' => '/pages/shipping-policy',
+          'Retur & Penukaran' => '/pages/return-exchange',
+          'Pertanyaan Umum' => '/pages/faq',
       ];
       $footerLinks2 = [
-          'Size Guide' => '/pages/size-guide',
-          'Privacy Policy' => '/pages/privacy-policy',
-          'Terms & Conditions' => '/pages/terms-conditions',
+          'Panduan Ukuran' => '/pages/size-guide',
+          'Kebijakan Privasi' => '/pages/privacy-policy',
+          'Syarat & Ketentuan' => '/pages/terms-conditions',
       ];
       $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-28px)]';
       $arrowIcon = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-[18px] w-[18px] stroke-[1.8]"><path d="M5 12h14M13 6l6 6-6 6" /></svg>';
@@ -114,9 +117,23 @@
           {{-- Gradient overlay for header readability on mobile only --}}
           <div class="absolute inset-0 pointer-events-none z-10 hero-gradient-overlay"></div>
           <div id="hero-track" class="absolute inset-0 flex transition-transform duration-[450ms] ease-out cursor-grab active:cursor-grabbing select-none">
-            @foreach ($heroImages as $index => $src)
+            @foreach ($heroImages as $index => $image)
               <div class="hero-slide relative h-full min-w-full shrink-0 grow-0 basis-full">
-                <img src="{{ $src }}" alt="" @if ($index > 2) loading="lazy" @endif class="hero-slide-image absolute inset-0 h-full w-full pointer-events-none" draggable="false" />
+                <picture>
+                  <source srcset="{{ $image['mobile'] }}" media="(max-width: 767px)" type="image/webp" />
+                  <source srcset="{{ $image['desktop'] }}" type="image/webp" />
+                  <img
+                    src="{{ $image['fallback'] }}"
+                    alt=""
+                    loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                    fetchpriority="{{ $index === 0 ? 'high' : 'auto' }}"
+                    decoding="async"
+                    width="1672"
+                    height="941"
+                    class="hero-slide-image absolute inset-0 h-full w-full pointer-events-none"
+                    draggable="false"
+                  />
+                </picture>
                 {{-- Aesthetic overlay untuk Banner Auraquina (slide pertama): hapus logo sparkle + warm cinematic tone --}}
                 @if ($index === 0)
                   {{-- Warm cinematic vignette overlay --}}
@@ -132,7 +149,7 @@
         </div>
         {{-- Hero dots pagination --}}
         <div id="hero-dots" class="hero-dots">
-          @foreach ($heroImages as $i => $src)
+          @foreach ($heroImages as $i => $image)
             <button type="button" class="hero-dot {{ $i === 0 ? 'is-active' : '' }}" data-hero-dot="{{ $i }}" aria-label="Go to slide {{ $i + 1 }}"></button>
           @endforeach
         </div>
@@ -154,7 +171,7 @@
               @foreach ($homeProductCards as $product)
                 <a href="{{ $product['href'] }}" class="product-carousel-item clean-product-card">
                   <span class="clean-product-card__image">
-                    <img src="{{ $product['img'] }}" alt="{{ $product['name'] }}" loading="{{ $loop->index < 4 ? 'eager' : 'lazy' }}" />
+                    <img src="{{ $product['img'] }}" @if (! empty($product['srcset'])) srcset="{{ $product['srcset'] }}" sizes="(max-width: 640px) 72vw, (max-width: 1024px) 36vw, 280px" @endif alt="{{ $product['name'] }}" loading="{{ $loop->index < 4 ? 'eager' : 'lazy' }}" />
                     <span class="clean-product-card__badge">{{ $product['badge'] }}</span>
                   </span>
                   <span class="clean-product-card__info">
@@ -166,6 +183,7 @@
             </div>
           </div>
         </section>
+
         <section class="bg-[var(--cream)] py-20 max-sm:py-14" aria-label="Brand philosophy">
           <div class="{{ $containerClass }} text-center">
             <p class="mb-6 text-[11px] font-bold tracking-[0.22em] uppercase text-[var(--sand)]">Our Philosophy</p>
@@ -176,6 +194,7 @@
             <p class="mt-6 text-[14px] leading-[1.75] text-[var(--muted)] max-w-[480px] mx-auto max-sm:text-[13px]">Setiap helai kain dipilih dengan hati, setiap jahitan dibuat dengan niat — untuk menemani langkahmu dengan tenang dan percaya diri.</p>
           </div>
         </section>
+
         {{-- Best Seller / Customer Picks --}}
         <section aria-labelledby="bestseller-title" class="{{ $containerClass }} py-14 max-sm:py-8">
           <div class="mb-7 flex items-center justify-between gap-5 max-sm:mb-5 max-sm:flex-col max-sm:items-start">
@@ -189,7 +208,7 @@
             @foreach ($bestSellers as $index => $item)
               <a class="group flex h-full flex-col overflow-hidden bg-[var(--white)] text-[var(--ink)]" href="{{ $item['href'] }}">
                 <span class="relative block aspect-[4/5] overflow-hidden rounded-[4px]" style="background:#f5f5f5">
-                  <img src="{{ $item['img'] }}" alt="{{ $item['name'] }}" loading="lazy" class="h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.03]" />
+                  <img src="{{ $item['img'] }}" @if (! empty($item['srcset'])) srcset="{{ $item['srcset'] }}" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw" @endif alt="{{ $item['name'] }}" loading="lazy" class="h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.03]" />
                   <span class="clean-product-card__badge">{{ $item['badge'] }}</span>
                 </span>
                 <span class="pt-3">
@@ -200,6 +219,7 @@
             @endforeach
           </div>
         </section>
+
         {{-- Instagram Feed Section --}}
         <section aria-labelledby="instagram-title" class="border-t border-[var(--border)] bg-[var(--warm)] pt-12 pb-0 max-sm:pt-8 max-sm:pb-0">
           <div class="{{ $containerClass }} mb-7 flex items-center justify-between gap-5 max-sm:mb-5 max-sm:flex-col max-sm:items-start">
@@ -213,37 +233,8 @@
               @auraquina
             </a>
           </div>
-          @php
-            $igFeed = [
-                'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1777252109529-nujayl_tas_resized2048-jpg.webp',
-                'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1776151010398-zeya_atass_resized2048-jpg.webp',
-                'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1771832642504-rayon_1_resized2048-jpg.webp',
-                'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1771547798609-fajraa_atas_resized2048-jpg.webp',
-                'https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1770794734994-Maida_series_atas_resized2048-jpg.webp',
-            ];
-          @endphp
-          <div class="grid grid-cols-5 gap-0 max-lg:grid-cols-4 max-sm:hidden">
-            @foreach ($igFeed as $index => $igImg)
-              <a href="https://www.instagram.com/auraquina/" target="_blank" rel="noopener" class="group relative block overflow-hidden bg-[var(--sand)] aspect-square {{ $index === 4 ? 'max-lg:hidden' : '' }}">
-                <img src="{{ $igImg }}" alt="Instagram post" loading="lazy" class="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]" />
-                <span class="absolute inset-0 flex items-center justify-center bg-[var(--ink)]/0 transition duration-200 group-hover:bg-[var(--ink)]/30">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" class="h-6 w-6 fill-none stroke-[var(--white)] stroke-[1.8] opacity-0 transition duration-200 group-hover:opacity-100"><rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><path d="M17 7h.01" /></svg>
-                </span>
-              </a>
-            @endforeach
-          </div>
-          {{-- Mobile: horizontal scroll --}}
-          <div class="hidden max-sm:flex gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 pb-4 scrollbar-hide">
-            @foreach ($igFeed as $igImg)
-              <a href="https://www.instagram.com/auraquina/" target="_blank" rel="noopener" class="group relative block min-w-[60vw] max-w-[60vw] shrink-0 snap-center overflow-hidden rounded-[6px] bg-[var(--sand)] aspect-square">
-                <img src="{{ $igImg }}" alt="Instagram post" loading="lazy" class="h-full w-full object-cover" />
-                <span class="absolute inset-0 flex items-center justify-center bg-[var(--ink)]/0 transition duration-200 group-hover:bg-[var(--ink)]/30">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" class="h-6 w-6 fill-none stroke-[var(--white)] stroke-[1.8] opacity-0 transition duration-200 group-hover:opacity-100"><rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><path d="M17 7h.01" /></svg>
-                </span>
-              </a>
-            @endforeach
-          </div>
         </section>
+
         <section class="border-y border-[var(--border)] bg-[var(--cream)] py-[34px] max-sm:py-6" aria-label="Store benefits">
           <div class="{{ $containerClass }} grid grid-cols-4 gap-0 max-lg:grid-cols-2 max-lg:gap-y-[26px] max-sm:grid-cols-1 max-sm:gap-y-5">
             @foreach ($serviceItems as $service)
@@ -260,7 +251,7 @@
       </div>
       {{-- Newsletter removed --}}
       @include('components.site-footer')
-      <a class="fixed right-[22px] bottom-[18px] z-[90] flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brown)] text-[var(--white)] max-lg:right-3 max-lg:bottom-3" href="https://wa.me/6287711516373" aria-label="WhatsApp">
+      <a class="fixed right-[22px] bottom-[18px] z-[90] flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brown)] text-[var(--white)] max-lg:right-3 max-lg:bottom-3" href="https://wa.me/6285942003395" aria-label="WhatsApp">
         <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12a11.93 11.93 0 0 0 1.64 6.06L0 24l6.16-1.61A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.25-6.2-3.48-8.52zM12 21.8a9.78 9.78 0 0 1-5-1.37l-.36-.21-3.66.96.98-3.57-.23-.37A9.8 9.8 0 1 1 21.8 12 9.8 9.8 0 0 1 12 21.8zm5.36-7.34c-.29-.15-1.74-.86-2-.96s-.46-.15-.66.15-.76.96-.93 1.16-.34.22-.63.07a8.06 8.06 0 0 1-2.36-1.46 8.86 8.86 0 0 1-1.63-2.04c-.17-.29 0-.45.13-.6s.29-.34.43-.5a2 2 0 0 0 .29-.5.55.55 0 0 0 0-.5c-.07-.15-.66-1.6-.91-2.18s-.48-.5-.66-.5h-.57a1.1 1.1 0 0 0-.8.37 3.36 3.36 0 0 0-1.05 2.5 5.83 5.83 0 0 0 1.22 3.1 13.34 13.34 0 0 0 5.13 4.53c.71.31 1.27.5 1.7.64a4.13 4.13 0 0 0 1.88.12 3.07 3.07 0 0 0 2-1.42 2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.56-.34z" />
         </svg>

@@ -6,6 +6,7 @@ use App\Models\ItemKeranjang;
 use App\Models\ItemPesanan;
 use App\Models\Pesanan;
 use App\Models\Produk;
+use App\Models\UserAddress;
 use App\Models\VarianProduk;
 use App\Models\Voucher;
 use DomainException;
@@ -169,7 +170,11 @@ class CheckoutController extends Controller
         $total = $totals['total'];
         $voucher = $totals['voucher'];
 
-        return view('checkout', compact('checkoutItems', 'subtotal', 'shipping', 'discount', 'total', 'voucher'));
+        $addresses = auth()->check()
+            ? UserAddress::where('user_id', auth()->id())->orderByDesc('is_default')->latest()->get()
+            : collect();
+
+        return view('checkout', compact('checkoutItems', 'subtotal', 'shipping', 'discount', 'total', 'voucher', 'addresses'));
     }
 
     public function applyVoucher(Request $request)
@@ -386,6 +391,46 @@ class CheckoutController extends Controller
         return view('pesanan-detail', compact('pesanan'));
     }
 
+    public function trackOrder()
+    {
+        return view('track-order', ['pesanan' => null]);
+    }
+
+    public function lookupOrder(Request $request)
+    {
+        $validated = $request->validate([
+            'kode_pesanan' => ['required', 'string', 'max:40'],
+            'contact' => ['required', 'string', 'max:255'],
+        ], [
+            'kode_pesanan.required' => 'Nomor pesanan wajib diisi.',
+            'contact.required' => 'Email atau nomor HP wajib diisi.',
+        ]);
+
+        $pesanan = Pesanan::with('items')
+            ->where('kode_pesanan', strtoupper(trim($validated['kode_pesanan'])))
+            ->first();
+
+        if (! $pesanan || ! $this->orderContactMatches($pesanan, $validated['contact'])) {
+            return back()
+                ->withErrors(['kode_pesanan' => 'Pesanan tidak ditemukan. Pastikan nomor pesanan dan email atau nomor HP sudah benar.'])
+                ->withInput();
+        }
+
+        $pesanan->expireIfOverdue();
+
+        return view('track-order', ['pesanan' => $pesanan->refresh()->load('items')]);
+    }
+
+    private function orderContactMatches(Pesanan $pesanan, string $contact): bool
+    {
+        $contact = trim($contact);
+        $phone = preg_replace('/\D+/', '', $contact) ?? '';
+        $orderPhone = preg_replace('/\D+/', '', (string) $pesanan->telepon) ?? '';
+
+        return hash_equals(strtolower((string) $pesanan->email), strtolower($contact))
+            || ($phone !== '' && hash_equals($orderPhone, $phone));
+    }
+
     public function showInvoice(Request $request, string $kode)
     {
         $pesanan = $this->authorizedOrder($request, $kode);
@@ -429,6 +474,11 @@ class CheckoutController extends Controller
 
         $validated = $request->validate([
             'type' => 'required|in:return,refund,issue',
+            'solution' => 'nullable|in:return_refund,refund_only,exchange,item_check',
+            'items' => 'nullable|array|max:10',
+            'items.*' => 'string|max:255',
+            'evidence_urls' => 'nullable|array|max:5',
+            'evidence_urls.*' => 'url|max:1000',
             'reason' => 'required|string|min:10|max:1000',
         ], [
             'type.required' => 'Pilih jenis kebutuhan after-sales.',
@@ -440,7 +490,10 @@ class CheckoutController extends Controller
         $pesanan->forceFill([
             'after_sales_status' => 'requested',
             'after_sales_type' => $validated['type'],
+            'after_sales_solution' => $validated['solution'] ?? null,
             'after_sales_reason' => trim($validated['reason']),
+            'after_sales_items' => array_values($validated['items'] ?? []),
+            'after_sales_evidence' => array_values($validated['evidence_urls'] ?? []),
             'after_sales_requested_at' => now(),
         ])->save();
 
@@ -523,7 +576,7 @@ class CheckoutController extends Controller
         }
 
         // Match "Transfer Bank BCA", "Transfer Bank Mandiri", etc.
-        if (str_contains($metode, 'transfer')) {
+        if (str_contains($metode, 'transfer') || str_contains($metode, 'other bank')) {
             return true;
         }
 
@@ -547,7 +600,7 @@ class CheckoutController extends Controller
 
         // Transfer Bank Mandiri
         if (str_contains($metode, 'mandiri')) {
-            return ['mandiri_va'];
+            return ['echannel'];
         }
 
         // Transfer Bank BRI
@@ -560,8 +613,28 @@ class CheckoutController extends Controller
             return ['bsi_va'];
         }
 
+        if (str_contains($metode, 'cimb')) {
+            return ['cimb_va'];
+        }
+
+        if (str_contains($metode, 'seabank')) {
+            return ['seabank_va'];
+        }
+
+        if (str_contains($metode, 'danamon')) {
+            return ['danamon_va'];
+        }
+
+        if (str_contains($metode, 'saqu')) {
+            return ['saqu_va'];
+        }
+
+        if (str_contains($metode, 'other')) {
+            return ['other_va'];
+        }
+
         // Fallback — show VA options
-        return ['bca_va', 'mandiri_va', 'bri_va', 'bni_va', 'bsi_va', 'permata_va'];
+        return ['bca_va', 'echannel', 'bni_va', 'bri_va', 'permata_va', 'cimb_va', 'seabank_va', 'danamon_va', 'bsi_va', 'saqu_va', 'other_va'];
     }
 
     private function processMidtransPayment(Pesanan $pesanan): void
@@ -614,6 +687,24 @@ class CheckoutController extends Controller
             ];
 
             $metode = strtolower($pesanan->metode_pembayaran);
+
+            $enabledPayments = $this->getEnabledPayments($pesanan->metode_pembayaran);
+            $snapOnlyPayments = ['bsi_va', 'cimb_va', 'seabank_va', 'danamon_va', 'saqu_va', 'other_va'];
+
+            if (array_intersect($enabledPayments, $snapOnlyPayments)) {
+                $params['enabled_payments'] = $enabledPayments;
+
+                $response = \Midtrans\Snap::createTransaction($params);
+
+                $pesanan->forceFill([
+                    'midtrans_snap_token' => $response->token ?? null,
+                    'midtrans_redirect_url' => $response->redirect_url ?? null,
+                    'midtrans_raw_response' => json_encode($response),
+                    'midtrans_status' => 'pending',
+                ])->save();
+
+                return;
+            }
 
             // Set payment type based on method
             if (str_contains($metode, 'qris') || str_contains($metode, 'gopay')) {

@@ -12,7 +12,7 @@
   </head>
   <body class="min-h-screen overflow-x-hidden bg-white text-[var(--ink)] antialiased" style="font-family:'Plus Jakarta Sans',sans-serif;">
 
-    @include('components.site-header', ['kategoris' => collect(), 'backHref' => '/account/orders'])
+    @include('components.site-header', ['kategoris' => collect(), 'backHref' => route('account.orders')])
 
     <main class="mx-auto max-w-[560px] px-5 py-8">
       @php
@@ -21,6 +21,34 @@
           'refund' => 'Refund',
           'issue' => 'Komplain Pesanan',
         ];
+        $statusLabels = [
+          'pending_payment' => 'Menunggu Pembayaran',
+          'paid' => 'Pembayaran Diterima',
+          'processing' => 'Diproses',
+          'packed' => 'Dikemas',
+          'shipped' => 'Dikirim',
+          'delivered' => 'Terkirim',
+          'completed' => 'Selesai',
+          'cancelled' => 'Dibatalkan',
+          'expired' => 'Kedaluwarsa',
+          'return_requested' => 'Retur Diajukan',
+          'refunded' => 'Dana Dikembalikan',
+        ];
+        $statusFlow = ['pending_payment', 'paid', 'processing', 'packed', 'shipped', 'delivered', 'completed'];
+        $currentStep = array_search($pesanan->status, $statusFlow, true);
+        $currentStep = $currentStep === false ? -1 : $currentStep;
+        $trackingUrl = null;
+        if ($pesanan->nomor_resi) {
+          $courier = strtolower((string) ($pesanan->kurir_pengiriman ?: $pesanan->metode_pengiriman));
+          $encodedAwb = urlencode($pesanan->nomor_resi);
+          $trackingUrl = match (true) {
+            str_contains($courier, 'jne') => 'https://www.jne.co.id/id/tracking/trace?awb=' . $encodedAwb,
+            str_contains($courier, 'j&t') || str_contains($courier, 'jnt') => 'https://jet.co.id/track',
+            str_contains($courier, 'sicepat') => 'https://www.sicepat.com/checkAwb',
+            str_contains($courier, 'anteraja') => 'https://anteraja.id/id/tracking',
+            default => 'https://cekresi.com/?noresi=' . $encodedAwb,
+          };
+        }
       @endphp
 
       {{-- Order Info --}}
@@ -73,6 +101,49 @@
 
       <hr class="border-[var(--border)]" />
 
+      <section class="py-6" aria-labelledby="status-timeline-title">
+        <div class="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--brown)]">Update Pesanan</p>
+            <h2 id="status-timeline-title" class="text-[18px] font-bold text-[var(--ink)]" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Perjalanan Pesanan</h2>
+            <p class="mt-1 text-[11px] text-[var(--muted)]">Status Pesanan</p>
+          </div>
+          <span class="rounded-full bg-[var(--cream)] px-3 py-1 text-[11px] font-bold text-[var(--brown)]">{{ $statusLabels[$pesanan->status] ?? ucfirst(str_replace('_', ' ', $pesanan->status)) }}</span>
+        </div>
+
+        <div class="space-y-4">
+          @foreach ($statusFlow as $index => $status)
+            @php
+              $isDone = $currentStep >= $index;
+              $isCurrent = $currentStep === $index;
+            @endphp
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center">
+                <span class="flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-bold {{ $isDone ? 'border-[var(--brown)] bg-[var(--brown)] text-white' : 'border-[var(--border)] bg-white text-[var(--muted)]' }}">{{ $index + 1 }}</span>
+                @if (! $loop->last)
+                  <span class="h-7 w-px {{ $currentStep > $index ? 'bg-[var(--brown)]' : 'bg-[var(--border)]' }}"></span>
+                @endif
+              </div>
+              <div class="pb-3">
+                <p class="text-[13px] font-bold {{ $isCurrent ? 'text-[var(--brown)]' : 'text-[var(--ink)]' }}">{{ $statusLabels[$status] }}</p>
+                <p class="mt-0.5 text-[11px] leading-5 text-[var(--muted)]">
+                  @if ($status === 'pending_payment') Pesanan berhasil dibuat dan menunggu pembayaran.
+                  @elseif ($status === 'paid') Pembayaran sudah diterima oleh sistem.
+                  @elseif ($status === 'processing') Tim Auraquina sedang menyiapkan pesanan.
+                  @elseif ($status === 'packed') Pesanan sudah dikemas dan siap dikirim.
+                  @elseif ($status === 'shipped') Pesanan sudah diserahkan ke kurir.
+                  @elseif ($status === 'delivered') Paket sudah sampai ke alamat tujuan.
+                  @else Pesanan selesai. Terima kasih sudah berbelanja.
+                  @endif
+                </p>
+              </div>
+            </div>
+          @endforeach
+        </div>
+      </section>
+
+      <hr class="border-[var(--border)]" />
+
       @php
         $midtransData = $pesanan->midtrans_raw_response ? json_decode($pesanan->midtrans_raw_response) : null;
       @endphp
@@ -83,7 +154,14 @@
           <p class="mb-4 text-[12px] font-bold uppercase tracking-wide text-[var(--ink)]">Pembayaran</p>
           <p class="mb-4 text-[12px] text-[var(--muted)]">{{ $pesanan->metode_pembayaran }}</p>
 
-          @if ($midtransData && ($midtransData->payment_type ?? '') === 'gopay' && isset($midtransData->actions[0]->url))
+          @if ($pesanan->midtrans_redirect_url)
+            {{-- Snap VA payment redirect --}}
+            <div class="mx-auto mb-3 flex flex-col items-center justify-center p-6 rounded-xl border border-[var(--border)] bg-white max-w-[320px] shadow-sm">
+              <p class="text-[12px] text-[var(--muted)] mb-2">{{ $pesanan->metode_pembayaran }}</p>
+              <p class="mb-4 text-[12px] leading-relaxed text-[var(--muted)]">Lanjutkan ke halaman pembayaran Midtrans untuk melihat nomor Virtual Account.</p>
+              <a href="{{ $pesanan->midtrans_redirect_url }}" class="inline-flex h-[42px] items-center justify-center rounded bg-[var(--brown)] px-5 text-[11px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">Bayar via Bank</a>
+            </div>
+          @elseif ($midtransData && ($midtransData->payment_type ?? '') === 'gopay' && isset($midtransData->actions[0]->url))
             {{-- QR Code Display --}}
             <div class="mx-auto mb-3 flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-white max-w-[280px] shadow-sm">
               <img src="https://gopay.co.id/icon.png" onerror="this.style.display='none'" alt="GoPay" class="h-6 mb-4 object-contain">
@@ -141,7 +219,14 @@
         <section class="py-6">
           <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">Cara Pembayaran</h3>
           
-          @if ($midtransData && ($midtransData->payment_type ?? '') === 'gopay')
+          @if ($pesanan->midtrans_redirect_url)
+            <ol class="list-inside list-decimal space-y-1.5 text-[12px] leading-relaxed text-[var(--muted)]">
+              <li>Klik tombol <strong>Bayar via Bank</strong> di atas.</li>
+              <li>Pilih atau lanjutkan metode <strong>{{ $pesanan->metode_pembayaran }}</strong> di halaman Midtrans.</li>
+              <li>Salin nomor Virtual Account yang ditampilkan.</li>
+              <li>Buka aplikasi mobile banking atau ATM bank terkait, lalu selesaikan pembayaran sesuai nominal tagihan.</li>
+            </ol>
+          @elseif ($midtransData && ($midtransData->payment_type ?? '') === 'gopay')
             <ol class="list-inside list-decimal space-y-1.5 text-[12px] leading-relaxed text-[var(--muted)]">
               <li>Buka aplikasi <strong>GoPay</strong>, <strong>OVO</strong>, <strong>Dana</strong>, atau aplikasi mobile banking yang mendukung QRIS.</li>
               <li>Pilih menu <strong>Scan QR / Bayar</strong>.</li>
@@ -289,17 +374,62 @@
         </div>
       </section>
 
+      <section class="py-6" aria-labelledby="tracking-title">
+        <div class="rounded-[10px] border border-[var(--border)] bg-[var(--warm)] p-5 shadow-[0_10px_30px_rgba(131,81,61,0.06)]">
+          <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--brown)]">Pantau Paket</p>
+          <h3 id="tracking-title" class="mb-3 text-[18px] font-bold text-[var(--ink)]" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Tracking Pengiriman</h3>
+          @if ($pesanan->nomor_resi)
+            <p class="mb-4 text-[12px] leading-6 text-[var(--muted)]">Pesanan sudah dikirim. Gunakan nomor resi berikut untuk melacak paket di website kurir.</p>
+            <div class="space-y-2 rounded-[8px] bg-white p-4 text-[12px]">
+              <div class="flex justify-between gap-4">
+                <span class="text-[var(--muted)]">Kurir</span>
+                <span class="font-bold text-[var(--ink)]">{{ $pesanan->kurir_pengiriman ?: $pesanan->metode_pengiriman }}</span>
+              </div>
+              <div class="flex justify-between gap-4">
+                <span class="text-[var(--muted)]">Nomor Resi</span>
+                <span class="font-bold text-[var(--ink)]">{{ $pesanan->nomor_resi }}</span>
+              </div>
+              @if ($pesanan->dikirim_pada)
+                <div class="flex justify-between gap-4">
+                  <span class="text-[var(--muted)]">Dikirim Pada</span>
+                  <span class="font-bold text-[var(--ink)]">{{ $pesanan->dikirim_pada->translatedFormat('d M Y, H:i') }}</span>
+                </div>
+              @endif
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button type="button" onclick="navigator.clipboard.writeText('{{ $pesanan->nomor_resi }}')" class="inline-flex h-[38px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">Salin Resi</button>
+              <a href="{{ $trackingUrl }}" target="_blank" rel="noopener" class="inline-flex h-[38px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">Lacak di Website Kurir</a>
+            </div>
+          @else
+            <p class="text-[12px] leading-6 text-[var(--muted)]">Nomor resi akan muncul di sini setelah pesanan diserahkan ke kurir.</p>
+          @endif
+        </div>
+      </section>
+
       <hr class="border-[var(--border)]" />
 
       <section id="after-sales" class="py-6">
-        <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">After-Sales</h3>
+        <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">After-Sales Care</h3>
 
         @if ($pesanan->after_sales_status)
           <div class="rounded border border-[#FEDF89] bg-[#FFFAEB] px-4 py-4 text-[12px] leading-5 text-[#B54708]">
             <p class="font-bold">Request sudah dikirim</p>
             <p class="mt-1">Jenis: {{ $afterSalesTypeMap[$pesanan->after_sales_type] ?? ucfirst((string) $pesanan->after_sales_type) }}</p>
+            @if ($pesanan->after_sales_solution)
+              <p class="mt-1">Solusi: {{ ucfirst(str_replace('_', ' ', $pesanan->after_sales_solution)) }}</p>
+            @endif
             <p class="mt-1">Status: {{ ucfirst(str_replace('_', ' ', (string) $pesanan->after_sales_status)) }}</p>
             <p class="mt-1">Alasan: {{ $pesanan->after_sales_reason }}</p>
+            @if (! empty($pesanan->after_sales_items))
+              <p class="mt-1">Item: {{ implode(', ', $pesanan->after_sales_items) }}</p>
+            @endif
+            @if (! empty($pesanan->after_sales_evidence))
+              <div class="mt-2 flex flex-wrap gap-2">
+                @foreach ($pesanan->after_sales_evidence as $evidence)
+                  <a href="{{ $evidence }}" target="_blank" rel="noopener" class="rounded bg-white px-2 py-1 text-[11px] font-bold text-[#B54708] underline">Bukti {{ $loop->iteration }}</a>
+                @endforeach
+              </div>
+            @endif
           </div>
         @elseif ($pesanan->canRequestAfterSales())
           <p class="mb-4 text-[12px] leading-relaxed text-[var(--muted)]">Jika ada kendala dengan pesanan yang sudah diterima, Anda dapat mengajukan request after-sales melalui form berikut.</p>
@@ -312,6 +442,23 @@
                 <option value="refund">Refund</option>
                 <option value="issue">Komplain Pesanan</option>
               </select>
+            </label>
+            <label class="block">
+              <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Solusi yang Diinginkan</span>
+              <select name="solution" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none">
+                <option value="return_refund">Return & Refund</option>
+                <option value="refund_only">Refund Only</option>
+                <option value="exchange">Tukar Produk</option>
+                <option value="item_check">Cek Kendala Produk</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Item Terkait</span>
+              <input name="items[]" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none" placeholder="Contoh: Khimar Mocha - warna tidak sesuai" />
+            </label>
+            <label class="block">
+              <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Link Bukti Foto/Video</span>
+              <input name="evidence_urls[]" type="url" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none" placeholder="https://..." />
             </label>
             <label class="block">
               <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Keterangan</span>
@@ -347,7 +494,7 @@
             <button type="submit" class="inline-flex h-[42px] items-center justify-center rounded bg-[var(--brown)] px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:opacity-85">Konfirmasi Diterima</button>
           </form>
         @endif
-        <a href="/shop" class="inline-flex h-[42px] items-center justify-center rounded bg-[var(--ink)] px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:opacity-85">Lanjut Belanja</a>
+        <a href="/shop" class="inline-flex h-[42px] items-center justify-center rounded bg-[var(--brown)] px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:opacity-85">Lanjut Belanja</a>
       </div>
 
     </main>

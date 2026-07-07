@@ -53,6 +53,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Pesanan::class);
     }
 
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(UserAddress::class);
+    }
+
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);

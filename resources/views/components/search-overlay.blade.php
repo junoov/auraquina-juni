@@ -18,6 +18,20 @@
       </div>
       <button type="submit" class="flex h-12 items-center justify-center rounded-[6px] bg-[var(--brown)] px-6 text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--white)] transition hover:opacity-90">Cari</button>
     </form>
+    <div class="mt-3 grid gap-3 rounded-[6px] border border-[var(--border)] bg-[var(--warm)] p-3 text-[12px] text-[var(--muted)]" data-search-guide>
+      <div>
+        <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--brown)]">Pencarian Populer</p>
+        <div class="flex flex-wrap gap-2">
+          @foreach (['abaya mocha', 'khimar jersey', 'warna sage'] as $term)
+            <button type="button" data-search-suggestion="{{ $term }}" class="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-bold text-[var(--ink)] transition hover:bg-[var(--cream)]">{{ $term }}</button>
+          @endforeach
+        </div>
+      </div>
+      <div>
+        <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--brown)]">Terakhir dicari</p>
+        <p data-search-recent>Coba: abaya mocha, khimar jersey, warna sage</p>
+      </div>
+    </div>
     <div data-search-results class="mt-3 hidden overflow-hidden rounded-[6px] border border-[var(--border)] bg-[var(--warm)]" role="listbox" aria-label="Hasil pencarian cepat"></div>
   </div>
 </div>

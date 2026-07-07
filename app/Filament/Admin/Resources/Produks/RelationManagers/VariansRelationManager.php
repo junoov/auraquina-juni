@@ -88,7 +88,7 @@ class VariansRelationManager extends RelationManager
                                         FileUpload::make('url')
                                             ->hiddenLabel()
                                             ->image()
-                                            ->disk('public')
+                                            ->disk('r2')
                                             ->directory('produk/varian')
                                             ->imageEditor()
                                             ->maxSize(5120)
@@ -124,7 +124,7 @@ class VariansRelationManager extends RelationManager
             ->columns([
                 ImageColumn::make('gambarVarianUtama.url')
                     ->label('Foto')
-                    ->disk('public')
+                    ->disk('r2')
                     ->circular()
                     ->size(40)
                     ->defaultImageUrl(fn ($record) => $record->kode_warna

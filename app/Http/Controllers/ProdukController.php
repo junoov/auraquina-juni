@@ -7,7 +7,9 @@ use App\Models\Pesanan;
 use App\Models\Produk;
 use App\Models\Review;
 use App\Models\VarianProduk;
+use App\Services\ProductImageVariantService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProdukController extends Controller
 {
@@ -106,10 +108,17 @@ class ProdukController extends Controller
                 'url' => url('/shop/' . $produk->slug),
                 'harga' => $produk->hargaFormatted(),
                 'kategori' => $produk->kategori?->nama,
-                    'gambar' => $produk->gambarUtama?->full_url,
+                'badge' => $produk->kategori?->nama,
+                'excerpt' => $produk->deskripsi_singkat ?: str($produk->deskripsi)->limit(120)->toString(),
+                'gambar' => $this->productImageUrl($produk->gambarUtama?->url, 'thumb'),
             ]);
 
         return response()->json(['items' => $items]);
+    }
+
+    private function productImageUrl(?string $path, string $variant): ?string
+    {
+        return app(ProductImageVariantService::class)->url($path, $variant);
     }
 
     private function applySearch($query, string $searchTerm): void
@@ -215,6 +224,8 @@ class ProdukController extends Controller
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'review' => 'required|string|min:20|max:1000',
+            'photos' => 'nullable|array|max:4',
+            'photos.*' => 'image|max:3072',
         ]);
 
         $eligibleOrder = Pesanan::where('user_id', $request->user()->id)
@@ -225,6 +236,11 @@ class ProdukController extends Controller
 
         abort_unless($eligibleOrder, 403);
 
+        $photos = collect($request->file('photos', []))
+            ->map(fn ($photo) => $photo->store('reviews', 'public'))
+            ->values()
+            ->all();
+
         Review::updateOrCreate(
             [
                 'produk_id' => $produk->id,
@@ -234,6 +250,7 @@ class ProdukController extends Controller
                 'pesanan_id' => $eligibleOrder->id,
                 'rating' => $validated['rating'],
                 'review' => trim($validated['review']),
+                'photos' => $photos,
                 'status' => Review::STATUS_PENDING,
             ]
         );

@@ -17,7 +17,12 @@ class Review extends Model
         'pesanan_id',
         'rating',
         'review',
+        'photos',
         'status',
+    ];
+
+    protected $casts = [
+        'photos' => 'array',
     ];
 
     protected static function booted(): void

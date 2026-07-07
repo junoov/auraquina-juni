@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 cd /var/www
 
@@ -13,8 +13,8 @@ HOST_GID=$(stat -c '%g' /var/www 2>/dev/null || echo "0")
 
 if [ "$HOST_UID" != "0" ]; then
     echo "[entrypoint] Running as host user UID=$HOST_UID GID=$HOST_GID"
-    groupadd -g "$HOST_GID" -o hostgroup 2>/dev/null || true
-    useradd -u "$HOST_UID" -g "$HOST_GID" -o -m hostuser 2>/dev/null || true
+    addgroup -g "$HOST_GID" -o hostgroup 2>/dev/null || true
+    adduser -u "$HOST_UID" -G hostgroup -D -h /tmp hostuser 2>/dev/null || true
     RS_USER="hostuser"
 else
     RS_USER="root"
@@ -23,19 +23,20 @@ fi
 # Fix permissions (storage & cache only)
 chmod -R 777 storage bootstrap/cache 2>/dev/null || true
 
-# Copy .env if missing
-if [ ! -f ".env" ]; then
-    echo "[entrypoint] Copying .env.example to .env..."
-    cp .env.example .env 2>/dev/null || true
-fi
+# Docker gets runtime configuration from docker-compose.yml and .env.docker.
+# Do not mutate the bind-mounted .env file; it belongs to the local host runtime.
 
-# Patch .env for Docker (bind-mounted .env may have localhost values)
-echo "[entrypoint] Patching .env for Docker..."
-sed -i 's/^DB_HOST=.*/DB_HOST=mysql/' .env 2>/dev/null || true
-sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=root/' .env 2>/dev/null || true
-sed -i 's/^REDIS_HOST=.*/REDIS_HOST=redis/' .env 2>/dev/null || true
-sed -i 's/^CACHE_STORE=.*/CACHE_STORE=redis/' .env 2>/dev/null || true
-sed -i 's/^SESSION_DRIVER=.*/SESSION_DRIVER=redis/' .env 2>/dev/null || true
+# Persist object storage env from Docker into Laravel .env when provided.
+for key in R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_ENDPOINT R2_BUCKET R2_URL AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_BUCKET AWS_ENDPOINT AWS_URL; do
+    value=$(printenv "$key")
+    if [ -n "$value" ]; then
+        if grep -q "^$key=" .env 2>/dev/null; then
+            sed -i "s|^$key=.*|$key=$value|" .env 2>/dev/null || true
+        else
+            printf '\n%s=%s\n' "$key" "$value" >> .env
+        fi
+    fi
+done
 
 # Generate app key if needed
 if [ -f .env ] && ! grep -q "APP_KEY=base64:" .env; then
@@ -46,12 +47,12 @@ fi
 # Always run composer install to ensure all dependencies are present
 # (named volumes can be stale from previous builds)
 echo "[entrypoint] Installing/updating composer dependencies..."
-gosu "$RS_USER" composer install --no-interaction --optimize-autoloader --no-scripts 2>&1 || \
-gosu "$RS_USER" rsync -a /tmp/vendor/ /var/www/vendor/ 2>/dev/null || true
+su-exec "$RS_USER" composer install --no-interaction --optimize-autoloader --no-scripts 2>&1 || \
+su-exec "$RS_USER" rsync -a /tmp/vendor/ /var/www/vendor/ 2>/dev/null || true
 
 # Ensure autoloader is up-to-date
 echo "[entrypoint] Rebuilding autoloader..."
-gosu "$RS_USER" composer dump-autoload --optimize --no-scripts 2>&1 || true
+su-exec "$RS_USER" composer dump-autoload --optimize --no-scripts 2>&1 || true
 
 # Wait for MySQL to be ready (max 60s timeout, then continue)
 echo "[entrypoint] Waiting for MySQL..."

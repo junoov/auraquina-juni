@@ -102,7 +102,7 @@ class ProdukForm
                                                 FileUpload::make('url')
                                                     ->hiddenLabel()
                                                     ->image()
-                                                    ->disk('public')
+                                                    ->disk('r2')
                                                     ->directory('produk')
                                                     ->imageEditor()
                                                     ->maxSize(5120)

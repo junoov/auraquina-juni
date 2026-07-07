@@ -39,25 +39,25 @@
       ],
   ];
   $footerLinks1 = [
-      'Shipping Policy' => '/pages/shipping-policy',
-      'Return & Exchange' => '/pages/return-exchange',
-      'FAQ' => '/pages/faq',
+      'Pengiriman' => '/pages/shipping-policy',
+      'Retur & Penukaran' => '/pages/return-exchange',
+      'Pertanyaan Umum' => '/pages/faq',
   ];
   $footerLinks2 = [
-      'Size Guide' => '/pages/size-guide',
-      'Privacy Policy' => '/pages/privacy-policy',
-      'Terms & Conditions' => '/pages/terms-conditions',
+      'Panduan Ukuran' => '/pages/size-guide',
+      'Kebijakan Privasi' => '/pages/privacy-policy',
+      'Syarat & Ketentuan' => '/pages/terms-conditions',
   ];
   $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-28px)]';
 @endphp
 
-<footer class="bg-[var(--white)] text-[var(--ink)] border-t border-[var(--border)] mt-16">
-  <div class="{{ $containerClass }} grid grid-cols-[1.35fr_0.8fr_0.8fr_1.4fr] gap-[52px] border-b border-[var(--border)] py-9 pb-[22px] text-[13px] leading-5 max-lg:grid-cols-2 max-lg:gap-7 max-sm:grid-cols-1 max-sm:gap-y-8 max-sm:pt-[30px]">
+<footer class="site-footer bg-[var(--white)] text-[var(--ink)] border-t border-[var(--border)] mt-16">
+  <div class="{{ $containerClass }} grid grid-cols-[1.35fr_0.8fr_0.8fr_1.4fr] gap-[52px] border-b border-[var(--border)] py-9 pb-[22px] text-[13px] leading-5 max-lg:grid-cols-2 max-lg:gap-7 max-sm:grid-cols-1 max-sm:gap-y-4 max-sm:py-6 max-sm:pb-5">
     <div>
-      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Auraquina Official</p>
-      <p class="mb-2 text-[var(--muted)]">Admin : +62 877-1151-6373</p>
+      <p class="mb-2 text-[14px] leading-5 font-bold text-[var(--ink)]">Auraquina Official</p>
+      <p class="mb-2 max-sm:mb-1 text-[var(--muted)]">Admin : <a class="text-[var(--ink)] transition hover:text-[var(--brown)]" href="tel:+6285942003395">+62 859-4200-3395</a></p>
       <p class="mb-2 text-[var(--muted)]">Yogyakarta, Indonesia.</p>
-      <div class="mt-7 flex items-center gap-[18px]">
+      <div class="mt-7 flex items-center gap-[18px] max-sm:mt-5">
         @foreach ($socialIcons as $social)
           <a href="{{ $social['href'] ?? '#' }}" @if(($social['href'] ?? '#') !== '#') target="_blank" rel="noopener" @endif aria-label="{{ $social['label'] }}">
             <svg aria-hidden="true" viewBox="0 0 24 24" class="h-[18px] w-[18px] fill-none stroke-[var(--ink)] stroke-[1.9]">{!! $social['icon'] !!}</svg>
@@ -65,23 +65,51 @@
         @endforeach
       </div>
     </div>
-    <div>
-      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Customer Care</p>
+    <div class="max-sm:hidden">
+      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Bantuan Pelanggan</p>
       @foreach ($footerLinks1 as $link => $href)
         <a class="mb-2 block text-[var(--ink)] hover:text-[var(--brown)] transition" href="{{ $href }}">{{ $link }}</a>
       @endforeach
     </div>
-    <div>
-      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Information</p>
+    <div class="max-sm:hidden">
+      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Informasi</p>
       @foreach ($footerLinks2 as $link => $href)
         <a class="mb-2 block text-[var(--ink)] hover:text-[var(--brown)] transition" href="{{ $href }}">{{ $link }}</a>
       @endforeach
     </div>
+    <div class="sm:hidden divide-y divide-[var(--border)] border-y border-[var(--border)]">
+      <details class="footer-accordion group">
+        <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between text-[13px] font-bold text-[var(--ink)]">
+          <span>Bantuan Pelanggan</span>
+          <svg class="site-footer__accordion-icon h-4 w-4 fill-none stroke-[var(--muted)] stroke-2 transition-transform duration-200" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </summary>
+        <div class="pb-3">
+          @foreach ($footerLinks1 as $link => $href)
+            <a class="block py-1.5 text-[13px] leading-5 text-[var(--ink)] transition hover:text-[var(--brown)]" href="{{ $href }}">{{ $link }}</a>
+          @endforeach
+        </div>
+      </details>
+      <details class="footer-accordion group">
+        <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between text-[13px] font-bold text-[var(--ink)]">
+          <span>Informasi</span>
+          <svg class="site-footer__accordion-icon h-4 w-4 fill-none stroke-[var(--muted)] stroke-2 transition-transform duration-200" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </summary>
+        <div class="pb-3">
+          @foreach ($footerLinks2 as $link => $href)
+            <a class="block py-1.5 text-[13px] leading-5 text-[var(--ink)] transition hover:text-[var(--brown)]" href="{{ $href }}">{{ $link }}</a>
+          @endforeach
+        </div>
+      </details>
+    </div>
     <div>
-      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)]">Payment Method</p>
-      <div class="flex flex-wrap items-center gap-2">
+      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)] max-sm:mb-3">Payment Method</p>
+      <div class="site-footer__payments flex flex-wrap items-center gap-2 max-sm:gap-1.5">
         @foreach ($payments as $payment)
-          <div class="inline-flex items-center justify-center rounded-[6px] border border-[var(--border)] bg-[var(--white)]" style="height: 32px; background-color: #ffffff; border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; padding: 4px 10px;" title="{{ $payment['name'] }}">
+          <div class="inline-flex h-8 items-center justify-center rounded-[6px] border border-[var(--border)] bg-[var(--white)] px-2.5 max-sm:h-7 max-sm:px-2" title="{{ $payment['name'] }}">
             {!! $payment['svg'] !!}
           </div>
         @endforeach
@@ -89,7 +117,7 @@
     </div>
   </div>
   <div class="{{ $containerClass }} flex justify-between gap-5 py-[18px] pb-5 text-[12px] leading-[18px] text-[var(--muted)] max-lg:flex-col max-sm:pb-[72px]">
-    <span>© 2024 AURAQUINA. All Rights Reserved.</span>
-    <span class="flex items-center gap-3 font-bold text-[var(--ink)]">We Accept <b>VISA</b><b>Mastercard</b><b>BCA</b><b>mandiri</b><b>BRI</b><b>BSI</b></span>
+    <span>© 2024 Auraquina. All rights reserved.</span>
+    <span class="flex items-center gap-3 font-bold text-[var(--ink)] max-sm:hidden">We Accept <b>VISA</b><b>Mastercard</b><b>BCA</b><b>mandiri</b><b>BRI</b><b>BSI</b></span>
   </div>
 </footer>

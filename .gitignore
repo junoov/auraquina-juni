@@ -5,6 +5,7 @@
 node_modules/
 .env
 .env.backup
+.env.docker
 .env.production
 .env.*.local
 /storage/*.key

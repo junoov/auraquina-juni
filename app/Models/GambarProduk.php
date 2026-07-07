@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\ProductImageVariantService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
@@ -14,6 +15,15 @@ class GambarProduk extends Model
         'utama' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        static::saved(function (self $image) {
+            if ($image->url) {
+                app(ProductImageVariantService::class)->generate($image->url);
+            }
+        });
+    }
+
     public function produk(): BelongsTo
     {
         return $this->belongsTo(Produk::class, 'produk_id');
@@ -25,6 +35,18 @@ class GambarProduk extends Model
         if (str_starts_with($this->url, 'http://') || str_starts_with($this->url, 'https://')) {
             return $this->url;
         }
-        return Storage::disk('public')->url($this->url);
+        $disk = config('filesystems.disks.r2.bucket') ? 'r2' : 'public';
+
+        return Storage::disk($disk)->url($this->url);
+    }
+
+    public function variantUrl(string $variant): ?string
+    {
+        return app(ProductImageVariantService::class)->url($this->url, $variant);
+    }
+
+    public function variantSrcset(array $variants): ?string
+    {
+        return app(ProductImageVariantService::class)->srcset($this->url, $variants);
     }
 }

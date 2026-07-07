@@ -37,6 +37,9 @@
       ];
 
       $containerClass = 'mx-auto w-full max-w-[1184px] px-4 max-sm:px-3';
+      $imageVariants = app(\App\Services\ProductImageVariantService::class);
+      $productImageUrl = fn (?string $path, string $variant = 'card') => $imageVariants->url($path, $variant);
+      $productImageSrcset = fn (?string $path) => $imageVariants->srcset($path, ['card' => 600, 'detail' => 1200]);
     @endphp
 
     @include('components.site-header', ['kategoris' => $kategoris, 'backHref' => '/'])
@@ -201,9 +204,17 @@
                     <p class="mb-4 text-center text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--brown)]">Lihat juga</p>
                     <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
                       @foreach ($produkSaran as $saran)
+                        @php
+                          $suggestionImage = $productImageUrl($saran->gambarUtama?->url, 'card') ?? '';
+                          $suggestionSrcset = $productImageSrcset($saran->gambarUtama?->url);
+                        @endphp
                         <a href="/shop/{{ $saran->slug }}" class="group block text-center text-[var(--ink)]">
                           <span class="block rounded-[4px] bg-[var(--sand)]">
-                            <img src="{{ $saran->gambarUtama?->full_url ?? '' }}" alt="{{ $saran->nama }}" loading="lazy" class="h-auto w-full rounded-[4px] object-contain transition-transform duration-300 group-hover:scale-[1.01]" />
+                            @if ($suggestionImage !== '')
+                              <img src="{{ $suggestionImage }}" @if ($suggestionSrcset) srcset="{{ $suggestionSrcset }}" sizes="(max-width: 640px) 50vw, 160px" @endif alt="{{ $saran->nama }}" loading="lazy" decoding="async" class="h-auto w-full rounded-[4px] object-contain transition-transform duration-300 group-hover:scale-[1.01]" />
+                            @else
+                              <span class="flex aspect-[3/4] items-center justify-center rounded-[4px] px-3 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--brown)]">Foto segera hadir</span>
+                            @endif
                           </span>
                           <span class="mt-2 block truncate text-[12px]">{{ $saran->nama }}</span>
                         </a>
@@ -215,9 +226,17 @@
             @else
               <div id="product-grid" class="grid grid-cols-3 gap-5 max-lg:grid-cols-2 max-lg:gap-[14px] max-sm:grid-cols-2 max-sm:gap-x-3 max-sm:gap-y-5">
                 @foreach ($produks as $index => $produk)
+                  @php
+                    $cardImage = $productImageUrl($produk->gambarUtama?->url, 'card') ?? '';
+                    $cardSrcset = $productImageSrcset($produk->gambarUtama?->url);
+                  @endphp
                   <a class="group block text-[var(--ink)]" href="/shop/{{ $produk->slug }}" data-product-card data-category="{{ $produk->kategori->nama }}" data-category-slug="{{ $produk->kategori->slug }}" data-price="{{ $produk->harga }}" data-sizes="{{ $produk->varians->pluck('ukuran')->unique()->implode(',') }}" data-colors="{{ $produk->varians->pluck('warna')->unique()->implode(',') }}">
                     <span class="block overflow-hidden rounded-[4px] bg-[var(--sand)]" style="aspect-ratio:3/4;">
-                      <img src="{{ $produk->gambarUtama?->full_url ?? '' }}" alt="{{ $produk->nama }}" loading="{{ $index < 3 ? 'eager' : 'lazy' }}" class="h-full w-full rounded-[4px] object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.01]" />
+                      @if ($cardImage !== '')
+                        <img src="{{ $cardImage }}" @if ($cardSrcset) srcset="{{ $cardSrcset }}" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 310px" @endif alt="{{ $produk->nama }}" loading="{{ $index < 3 ? 'eager' : 'lazy' }}" fetchpriority="{{ $index < 3 ? 'high' : 'auto' }}" decoding="async" width="480" height="640" class="h-full w-full rounded-[4px] object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.01]" />
+                      @else
+                        <span class="flex h-full w-full items-center justify-center px-4 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--brown)]">Foto segera hadir</span>
+                      @endif
                     </span>
                     <span class="block pt-3 max-sm:pt-2">
                       <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--brown)] max-sm:text-[9px]">{{ $produk->kategori->nama }}</p>

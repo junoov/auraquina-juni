@@ -219,6 +219,8 @@ function initSearchOverlay() {
   const overlay = document.getElementById('search-overlay');
   const input = document.getElementById('search-input');
   const results = overlay?.querySelector('[data-search-results]');
+  const guide = overlay?.querySelector('[data-search-guide]');
+  const recent = overlay?.querySelector('[data-search-recent]');
 
   if (!overlay) return;
 
@@ -232,6 +234,7 @@ function initSearchOverlay() {
     if (!results) return;
     results.innerHTML = html;
     results.classList.toggle('hidden', html === '');
+    guide?.classList.toggle('hidden', html !== '');
     activeResultIndex = -1;
   }
 
@@ -252,7 +255,8 @@ function initSearchOverlay() {
         </span>
         <span class="min-w-0 flex-1">
           <span class="block truncate text-[13px] font-bold text-[var(--ink)]">${item.nama}</span>
-          <span class="block truncate text-[11px] text-[var(--muted)]">${item.kategori || 'Produk'} · ${item.harga}</span>
+          <span class="block truncate text-[11px] text-[var(--muted)]">${item.badge || item.kategori || 'Produk'} · ${item.harga}</span>
+          ${item.excerpt ? `<span class="mt-0.5 block truncate text-[11px] text-[var(--muted)]">${item.excerpt}</span>` : ''}
         </span>
       </a>
     `).join(''));
@@ -314,6 +318,13 @@ function initSearchOverlay() {
   }
 
   input?.addEventListener('input', () => searchProducts(input.value));
+  overlay.querySelectorAll('[data-search-suggestion]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!input) return;
+      input.value = button.dataset.searchSuggestion || '';
+      searchProducts(input.value);
+    });
+  });
   input?.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
