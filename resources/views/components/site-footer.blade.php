@@ -56,7 +56,7 @@
   <div class="{{ $containerClass }} grid grid-cols-[1.35fr_0.8fr_0.8fr_1.4fr] gap-[52px] border-b border-[var(--border)] py-9 pb-[22px] text-[13px] leading-5 max-lg:grid-cols-2 max-lg:gap-7 max-sm:grid-cols-1 max-sm:gap-y-4 max-sm:py-6 max-sm:pb-5">
     <div>
       <p class="mb-2 text-[14px] leading-5 font-bold text-[var(--ink)]">Auraquina Official</p>
-      <p class="mb-2 max-sm:mb-1 text-[var(--muted)]">Admin : <a class="text-[var(--ink)] transition hover:text-[var(--brown)]" href="tel:+6287711516373">+62 877-1151-6373</a></p>
+      <p class="mb-2 max-sm:mb-1 text-[var(--muted)]">Admin : <a class="text-[var(--ink)] transition hover:text-[var(--brown)]" href="tel:+6285942003395">+62 859-4200-3395</a></p>
       <p class="mb-2 text-[var(--muted)]">Yogyakarta, Indonesia.</p>
       <div class="mt-7 flex items-center gap-[18px] max-sm:mt-5">
         @foreach ($socialIcons as $social)
