@@ -27,7 +27,7 @@
       </div>
     </nav>
 
-    <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 text-[28px] lg:text-[32px] leading-none font-medium tracking-[0.03em]" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif;">
+    <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 text-[28px] lg:text-[32px] leading-none font-medium tracking-[0.03em]" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif; color: var(--brown) !important;">
       <img src="{{ asset('images/logo.png') }}" alt="" class="h-8 lg:h-9 w-auto object-contain" />
       <span>Auraquina</span>
     </a>
@@ -62,7 +62,7 @@
       </button>
     </div>
     {{-- Center: logo --}}
-    <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-[22px] leading-none font-medium tracking-[0.03em] text-[var(--ink)]" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif;">
+    <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-[22px] leading-none font-medium tracking-[0.03em]" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif; color: var(--brown) !important;">
       <img src="{{ asset('images/logo.png') }}" alt="" class="h-6 w-auto object-contain" />
       <span>Auraquina</span>
     </a>

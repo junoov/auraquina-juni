@@ -132,19 +132,19 @@ h1, h2, h3, blockquote {
 
 @media (max-width: 1023px) {
   .hero-frame {
-    min-height: auto !important;
-    aspect-ratio: 1 !important;
+    min-height: 70vh !important;
+    aspect-ratio: 3 / 4.5 !important;
   }
 
   .hero-slide-image {
     object-fit: cover;
     object-position: center top;
-    margin-top: 72px;
-    height: calc(100% - 72px) !important;
+    margin-top: 0 !important;
+    height: 100% !important;
   }
 
   .hero-gradient-overlay {
-    background: linear-gradient(to bottom, rgba(253,252,250,0.7) 0%, rgba(253,252,250,0.3) 15%, transparent 35%);
+    background: linear-gradient(to bottom, rgba(26,20,18,0.55) 0%, rgba(26,20,18,0.15) 20%, transparent 45%);
   }
 }
 
@@ -165,6 +165,17 @@ h1, h2, h3, blockquote {
   justify-content: center;
   gap: 8px;
   padding: 18px 0 0;
+}
+
+@media (max-width: 1023px) {
+  .hero-dots {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    padding: 0;
+  }
 }
 
 .hero-dot {

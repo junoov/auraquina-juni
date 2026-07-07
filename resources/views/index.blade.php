@@ -13,10 +13,39 @@
   </head>
   <body class="min-h-full overflow-x-clip bg-[var(--warm)] text-[var(--text)] antialiased [text-rendering:geometricPrecision]">
     @php
-      $heroImages = collect(range(1, 4))->map(fn ($index) => [
-          'desktop' => asset("images/hero-baru/hero-{$index}-desktop.webp"),
-          'mobile' => asset("images/hero-baru/hero-{$index}-mobile.webp"),
-          'fallback' => asset("images/hero-baru/hero-{$index}.png"),
+      $heroImages = collect([
+          [
+              'desktop' => asset("images/hero-baru/hero-1-desktop.webp"),
+              'mobile' => asset("images/hero-baru/hero-1-mobile.webp"),
+              'fallback' => asset("images/hero-baru/hero-1.png"),
+              'tag' => 'New Collection',
+              'title' => 'The Harmony of Simplicity',
+              'desc' => 'Koleksi modest wear eksklusif yang memadukan keanggunan klasik dengan sentuhan bersahaja.',
+          ],
+          [
+              'desktop' => asset("images/hero-baru/hero-2-desktop.webp"),
+              'mobile' => asset("images/hero-baru/hero-2-mobile.webp"),
+              'fallback' => asset("images/hero-baru/hero-2.png"),
+              'tag' => 'Philosophy',
+              'title' => 'Crafted to Perfection',
+              'desc' => 'Setiap helai kain dipilih untuk kenyamanan maksimal dan penampilan yang abadi.',
+          ],
+          [
+              'desktop' => asset("images/hero-baru/hero-3-desktop.webp"),
+              'mobile' => asset("images/hero-baru/hero-3-mobile.webp"),
+              'fallback' => asset("images/hero-baru/hero-3.png"),
+              'tag' => 'Lookbook',
+              'title' => 'Graceful Movement',
+              'desc' => 'Didesain untuk melengkapi setiap langkahmu dengan kelembutan dan kesopanan.',
+          ],
+          [
+              'desktop' => asset("images/hero-baru/hero-4-desktop.webp"),
+              'mobile' => asset("images/hero-baru/hero-4-mobile.webp"),
+              'fallback' => asset("images/hero-baru/hero-4.png"),
+              'tag' => 'Best Seller',
+              'title' => 'Classic Elegance',
+              'desc' => 'Temukan potongan favorit pelanggan kami yang dirancang untuk kecantikan alami.',
+          ],
       ]);
       $imageVariants = app(\App\Services\ProductImageVariantService::class);
       $productImageUrl = fn (?string $path) => $imageVariants->url($path, 'card');
@@ -143,6 +172,17 @@
                   {{-- Subtle warm tone film overlay --}}
                   <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(180deg, rgba(210,170,120,0.06) 0%, transparent 40%, rgba(130,90,55,0.10) 100%);"></div>
                 @endif
+                {{-- Text Overlay --}}
+                <div class="absolute inset-0 bg-gradient-to-t from-[rgba(26,20,18,0.7)] via-[rgba(26,20,18,0.15)] to-transparent pointer-events-none z-10 lg:hidden"></div>
+                <div class="absolute bottom-14 left-6 right-6 z-20 text-[var(--white)] max-sm:bottom-10 max-sm:left-5 max-sm:right-5 lg:hidden">
+                  <p class="mb-1.5 text-[10px] tracking-[0.25em] uppercase text-[rgba(255,255,255,0.85)] font-bold">{{ $image['tag'] }}</p>
+                  <h2 class="text-[32px] font-medium leading-[1.15] tracking-[-0.02em] font-serif text-[var(--white)] max-sm:text-[26px]">{{ $image['title'] }}</h2>
+                  <p class="mt-2 text-[13px] leading-[1.6] text-[rgba(255,255,255,0.8)] font-light max-w-[420px] max-sm:text-[12px]">{{ $image['desc'] }}</p>
+                  <a href="/shop" class="mt-4 inline-flex items-center gap-2 border-b border-[var(--white)] pb-0.5 text-[12px] font-bold tracking-wide uppercase text-[var(--white)] hover:text-[var(--gold-beige)] hover:border-[var(--gold-beige)] transition duration-200">
+                    Shop Now
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-3.5 w-3.5 stroke-[2]"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  </a>
+                </div>
               </div>
             @endforeach
           </div>
