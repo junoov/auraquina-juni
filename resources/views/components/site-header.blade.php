@@ -27,7 +27,10 @@
       </div>
     </nav>
 
-    <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[28px] lg:text-[32px] leading-none font-medium tracking-[0.03em]" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif;">Auraquina</a>
+    <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 text-[28px] lg:text-[32px] leading-none font-medium tracking-[0.03em]" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif;">
+      <img src="{{ asset('images/logo.png') }}" alt="" class="h-8 lg:h-9 w-auto object-contain" />
+      <span>Auraquina</span>
+    </a>
 
     <div class="ml-3 flex items-center gap-2">
       <button type="button" data-search-trigger aria-label="Search" class="flex h-9 w-9 items-center justify-center rounded-lg transition">
@@ -59,7 +62,10 @@
       </button>
     </div>
     {{-- Center: logo --}}
-    <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[22px] leading-none font-medium tracking-[0.03em] text-[var(--ink)]" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif;">Auraquina</a>
+    <a class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-[22px] leading-none font-medium tracking-[0.03em] text-[var(--ink)]" href="/" aria-label="Auraquina" style="font-family: 'Cormorant Garamond', Georgia, serif;">
+      <img src="{{ asset('images/logo.png') }}" alt="" class="h-6 w-auto object-contain" />
+      <span>Auraquina</span>
+    </a>
     {{-- Right: search + cart --}}
     <div class="flex items-center gap-1" style="width:80px;justify-content:flex-end;">
       <button type="button" data-search-trigger aria-label="Search" class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--ink)] transition">

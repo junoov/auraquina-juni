@@ -1,9 +1,8 @@
 @php
   $socialIcons = [
       ['label' => 'Instagram', 'href' => 'https://www.instagram.com/auraquina/', 'icon' => '<rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><path d="M17 7h.01" />'],
-      ['label' => 'TikTok', 'href' => '#', 'icon' => '<path d="M14 3v11.5a4 4 0 1 1-4-4" /><path d="M14 6a6 6 0 0 0 5 3" />'],
-      ['label' => 'YouTube', 'href' => '#', 'icon' => '<path d="M4 8.5A3 3 0 0 1 7 6h10a3 3 0 0 1 3 2.5 18 18 0 0 1 0 7A3 3 0 0 1 17 18H7a3 3 0 0 1-3-2.5 18 18 0 0 1 0-7Z" /><path d="m10 9 5 3-5 3Z" />'],
-      ['label' => 'Email', 'href' => '#', 'icon' => '<path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" />'],
+      ['label' => 'TikTok', 'href' => 'https://www.tiktok.com/@auraquina_', 'icon' => '<path d="M14 3v11.5a4 4 0 1 1-4-4" /><path d="M14 6a6 6 0 0 0 5 3" />'],
+      ['label' => 'Email', 'href' => 'mailto:auraquina9@gmail.com', 'icon' => '<path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" />'],
   ];
   $payments = [
       [
@@ -40,14 +39,14 @@
       ],
   ];
   $footerLinks1 = [
-      'Shipping Policy' => '/shipping-policy',
-      'Return & Exchange' => '/return-exchange',
-      'FAQ' => '/faq',
+      'Shipping Policy' => '/pages/shipping-policy',
+      'Return & Exchange' => '/pages/return-exchange',
+      'FAQ' => '/pages/faq',
   ];
   $footerLinks2 = [
-      'Size Guide' => '/size-guide',
-      'Privacy Policy' => '/privacy-policy',
-      'Terms & Conditions' => '/terms-conditions',
+      'Size Guide' => '/pages/size-guide',
+      'Privacy Policy' => '/pages/privacy-policy',
+      'Terms & Conditions' => '/pages/terms-conditions',
   ];
   $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-28px)]';
 @endphp

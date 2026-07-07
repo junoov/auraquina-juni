@@ -112,13 +112,15 @@ h1, h2, h3, blockquote {
 
 @media (max-width: 1023px) {
   .hero-frame {
-    min-height: clamp(320px, 80vw, 500px);
-    aspect-ratio: 3 / 4;
+    min-height: auto !important;
+    aspect-ratio: 1 !important;
   }
 
   .hero-slide-image {
     object-fit: cover;
     object-position: center top;
+    margin-top: 72px;
+    height: calc(100% - 72px) !important;
   }
 
   .hero-gradient-overlay {
@@ -417,22 +419,3 @@ h1, h2, h3, blockquote {
   transition: background-color 0.35s ease, backdrop-filter 0.35s ease, box-shadow 0.35s ease, color 0.35s ease;
 }
 
-/* Mobile: transparent header gets solid white on mobile for readability */
-@media (max-width: 1023px) {
-  .site-header--transparent .site-header__inner {
-    background-color: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-/* Mobile: transparent header gets solid white on mobile for readability */
-@media (max-width: 1023px) {
-  .site-header--transparent .site-header__inner {
-    background-color: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
-  }
-}
