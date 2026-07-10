@@ -68,7 +68,7 @@ return [
             'endpoint' => env('R2_ENDPOINT'),
             'bucket' => env('R2_BUCKET'),
             'url' => env('R2_URL'),
-            'use_path_style_endpoint' => false,
+            'use_path_style_endpoint' => true,
             'throw' => false,
             'report' => false,
         ],
