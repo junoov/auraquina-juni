@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Auraquina</title>
     <meta name="description" content="Auraquina" />
-    <link rel="icon" href="{{ asset('images/products/IMG_2737.JPG') }}" />
+    <link rel="icon" href="{{ asset('images/logo.png') }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
@@ -291,7 +291,7 @@
       </div>
       {{-- Newsletter removed --}}
       @include('components.site-footer')
-      <a class="fixed right-[22px] bottom-[18px] z-[90] flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brown)] text-[var(--white)] max-lg:right-3 max-lg:bottom-3" href="https://wa.me/6285942003395" aria-label="WhatsApp">
+    <a class="fixed right-[22px] bottom-[18px] z-[90] flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brown)] text-[var(--white)] max-lg:right-3 max-lg:bottom-3" href="https://wa.me/6287711516373" aria-label="WhatsApp">
         <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12a11.93 11.93 0 0 0 1.64 6.06L0 24l6.16-1.61A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.25-6.2-3.48-8.52zM12 21.8a9.78 9.78 0 0 1-5-1.37l-.36-.21-3.66.96.98-3.57-.23-.37A9.8 9.8 0 1 1 21.8 12 9.8 9.8 0 0 1 12 21.8zm5.36-7.34c-.29-.15-1.74-.86-2-.96s-.46-.15-.66.15-.76.96-.93 1.16-.34.22-.63.07a8.06 8.06 0 0 1-2.36-1.46 8.86 8.86 0 0 1-1.63-2.04c-.17-.29 0-.45.13-.6s.29-.34.43-.5a2 2 0 0 0 .29-.5.55.55 0 0 0 0-.5c-.07-.15-.66-1.6-.91-2.18s-.48-.5-.66-.5h-.57a1.1 1.1 0 0 0-.8.37 3.36 3.36 0 0 0-1.05 2.5 5.83 5.83 0 0 0 1.22 3.1 13.34 13.34 0 0 0 5.13 4.53c.71.31 1.27.5 1.7.64a4.13 4.13 0 0 0 1.88.12 3.07 3.07 0 0 0 2-1.42 2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.56-.34z" />
         </svg>

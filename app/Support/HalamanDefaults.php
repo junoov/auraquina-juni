@@ -14,7 +14,7 @@ class HalamanDefaults
                 'description' => 'Saluran resmi untuk pertanyaan pesanan, ukuran, dan bantuan belanja Auraquina.',
                 'sections' => [
                     ['heading' => 'Kontak Utama', 'body' => [
-                        'WhatsApp admin: 0811-3662-636.',
+                        'WhatsApp admin: +62 877-1151-6373.',
                         'Email: hello@auraquina.com.',
                         'Lokasi operasional: Malang, East Java, Indonesia.',
                     ]],
@@ -153,7 +153,7 @@ class HalamanDefaults
                         'Voucher dapat memiliki batas periode, kuota, minimum transaksi, kategori produk, metode pembayaran, dan ketentuan lain. Voucher yang sudah kedaluwarsa atau tidak memenuhi syarat tidak dapat digunakan.',
                     ]],
                     ['heading' => 'Bagaimana menghubungi admin Auraquina?', 'body' => [
-                        'Anda dapat menghubungi customer care melalui WhatsApp 0811-3662-636 atau email hello@auraquina.com.',
+                        'Anda dapat menghubungi customer care melalui WhatsApp +62 877-1151-6373 atau email hello@auraquina.com.',
                         'Agar pengecekan lebih cepat, sertakan nomor pesanan, nama pemesan, kendala yang dialami, dan bukti pendukung seperti foto, video, atau bukti pembayaran bila relevan.',
                     ]],
                 ],
@@ -258,7 +258,7 @@ class HalamanDefaults
                         'Data pelanggan hanya digunakan dan dibagikan untuk tujuan yang relevan dengan layanan, transaksi, pengiriman, pembayaran, keamanan, komunikasi pelanggan, atau kewajiban hukum yang berlaku.',
                     ]],
                     ['heading' => 'Kontak Privasi', 'body' => [
-                        'Jika Anda memiliki pertanyaan tentang Kebijakan Privasi, penggunaan data, pembayaran, atau riwayat pesanan, silakan hubungi customer care Auraquina melalui WhatsApp 0811-3662-636 atau email hello@auraquina.com.',
+                        'Jika Anda memiliki pertanyaan tentang Kebijakan Privasi, penggunaan data, pembayaran, atau riwayat pesanan, silakan hubungi customer care Auraquina melalui WhatsApp +62 877-1151-6373 atau email hello@auraquina.com.',
                         'Mohon sertakan nama, nomor pesanan jika ada, dan penjelasan permintaan agar tim kami dapat membantu pengecekan dengan lebih tepat.',
                     ]],
                 ],
@@ -344,7 +344,7 @@ class HalamanDefaults
                         'Apabila terjadi perselisihan, Auraquina dan pelanggan akan mengutamakan penyelesaian secara musyawarah melalui kanal customer care resmi sebelum menempuh langkah lain sesuai ketentuan hukum yang berlaku di Indonesia.',
                     ]],
                     ['heading' => 'Pertanyaan, Kontak, dan Masukan', 'body' => [
-                        'Jika Anda memiliki pertanyaan tentang Syarat & Ketentuan, pesanan, pembayaran, pengiriman, retur, atau layanan Auraquina, silakan hubungi customer care melalui WhatsApp 0811-3662-636 atau email hello@auraquina.com.',
+                        'Jika Anda memiliki pertanyaan tentang Syarat & Ketentuan, pesanan, pembayaran, pengiriman, retur, atau layanan Auraquina, silakan hubungi customer care melalui WhatsApp +62 877-1151-6373 atau email hello@auraquina.com.',
                         'Mohon sertakan nomor pesanan, nama pemesan, dan bukti pendukung agar tim Auraquina dapat membantu pengecekan dengan lebih cepat dan akurat.',
                     ]],
                 ],

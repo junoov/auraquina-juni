@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>Login — Auraquina</title>
     <meta name="description" content="Masuk ke akun Auraquina untuk melanjutkan belanja." />
-    <link rel="icon" href="https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1769740142660-Untitled-1_resized128-png.webp" />
+    <link rel="icon" href="{{ asset('images/logo.png') }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />

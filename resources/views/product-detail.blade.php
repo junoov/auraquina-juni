@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Auraquina - Detail Produk</title>
     <meta name="description" content="Detail produk Auraquina" />
-    <link rel="icon" href="https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1769740142660-Untitled-1_resized128-png.webp" />
+    <link rel="icon" href="{{ asset('images/logo.png') }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
@@ -164,7 +164,7 @@
           <div style="border-top:1px solid rgba(211,192,172,0.4);">
             <details open>
               <summary style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;font-size:12px;font-weight:700;cursor:pointer;list-style:none;color:#201916;letter-spacing:0.06em;text-transform:uppercase;">Deskripsi<svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:#71665d;stroke-width:1.5;flex-shrink:0;"><path d="m6 9 6 6 6-6"/></svg></summary>
-              <p style="padding-bottom:20px;font-size:13px;line-height:1.85;color:#71665d;overflow-wrap:anywhere;">{{ $produk->deskripsi }}</p>
+              <p style="padding-bottom:20px;font-size:13px;line-height:1.85;color:#71665d;overflow-wrap:anywhere;text-align:justify;">{{ $produk->deskripsi }}</p>
             </details>
           </div>
         </div>
@@ -257,8 +257,11 @@
               <figure class="related-edit__frame">
                 <img src="{{ $blankImage }}" data-src="{{ $relatedImage }}" @if ($relatedSrcset) data-srcset="{{ $relatedSrcset }}" sizes="(max-width: 640px) 55vw, 220px" @endif alt="{{ $item->nama }}" loading="lazy" decoding="async" />
               </figure>
-              <span class="related-edit__name">{{ $item->nama }}</span>
-              <span class="related-edit__price">{{ $item->hargaFormatted() }}</span>
+              <div class="related-edit__details">
+                <span class="related-edit__category">{{ $item->kategori->nama }}</span>
+                <span class="related-edit__name">{{ $item->nama }}</span>
+                <span class="related-edit__price">{{ $item->hargaFormatted() }}</span>
+              </div>
             </a>
           @endforeach
         </div>
@@ -269,7 +272,7 @@
     @include('components.site-footer')
 
     {{-- WhatsApp FAB --}}
-    <a class="fixed right-[22px] bottom-[18px] z-[90] flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brown)] text-[var(--white)] max-lg:right-3 max-lg:bottom-3" href="https://wa.me/628113662636" aria-label="WhatsApp">
+    <a class="fixed right-[22px] bottom-[18px] z-[90] flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brown)] text-[var(--white)] max-lg:right-3 max-lg:bottom-3" href="https://wa.me/6287711516373" aria-label="WhatsApp">
       <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
         <path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12a11.93 11.93 0 0 0 1.64 6.06L0 24l6.16-1.61A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.25-6.2-3.48-8.52zM12 21.8a9.78 9.78 0 0 1-5-1.37l-.36-.21-3.66.96.98-3.57-.23-.37A9.8 9.8 0 1 1 21.8 12 9.8 9.8 0 0 1 12 21.8zm5.36-7.34c-.29-.15-1.74-.86-2-.96s-.46-.15-.66.15-.76.96-.93 1.16-.34.22-.63.07a8.06 8.06 0 0 1-2.36-1.46 8.86 8.86 0 0 1-1.63-2.04c-.17-.29 0-.45.13-.6s.29-.34.43-.5a2 2 0 0 0 .29-.5.55.55 0 0 0 0-.5c-.07-.15-.66-1.6-.91-2.18s-.48-.5-.66-.5h-.57a1.1 1.1 0 0 0-.8.37 3.36 3.36 0 0 0-1.05 2.5 5.83 5.83 0 0 0 1.22 3.1 13.34 13.34 0 0 0 5.13 4.53c.71.31 1.27.5 1.7.64a4.13 4.13 0 0 0 1.88.12 3.07 3.07 0 0 0 2-1.42 2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.56-.34z"/>
       </svg>
@@ -352,8 +355,8 @@
       }
       .related-edit {
         position: relative;
-        margin: 6px auto 0;
-        padding: clamp(34px, 5vw, 52px) 0 clamp(44px, 6vw, 70px);
+        margin: 40px auto 0;
+        padding: clamp(40px, 6vw, 64px) 0 clamp(48px, 8vw, 80px);
         border-top: 1px solid rgba(211, 192, 172, 0.4);
         overflow: hidden;
       }
@@ -361,84 +364,94 @@
       .related-edit::before {
         content: '';
         position: absolute;
-        top: 31px;
+        top: 0;
         left: 50%;
-        width: min(420px, 72vw);
+        width: 100%;
+        max-width: 1184px;
         height: 1px;
         transform: translateX(-50%);
-        background: linear-gradient(90deg, transparent, rgba(131, 81, 61, 0.34), transparent);
+        background: linear-gradient(90deg, transparent, rgba(131, 81, 61, 0.2), transparent);
       }
 
       .related-edit__intro {
-        max-width: 430px;
-        margin: 0 auto clamp(24px, 3vw, 34px);
+        max-width: 500px;
+        margin: 0 auto 40px;
         text-align: center;
       }
 
       .related-edit__eyebrow {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
         color: #A7745E;
         font-size: 10px;
         font-weight: 700;
-        letter-spacing: 0.2em;
+        letter-spacing: 0.25em;
         line-height: 1;
         text-transform: uppercase;
+        margin-bottom: 8px;
       }
 
       .related-edit__eyebrow::before,
       .related-edit__eyebrow::after {
         content: '';
-        width: 22px;
+        width: 18px;
         height: 1px;
         background: currentColor;
-        opacity: 0.45;
+        opacity: 0.35;
       }
 
       .related-edit h2 {
-        margin: 8px 0 7px;
+        margin: 8px 0 10px;
         color: #201916;
-        font-family: 'Plus Jakarta Sans',system-ui,sans-serif;
-        font-size: clamp(27px, 3vw, 34px);
-        font-weight: 500;
-        letter-spacing: -0.025em;
-        line-height: 1.05;
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        font-size: clamp(28px, 4vw, 36px);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
       }
 
       .related-edit__intro p {
         margin: 0;
         color: #8C7E74;
-        font-size: 12px;
-        line-height: 1.8;
+        font-size: 13px;
+        line-height: 1.7;
       }
 
       .related-edit__rail {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 178px));
+        grid-template-columns: repeat(4, 1fr);
         justify-content: center;
-        align-items: start;
-        gap: clamp(16px, 2.2vw, 30px);
+        align-items: stretch;
+        gap: 24px;
       }
 
       .related-edit__item {
         color: #201916;
-        text-align: center;
         text-decoration: none;
+        background: #FFFFFF;
+        border: 1px solid rgba(211, 192, 172, 0.25);
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+        box-shadow: 0 4px 20px rgba(131, 81, 61, 0.02);
       }
 
-      .related-edit__item:nth-child(even) {
-        margin-top: 24px;
+      .related-edit__item:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 38px rgba(131, 81, 61, 0.08);
+        border-color: rgba(131, 81, 61, 0.25);
       }
 
       .related-edit__frame {
         position: relative;
-        aspect-ratio: 0.72;
-        margin: 0 0 13px;
+        aspect-ratio: 3/4;
+        margin: 0 0 14px;
         overflow: hidden;
         background: #F5F0EA;
-        border-radius: 999px 999px 36px 36px;
-        box-shadow: 0 18px 42px rgba(131, 81, 61, 0.11);
+        border-radius: 8px;
         transform: translateZ(0);
       }
 
@@ -446,7 +459,7 @@
         content: '';
         position: absolute;
         inset: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.64);
+        border: 1px solid rgba(255, 255, 255, 0.4);
         border-radius: inherit;
         pointer-events: none;
       }
@@ -456,37 +469,56 @@
         height: 100%;
         object-fit: cover;
         display: block;
-        transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+        transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .related-edit__item:hover .related-edit__frame img,
-      .related-edit__item:focus-visible .related-edit__frame img {
-        transform: scale(1.045);
+      .related-edit__item:hover .related-edit__frame img {
+        transform: scale(1.05);
       }
 
-      .related-edit__item:focus-visible {
-        outline: 2px solid #83513D;
-        outline-offset: 6px;
-        border-radius: 18px;
+      .related-edit__details {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        text-align: left;
+        padding: 4px 4px 8px;
+      }
+
+      .related-edit__category {
+        display: block;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #A7745E;
+        margin-bottom: 6px;
       }
 
       .related-edit__name {
         display: -webkit-box;
-        min-height: 35px;
+        min-height: 36px;
+        max-height: 36px;
         overflow: hidden;
-        color: #2B211D;
-        font-size: 12px;
-        line-height: 1.45;
+        color: #201916;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.4;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
+        margin-bottom: 8px;
+        transition: color 0.2s ease;
+      }
+
+      .related-edit__item:hover .related-edit__name {
+        color: #83513D;
       }
 
       .related-edit__price {
         display: block;
-        margin-top: 5px;
         color: #83513D;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 700;
+        margin-top: auto;
       }
 
       .product-info [data-color-options] {
@@ -652,12 +684,9 @@
           display: none;
         }
         .related-edit__item {
-          min-width: 38vw;
-          max-width: 38vw;
+          min-width: 60vw;
+          max-width: 60vw;
           scroll-snap-align: start;
-        }
-        .related-edit__item:nth-child(even) {
-          margin-top: 18px;
         }
       }
       .product-action-buttons {

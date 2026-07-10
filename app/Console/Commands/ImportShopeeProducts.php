@@ -315,10 +315,12 @@ class ImportShopeeProducts extends Command
         Kategori::query()->update(['aktif' => false]);
 
         foreach ([
-            ['nama' => 'Abaya', 'slug' => 'abaya', 'urutan' => 1],
-            ['nama' => 'Khimar', 'slug' => 'khimar', 'urutan' => 2],
-            ['nama' => 'One Set', 'slug' => 'one-set', 'urutan' => 3],
-            ['nama' => 'Aksesoris', 'slug' => 'aksesoris', 'urutan' => 4],
+            ['nama' => 'Gamis / Dress', 'slug' => 'abaya', 'urutan' => 1],
+            ['nama' => 'One Set / Setelan', 'slug' => 'one-set', 'urutan' => 2],
+            ['nama' => 'Daster / Homedress', 'slug' => 'daster', 'urutan' => 3],
+            ['nama' => 'Hijab / Khimar', 'slug' => 'khimar', 'urutan' => 4],
+            ['nama' => 'Mukena', 'slug' => 'mukena', 'urutan' => 5],
+            ['nama' => 'Aksesoris', 'slug' => 'aksesoris', 'urutan' => 6],
         ] as $data) {
             Kategori::query()->updateOrCreate(
                 ['slug' => $data['slug']],
@@ -332,27 +334,39 @@ class ImportShopeeProducts extends Command
         $nameHaystack = strtolower($nama);
         $sourceHaystack = strtolower(implode(' ', $sourceCategories));
 
+        if (preg_match('/daster/i', $nameHaystack)) {
+            return ['slug' => 'daster', 'nama' => 'Daster / Homedress', 'urutan' => 3];
+        }
+        if (preg_match('/mukena/i', $nameHaystack)) {
+            return ['slug' => 'mukena', 'nama' => 'Mukena', 'urutan' => 5];
+        }
         if (preg_match('/gamis|dress|abaya/i', $nameHaystack)) {
-            return ['slug' => 'abaya', 'nama' => 'Abaya', 'urutan' => 1];
+            return ['slug' => 'abaya', 'nama' => 'Gamis / Dress', 'urutan' => 1];
         }
         if (preg_match('/khimar|hijab|bergo|pashmina/i', $nameHaystack)) {
-            return ['slug' => 'khimar', 'nama' => 'Khimar', 'urutan' => 2];
+            return ['slug' => 'khimar', 'nama' => 'Hijab / Khimar', 'urutan' => 4];
         }
         if (preg_match('/set|setelan|oneset|one\s*set/i', $nameHaystack)) {
-            return ['slug' => 'one-set', 'nama' => 'One Set', 'urutan' => 3];
+            return ['slug' => 'one-set', 'nama' => 'One Set / Setelan', 'urutan' => 2];
         }
 
+        if (preg_match('/daster/i', $sourceHaystack)) {
+            return ['slug' => 'daster', 'nama' => 'Daster / Homedress', 'urutan' => 3];
+        }
+        if (preg_match('/mukena/i', $sourceHaystack)) {
+            return ['slug' => 'mukena', 'nama' => 'Mukena', 'urutan' => 5];
+        }
         if (preg_match('/gamis|dress|abaya/i', $sourceHaystack)) {
-            return ['slug' => 'abaya', 'nama' => 'Abaya', 'urutan' => 1];
+            return ['slug' => 'abaya', 'nama' => 'Gamis / Dress', 'urutan' => 1];
         }
         if (preg_match('/khimar|hijab|bergo|pashmina/i', $sourceHaystack)) {
-            return ['slug' => 'khimar', 'nama' => 'Khimar', 'urutan' => 2];
+            return ['slug' => 'khimar', 'nama' => 'Hijab / Khimar', 'urutan' => 4];
         }
         if (preg_match('/set|setelan|oneset|one\s*set/i', $sourceHaystack)) {
-            return ['slug' => 'one-set', 'nama' => 'One Set', 'urutan' => 3];
+            return ['slug' => 'one-set', 'nama' => 'One Set / Setelan', 'urutan' => 2];
         }
 
-        return ['slug' => 'aksesoris', 'nama' => 'Aksesoris', 'urutan' => 4];
+        return ['slug' => 'aksesoris', 'nama' => 'Aksesoris', 'urutan' => 6];
     }
 
     private function getKategoriId(string $slug, ?string $name = null, int $urutan = 99): int

@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>Lacak Pesanan - Auraquina</title>
     <meta name="description" content="Lacak status pesanan Auraquina dengan nomor pesanan dan email atau nomor HP." />
-    <link rel="icon" href="https://d2kchovjbwl1tk.cloudfront.net/vendors/292/assets/image/1769740142660-Untitled-1_resized128-png.webp" />
+    <link rel="icon" href="{{ asset('images/logo.png') }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet" />
