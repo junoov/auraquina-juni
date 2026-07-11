@@ -57,7 +57,7 @@
         {{-- Page title + sort (desktop) --}}
         <div class="mb-7 flex items-center justify-between gap-4 max-sm:hidden">
           <h1 class="text-[20px] leading-[1.2] font-bold text-[var(--ink)]">{{ empty($searchTerm) ? 'All Products' : 'Search Results' }}</h1>
-          <select name="sort" form="shop-filter-form" onchange="document.getElementById('shop-filter-form').submit()" class="h-9 rounded-lg border border-[var(--border)] bg-[var(--white)] px-3 text-[12px] font-bold text-[var(--ink)] outline-none transition focus:border-[var(--brown)]">
+          <select name="sort" form="shop-filter-form" class="h-9 rounded-lg border border-[var(--border)] bg-[var(--white)] px-3 text-[12px] font-bold text-[var(--ink)] outline-none transition focus:border-[var(--brown)]">
             @foreach ($sortOptions as $value => $label)
               <option value="{{ $value }}" {{ $selectedSort === $value ? 'selected' : '' }}>sort : {{ $label }}</option>
             @endforeach
@@ -157,7 +157,16 @@
               @endif
             <div class="space-y-6">
               @foreach ($filters as $title => $items)
-                <details class="border-b border-[var(--border)] pb-5" {{ $loop->first ? 'open' : '' }}>
+                @php
+                  $isOpen = $loop->first || match ($title) {
+                      'Kategori' => ! empty($category),
+                      'Ukuran' => $selectedSizes->isNotEmpty(),
+                      'Warna' => $selectedColors->isNotEmpty(),
+                      'Harga' => $selectedPrices->isNotEmpty(),
+                      default => false,
+                  };
+                @endphp
+                <details id="filter-details-{{ Str::slug($title) }}" class="border-b border-[var(--border)] pb-5" {{ $isOpen ? 'open' : '' }}>
                   <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-[var(--ink)]">
                     {{ $title }}
                     <svg viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-[var(--muted)] stroke-[1.8]"><path d="m6 9 6 6 6-6" /></svg>
@@ -174,7 +183,7 @@
                         };
                       @endphp
                       <label class="flex cursor-pointer items-center gap-3 text-[13px] text-[var(--muted)] transition hover:text-[var(--ink)]">
-                        <input type="{{ $title === 'Kategori' ? 'radio' : 'checkbox' }}" name="{{ $inputName }}" value="{{ $item['value'] }}" data-filter-group="{{ Str::slug($title) }}" class="h-4 w-4 rounded border-[var(--border)] accent-[var(--brown)]" {{ $isChecked ? 'checked' : '' }} onchange="document.getElementById('shop-filter-form').submit()" />
+                        <input type="{{ $title === 'Kategori' ? 'radio' : 'checkbox' }}" name="{{ $inputName }}" value="{{ $item['value'] }}" data-filter-group="{{ Str::slug($title) }}" class="h-4 w-4 rounded border-[var(--border)] accent-[var(--brown)]" {{ $isChecked ? 'checked' : '' }} />
                         {{ $item['label'] }}
                       </label>
                     @endforeach
@@ -266,6 +275,22 @@
     </a>
 
     <script>
+      // Restore & save filter details open/close state
+      document.querySelectorAll('details[id^="filter-details-"]').forEach(details => {
+        const id = details.id;
+        const savedState = sessionStorage.getItem(id);
+        if (savedState !== null) {
+          if (savedState === 'true') {
+            details.setAttribute('open', '');
+          } else {
+            details.removeAttribute('open');
+          }
+        }
+        details.addEventListener('toggle', () => {
+          sessionStorage.setItem(id, details.open ? 'true' : 'false');
+        });
+      });
+
       // Bottom sheet logic
       function initSheet(btnId, sheetId, backdropId, panelId, closeId, applyId) {
         const btn = document.getElementById(btnId);
@@ -304,7 +329,7 @@
       initSheet('mobile-filter-btn', 'filter-sheet', 'filter-backdrop', 'filter-panel', 'filter-close', 'filter-apply');
       initSheet('mobile-sort-btn', 'sort-sheet', 'sort-backdrop', 'sort-panel', 'sort-close', 'sort-apply');
 
-      const productCards = Array.from(document.querySelectorAll('[data-product-card]'));
+      let productCards = Array.from(document.querySelectorAll('[data-product-card]'));
       const emptyFilter = document.getElementById('product-empty-filter');
       const productPagination = document.getElementById('product-pagination');
       const itemsPerPage = 24;
@@ -317,14 +342,6 @@
 
       function selectedFilters(group) {
         return Array.from(document.querySelectorAll(`[data-filter-group="${group}"]:checked`)).map((input) => input.value);
-      }
-
-      function matchesPrice(price, ranges) {
-        return ranges.length === 0 || ranges.some((range) => {
-          if (range === 'under_300') return price < 300000;
-          if (range === 'over_500') return price > 500000;
-          return price >= 300000 && price <= 500000;
-        });
       }
 
       function submitMobileFilters() {
@@ -342,7 +359,8 @@
         const sort = document.querySelector('#sort-sheet input[name="sort"]:checked')?.value;
         if (sort && sort !== 'featured') params.set('sort', sort);
 
-        window.location.href = `/shop${params.toString() ? `?${params.toString()}` : ''}`;
+        const newUrl = `/shop${params.toString() ? `?${params.toString()}` : ''}`;
+        loadProductsAjax(newUrl);
       }
 
       function buttonClass(active = false) {
@@ -398,34 +416,93 @@
         renderPagination();
       }
 
-      function applyProductFilters() {
-        const categories = selectedFilters('kategori').filter((value) => value !== '');
-        const sizes = selectedFilters('ukuran');
-        const colors = selectedFilters('warna');
-        const prices = selectedFilters('harga');
+      function loadProductsAjax(url) {
+        const gridContainer = document.getElementById('product-grid');
+        const paginationContainer = document.getElementById('product-pagination');
+        const emptyFilterContainer = document.getElementById('product-empty-filter');
 
-        filteredCards = productCards.filter((card) => {
-          const cardSizes = card.dataset.sizes.split(',').filter(Boolean);
-          const cardColors = card.dataset.colors.split(',').filter(Boolean);
-          return (
-            (categories.length === 0 || categories.includes(card.dataset.category) || categories.includes(card.dataset.categorySlug)) &&
-            (sizes.length === 0 || sizes.some((size) => cardSizes.includes(size))) &&
-            (colors.length === 0 || colors.some((color) => cardColors.includes(color))) &&
-            matchesPrice(Number(card.dataset.price), prices)
-          );
+        if (gridContainer) {
+          gridContainer.style.opacity = '0.3';
+          gridContainer.style.transition = 'opacity 0.15s ease';
+        }
+
+        fetch(url, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+
+          const newGrid = doc.getElementById('product-grid');
+          if (newGrid && gridContainer) {
+            gridContainer.innerHTML = newGrid.innerHTML;
+          }
+
+          const newPagination = doc.getElementById('product-pagination');
+          if (newPagination && paginationContainer) {
+            paginationContainer.innerHTML = newPagination.innerHTML;
+            paginationContainer.className = newPagination.className;
+          }
+
+          const newEmpty = doc.getElementById('product-empty-filter');
+          if (newEmpty && emptyFilterContainer) {
+            emptyFilterContainer.innerHTML = newEmpty.innerHTML;
+            emptyFilterContainer.className = newEmpty.className;
+          }
+
+          window.history.pushState(null, '', url);
+
+          productCards = Array.from(document.querySelectorAll('[data-product-card]'));
+          filteredCards = productCards;
+          currentPage = 0;
+          renderPagination();
+          goToPage(0);
+
+          if (gridContainer) {
+            gridContainer.style.opacity = '1';
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          window.location.href = url;
         });
-
-        emptyFilter?.classList.toggle('hidden', productCards.length === 0 || filteredCards.length !== 0);
-        goToPage(0);
       }
 
-      applyProductFilters();
+      function submitFiltersAjax() {
+        const form = document.getElementById('shop-filter-form');
+        if (!form) return;
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
 
-      document.querySelectorAll('[data-filter-group]').forEach((input) => {
-        input.addEventListener('change', applyProductFilters);
+        for (const [key, value] of formData.entries()) {
+          if (value !== '') {
+            params.append(key, value);
+          }
+        }
+
+        const search = @json($searchTerm ?? '');
+        if (search) params.set('search', search);
+
+        const sortSelect = document.querySelector('select[name="sort"]');
+        if (sortSelect && sortSelect.value && sortSelect.value !== 'featured') {
+          params.set('sort', sortSelect.value);
+        }
+
+        const newUrl = `/shop${params.toString() ? `?${params.toString()}` : ''}`;
+        loadProductsAjax(newUrl);
+      }
+
+      // Initialize page
+      goToPage(0);
+
+      // Listen for filter changes
+      document.querySelectorAll('#shop-filter-form input, select[name="sort"]').forEach((el) => {
+        el.addEventListener('change', submitFiltersAjax);
       });
 
-      document.getElementById('filter-apply')?.addEventListener('click', applyProductFilters);
       document.getElementById('filter-apply')?.addEventListener('click', submitMobileFilters);
       document.getElementById('sort-apply')?.addEventListener('click', submitMobileFilters);
     </script>
