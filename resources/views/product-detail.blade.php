@@ -164,7 +164,7 @@
           <div style="border-top:1px solid rgba(211,192,172,0.4);">
             <details open>
               <summary style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;font-size:12px;font-weight:700;cursor:pointer;list-style:none;color:#201916;letter-spacing:0.06em;text-transform:uppercase;">Deskripsi<svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:#71665d;stroke-width:1.5;flex-shrink:0;"><path d="m6 9 6 6 6-6"/></svg></summary>
-              <p style="padding-bottom:20px;font-size:13px;line-height:1.85;color:#71665d;overflow-wrap:anywhere;text-align:justify;">{{ $produk->deskripsi }}</p>
+              <p style="padding-bottom:20px;font-size:13px;line-height:1.85;color:#71665d;overflow-wrap:anywhere;text-align:justify;white-space:pre-line;">{{ $produk->deskripsi }}</p>
             </details>
           </div>
         </div>
@@ -589,7 +589,7 @@
 
       @media (max-width: 1023px) {
         main {
-          padding: 86px 16px 0 !important;
+          padding: 0 16px 0 !important;
         }
         #product-grid {
           display: flex !important;
@@ -603,6 +603,8 @@
         .product-mobile-gallery {
           position: relative;
           background: #F5F0EA;
+          margin-left: -16px;
+          margin-right: -16px;
         }
         #mobile-gallery {
           background: #F5F0EA;
