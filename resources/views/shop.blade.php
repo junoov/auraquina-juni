@@ -36,7 +36,7 @@
         'name_asc' => 'Nama A-Z',
       ];
 
-      $containerClass = 'mx-auto w-full max-w-[1184px] px-4 max-sm:px-3';
+      $containerClass = 'mx-auto w-full max-w-[1440px] px-12 max-lg:px-8 max-sm:px-3';
       $imageVariants = app(\App\Services\ProductImageVariantService::class);
       $productImageUrl = fn (?string $path, string $variant = 'card') => $imageVariants->url($path, $variant);
       $productImageSrcset = fn (?string $path) => $imageVariants->srcset($path, ['card' => 600, 'detail' => 1200]);
@@ -44,8 +44,8 @@
 
     @include('components.site-header', ['kategoris' => $kategoris, 'backHref' => '/'])
 
-    <main class="pt-[86px] max-lg:pt-[72px]">
-      <section class="{{ $containerClass }} py-8 max-sm:py-5">
+    <main class="">
+      <section class="{{ $containerClass }} pt-4 pb-8 max-sm:pt-3 max-sm:pb-5">
 
         @if (! empty($searchTerm))
           <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[8px] border border-[var(--border)] bg-[var(--white)] px-4 py-3 text-[13px] text-[var(--muted)]">
@@ -233,7 +233,7 @@
                   <a class="group block text-[var(--ink)]" href="/shop/{{ $produk->slug }}" data-product-card data-category="{{ $produk->kategori->nama }}" data-category-slug="{{ $produk->kategori->slug }}" data-price="{{ $produk->harga }}" data-sizes="{{ $produk->varians->pluck('ukuran')->unique()->implode(',') }}" data-colors="{{ $produk->varians->pluck('warna')->unique()->implode(',') }}">
                     <span class="block overflow-hidden rounded-[4px] bg-[var(--sand)]" style="aspect-ratio:3/4;">
                       @if ($cardImage !== '')
-                        <img src="{{ $cardImage }}" @if ($cardSrcset) srcset="{{ $cardSrcset }}" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 310px" @endif alt="{{ $produk->nama }}" loading="{{ $index < 3 ? 'eager' : 'lazy' }}" fetchpriority="{{ $index < 3 ? 'high' : 'auto' }}" decoding="async" width="480" height="640" class="h-full w-full rounded-[4px] object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.01]" />
+                        <img src="{{ $cardImage }}" @if ($cardSrcset) srcset="{{ $cardSrcset }}" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 400px" @endif alt="{{ $produk->nama }}" loading="{{ $index < 3 ? 'eager' : 'lazy' }}" fetchpriority="{{ $index < 3 ? 'high' : 'auto' }}" decoding="async" width="480" height="640" class="h-full w-full rounded-[4px] object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.01]" />
                       @else
                         <span class="flex h-full w-full items-center justify-center px-4 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--brown)]">Foto segera hadir</span>
                       @endif
