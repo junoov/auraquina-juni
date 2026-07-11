@@ -168,7 +168,7 @@ class ProdukForm
                             ->icon(Heroicon::OutlinedCog6Tooth)
                             ->schema([
                                 Section::make('Detail Produk')
-                                    ->description('Informasi tambahan seperti bahan, perawatan, dan info model.')
+                                    ->description('Informasi tambahan seperti bahan dan label.')
                                     ->columns(2)
                                     ->schema([
                                         TextInput::make('bahan')
@@ -185,16 +185,6 @@ class ProdukForm
                                                 'preorder' => '📦 Pra-pesan',
                                             ])
                                             ->nullable(),
-                                        Textarea::make('perawatan')
-                                            ->label('Petunjuk Perawatan')
-                                            ->placeholder('Contoh: Cuci dengan tangan, jangan gunakan pemutih.')
-                                            ->rows(3)
-                                            ->columnSpanFull(),
-                                        Textarea::make('info_model')
-                                            ->label('Info Model')
-                                            ->placeholder('Contoh: Tinggi 170cm, BB 55kg, pakai All Size')
-                                            ->rows(3)
-                                            ->columnSpanFull(),
                                     ]),
 
                                 Section::make('Status & Tampilan')

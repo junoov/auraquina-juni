@@ -1222,6 +1222,7 @@
 
       // Mobile gallery dots - scroll based
       if (gallery) {
+        hydrateDeferredImages(gallery);
         let touchStartX = 0;
         let touchStartY = 0;
 
