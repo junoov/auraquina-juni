@@ -121,7 +121,7 @@
                 <button type="button" onclick="selectSize(this,'{{ $size }}')" style="min-width:64px;height:40px;padding:0 16px;border:1.5px solid {{ $i === 0 ? '#201916' : 'rgba(211,192,172,0.58)' }};background:{{ $i === 0 ? '#FFFFFF' : '#FFFFFF' }};color:#201916;font-size:13px;font-weight:{{ $i === 0 ? '700' : '400' }};cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">{{ $size }}</button>
               @endforeach
             </div>
-            <a href="#" style="display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;color:#83513D;text-decoration:none;">Tabel Ukuran <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;"><path d="M9 6l6 6-6 6"/></svg></a>
+            <button type="button" onclick="openSizeChartModal()" style="display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;color:#83513D;text-decoration:none;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Tabel Ukuran <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;"><path d="M9 6l6 6-6 6"/></svg></button>
           </div>
 
           {{-- Color --}}
@@ -1292,6 +1292,418 @@
         zoomContainer.addEventListener('mouseleave', resetZoom);
         zoomContainer.addEventListener('dragstart', (e) => e.preventDefault());
       }
+
+      window.addEventListener('pageshow', () => {
+        const buyBtn = document.querySelector('.action-btn-solid');
+        if (buyBtn) {
+          buyBtn.textContent = 'Buy It Now';
+          buyBtn.disabled = false;
+          buyBtn.style.opacity = '';
+        }
+        const cartBtn = document.querySelector('.action-btn-outline');
+        if (cartBtn) {
+          cartBtn.textContent = 'Add to Cart';
+          cartBtn.disabled = false;
+          cartBtn.style.opacity = '';
+        }
+      });
+
+      function openSizeChartModal() {
+        const modal = document.getElementById('size-chart-modal');
+        if (modal) {
+          modal.style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+        }
+      }
+
+      function closeSizeChartModal() {
+        const modal = document.getElementById('size-chart-modal');
+        if (modal) {
+          modal.style.display = 'none';
+          document.body.style.overflow = '';
+        }
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeSizeChartModal();
+        }
+      });
     </script>
+
+    <!-- Size Chart Modal -->
+    <div id="size-chart-modal" style="display:none; position:fixed; inset:0; z-index:99999; align-items:center; justify-content:center; padding:16px;">
+      <!-- Backdrop -->
+      <div onclick="closeSizeChartModal()" style="position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(2px); transition:opacity 0.25s ease;"></div>
+      <!-- Modal Content Card -->
+      <div style="position:relative; background:#FFFFFF; width:100%; max-width:550px; border-radius:12px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow:hidden; display:flex; flex-direction:column; animation:modalFadeIn 0.25s ease-out; font-family:'Plus Jakarta Sans',system-ui,sans-serif; border:1px solid rgba(211,192,172,0.4);">
+        
+        <!-- Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid rgba(211,192,172,0.3); background:#FCF8F3;">
+          <h3 style="font-size:16px; font-weight:700; color:#201916; margin:0;">Panduan & Tabel Ukuran</h3>
+          <button type="button" onclick="closeSizeChartModal()" style="background:none; border:none; padding:4px; cursor:pointer; color:#71665d; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.color='#201916'" onmouseout="this.style.color='#71665d'">
+            <svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:20px; overflow-y:auto; max-height:calc(90vh - 100px); display:flex; flex-direction:column; gap:20px;">
+          @php
+            $categorySlug = $produk->kategori->slug ?? 'default';
+
+            $sizeChartTemplates = [
+                'abaya' => [
+                    'S' => ['ld' => '96 cm', 'pb' => '135 cm', 'pl' => '56 cm'],
+                    'M' => ['ld' => '100 cm', 'pb' => '138 cm', 'pl' => '57 cm'],
+                    'L' => ['ld' => '104 cm', 'pb' => '140 cm', 'pl' => '58 cm'],
+                    'XL' => ['ld' => '110 cm', 'pb' => '142 cm', 'pl' => '59 cm'],
+                    'XXL' => ['ld' => '120 cm', 'pb' => '142 cm', 'pl' => '60 cm'],
+                    'All Size' => ['ld' => '104 cm', 'pb' => '138 cm', 'pl' => '58 cm'],
+                ],
+                'one-set' => [
+                    'S' => ['ld' => '96 cm', 'pb' => '65 cm', 'pc' => '92 cm'],
+                    'M' => ['ld' => '100 cm', 'pb' => '68 cm', 'pc' => '94 cm'],
+                    'L' => ['ld' => '104 cm', 'pb' => '70 cm', 'pc' => '96 cm'],
+                    'XL' => ['ld' => '110 cm', 'pb' => '72 cm', 'pc' => '98 cm'],
+                    'XXL' => ['ld' => '120 cm', 'pb' => '74 cm', 'pc' => '100 cm'],
+                    'All Size' => ['ld' => '104 cm', 'pb' => '70 cm', 'pc' => '96 cm'],
+                ],
+                'daster' => [
+                    'S' => ['ld' => '100 cm', 'pb' => '110 cm'],
+                    'M' => ['ld' => '105 cm', 'pb' => '112 cm'],
+                    'L' => ['ld' => '110 cm', 'pb' => '115 cm'],
+                    'XL' => ['ld' => '120 cm', 'pb' => '118 cm'],
+                    'XXL' => ['ld' => '130 cm', 'pb' => '120 cm'],
+                    'All Size' => ['ld' => '110 cm', 'pb' => '115 cm'],
+                ],
+                'khimar' => [
+                    'M' => ['pd' => '75 cm', 'pb' => '90 cm', 'lm' => '52 cm'],
+                    'L' => ['pd' => '85 cm', 'pb' => '105 cm', 'lm' => '54 cm'],
+                    'XL' => ['pd' => '95 cm', 'pb' => '115 cm', 'lm' => '56 cm'],
+                    'All Size' => ['pd' => '85 cm', 'pb' => '105 cm', 'lm' => '54 cm'],
+                ],
+                'mukena' => [
+                    'Dewasa Standar' => ['pda' => '115 cm', 'pba' => '125 cm', 'pr' => '115 cm'],
+                    'Dewasa Jumbo' => ['pda' => '125 cm', 'pba' => '135 cm', 'pr' => '120 cm'],
+                    'Standard' => ['pda' => '115 cm', 'pba' => '125 cm', 'pr' => '115 cm'],
+                    'Jumbo' => ['pda' => '125 cm', 'pba' => '135 cm', 'pr' => '120 cm'],
+                    'All Size' => ['pda' => '120 cm', 'pba' => '130 cm', 'pr' => '117 cm'],
+                ]
+            ];
+
+            $currentTemplate = $sizeChartTemplates[$categorySlug] ?? [];
+          @endphp
+
+          @if ($categorySlug === 'abaya')
+            <!-- Sizing Diagram Gamis / Dress (Inline SVG) -->
+            <div style="display:flex; justify-content:center; align-items:center; gap:20px; padding:12px; background:#FAFAFA; border-radius:8px; border:1px dashed rgba(211,192,172,0.6);">
+              <svg width="100" height="100" viewBox="0 0 120 120" style="flex-shrink:0;">
+                <!-- Dress Silhouette -->
+                <path d="M45 15 C52 20, 68 20, 75 15 L95 25 L88 38 L80 34 L80 110 L40 110 L40 34 L32 38 L25 25 Z" fill="#F2EAE1" stroke="#83513D" stroke-width="2" stroke-linejoin="round"/>
+                <!-- Line Lingkar Dada -->
+                <line x1="42" y1="45" x2="78" y2="45" stroke="#D27C2C" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polygon points="42,45 47,42 47,48" fill="#D27C2C"/>
+                <polygon points="78,45 73,42 73,48" fill="#D27C2C"/>
+                <!-- Line Panjang -->
+                <line x1="60" y1="20" x2="60" y2="105" stroke="#4A6B82" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polygon points="60,20 57,25 63,25" fill="#4A6B82"/>
+                <polygon points="60,105 57,100 63,100" fill="#4A6B82"/>
+                <!-- Texts -->
+                <text x="60" y="42" font-size="7" font-weight="700" fill="#D27C2C" text-anchor="middle">Lingkar Dada</text>
+                <text x="66" y="80" font-size="7" font-weight="700" fill="#4A6B82" text-anchor="start">Panjang</text>
+              </svg>
+              <div style="font-size:12px; color:#554c44; line-height:1.6;">
+                <p style="margin:0 0 6px 0;"><strong style="color:#D27C2C;">■ Lingkar Dada (LD):</strong> Lingkar sekeliling dada di bawah ketiak.</p>
+                <p style="margin:0;"><strong style="color:#4A6B82;">■ Panjang Gamis (PB):</strong> Diukur vertikal dari pundak sampai ujung bawah gamis.</p>
+              </div>
+            </div>
+
+            <!-- Sizing Table Gamis -->
+            <table style="width:100%; border-collapse:collapse; text-align:center; font-size:13px; border-radius:6px; overflow:hidden;">
+              <thead>
+                <tr style="background:#83513D; color:#FFFFFF;">
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Ukuran</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Lingkar Dada (LD)</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Panjang Badan (PB)</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Panjang Lengan</th>
+                </tr>
+              </thead>
+              <tbody style="color:#201916;">
+                @foreach ($sizes as $size)
+                  @php
+                    $row = $currentTemplate[$size] ?? ['ld' => '-', 'pb' => '-', 'pl' => '-'];
+                  @endphp
+                  <tr style="background: {{ $loop->even ? '#FAFAFA' : '#FFFFFF' }};">
+                    <td style="padding:10px; font-weight:700; border:1px solid rgba(211,192,172,0.4); background:#FCF8F3;">{{ $size }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['ld'] }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['pb'] }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['pl'] }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+
+          @elseif ($categorySlug === 'one-set')
+            <!-- Sizing Diagram One Set (Inline SVG) -->
+            <div style="display:flex; justify-content:center; align-items:center; gap:20px; padding:12px; background:#FAFAFA; border-radius:8px; border:1px dashed rgba(211,192,172,0.6);">
+              <svg width="100" height="100" viewBox="0 0 120 120" style="flex-shrink:0;">
+                <!-- Shirt Top -->
+                <path d="M40 10 C46 15, 64 15, 70 10 L86 20 L80 32 L73 29 L73 60 L37 60 L37 29 L30 32 L24 20 Z" fill="#F2EAE1" stroke="#83513D" stroke-width="1.5" stroke-linejoin="round"/>
+                <!-- Pants Bottom -->
+                <path d="M42 65 L68 65 L72 110 L57 110 L55 85 L53 85 L51 110 L36 110 Z" fill="#F2EAE1" stroke="#83513D" stroke-width="1.5" stroke-linejoin="round"/>
+                <!-- Line LD -->
+                <line x1="39" y1="35" x2="69" y2="35" stroke="#D27C2C" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polygon points="39,35 43,32 43,38" fill="#D27C2C"/>
+                <polygon points="69,35 65,32 65,38" fill="#D27C2C"/>
+                <!-- Line PJ Celana -->
+                <line x1="80" y1="65" x2="80" y2="110" stroke="#4A6B82" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polygon points="80,65 77,70 83,70" fill="#4A6B82"/>
+                <polygon points="80,110 77,105 83,105" fill="#4A6B82"/>
+                <!-- Texts -->
+                <text x="54" y="32" font-size="7" font-weight="700" fill="#D27C2C" text-anchor="middle">LD</text>
+                <text x="85" y="90" font-size="7" font-weight="700" fill="#4A6B82" text-anchor="start">Celana</text>
+              </svg>
+              <div style="font-size:12px; color:#554c44; line-height:1.6;">
+                <p style="margin:0 0 6px 0;"><strong style="color:#D27C2C;">■ Lingkar Dada (LD):</strong> Lingkar sekeliling dada baju atasan.</p>
+                <p style="margin:0;"><strong style="color:#4A6B82;">■ Panjang Celana (PC):</strong> Diukur dari pinggang karet sampai ujung celana.</p>
+              </div>
+            </div>
+
+            <!-- Sizing Table One Set -->
+            <table style="width:100%; border-collapse:collapse; text-align:center; font-size:13px; border-radius:6px; overflow:hidden;">
+              <thead>
+                <tr style="background:#83513D; color:#FFFFFF;">
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Ukuran</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Lingkar Dada (LD)</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Panjang Baju</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Panjang Celana</th>
+                </tr>
+              </thead>
+              <tbody style="color:#201916;">
+                @foreach ($sizes as $size)
+                  @php
+                    $row = $currentTemplate[$size] ?? ['ld' => '-', 'pb' => '-', 'pc' => '-'];
+                  @endphp
+                  <tr style="background: {{ $loop->even ? '#FAFAFA' : '#FFFFFF' }};">
+                    <td style="padding:10px; font-weight:700; border:1px solid rgba(211,192,172,0.4); background:#FCF8F3;">{{ $size }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['ld'] }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['pb'] }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['pc'] }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+
+          @elseif ($categorySlug === 'daster')
+            <!-- Sizing Diagram Daster (Inline SVG) -->
+            <div style="display:flex; justify-content:center; align-items:center; gap:20px; padding:12px; background:#FAFAFA; border-radius:8px; border:1px dashed rgba(211,192,172,0.6);">
+              <svg width="100" height="100" viewBox="0 0 120 120" style="flex-shrink:0;">
+                <!-- Daster Silhouette -->
+                <path d="M40 15 C48 20, 68 20, 76 15 L90 28 L82 40 L76 36 L74 95 L42 95 L40 36 L34 40 L26 28 Z" fill="#F2EAE1" stroke="#83513D" stroke-width="1.8" stroke-linejoin="round"/>
+                <!-- Line LD -->
+                <line x1="41" y1="45" x2="75" y2="45" stroke="#D27C2C" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polygon points="41,45 45,42 45,48" fill="#D27C2C"/>
+                <polygon points="75,45 71,42 71,48" fill="#D27C2C"/>
+                <!-- Line Panjang -->
+                <line x1="58" y1="20" x2="58" y2="92" stroke="#4A6B82" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polygon points="58,20 55,25 61,25" fill="#4A6B82"/>
+                <polygon points="58,92 55,87 61,87" fill="#4A6B82"/>
+                <!-- Texts -->
+                <text x="58" y="42" font-size="7" font-weight="700" fill="#D27C2C" text-anchor="middle">Lingkar Dada</text>
+                <text x="64" y="70" font-size="7" font-weight="700" fill="#4A6B82" text-anchor="start">Panjang</text>
+              </svg>
+              <div style="font-size:12px; color:#554c44; line-height:1.6;">
+                <p style="margin:0 0 6px 0;"><strong style="color:#D27C2C;">■ Lingkar Dada (LD):</strong> Lingkar sekeliling dada (desain longgar).</p>
+                <p style="margin:0;"><strong style="color:#4A6B82;">■ Panjang Daster (PB):</strong> Diukur dari pundak sampai ujung bawah daster.</p>
+              </div>
+            </div>
+
+            <!-- Sizing Table Daster -->
+            <table style="width:100%; border-collapse:collapse; text-align:center; font-size:13px; border-radius:6px; overflow:hidden;">
+              <thead>
+                <tr style="background:#83513D; color:#FFFFFF;">
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Ukuran</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Lingkar Dada (LD)</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Panjang Badan (PB)</th>
+                </tr>
+              </thead>
+              <tbody style="color:#201916;">
+                @foreach ($sizes as $size)
+                  @php
+                    $row = $currentTemplate[$size] ?? ['ld' => '-', 'pb' => '-'];
+                  @endphp
+                  <tr style="background: {{ $loop->even ? '#FAFAFA' : '#FFFFFF' }};">
+                    <td style="padding:10px; font-weight:700; border:1px solid rgba(211,192,172,0.4); background:#FCF8F3;">{{ $size }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['ld'] }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['pb'] }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+
+          @elseif ($categorySlug === 'khimar')
+            <!-- Sizing Diagram Khimar (Inline SVG) -->
+            <div style="display:flex; justify-content:center; align-items:center; gap:20px; padding:12px; background:#FAFAFA; border-radius:8px; border:1px dashed rgba(211,192,172,0.6);">
+              <svg width="100" height="100" viewBox="0 0 120 120" style="flex-shrink:0;">
+                <!-- Hijab Shape -->
+                <path d="M60 10 C40 10, 25 35, 25 70 C25 95, 45 105, 60 112 C75 105, 95 95, 95 70 C95 35, 80 10, 60 10 Z" fill="#F2EAE1" stroke="#83513D" stroke-width="1.8" stroke-linejoin="round"/>
+                <!-- Face Hole -->
+                <path d="M60 22 C52 22, 48 32, 48 44 C48 56, 52 64, 60 64 C68 64, 72 56, 72 44 C72 32, 68 22, 60 22 Z" fill="#E6DED6" stroke="#83513D" stroke-width="1"/>
+                <!-- Line PD -->
+                <line x1="60" y1="65" x2="60" y2="110" stroke="#D27C2C" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polygon points="60,65 57,70 63,70" fill="#D27C2C"/>
+                <polygon points="60,110 57,105 63,105" fill="#D27C2C"/>
+                <!-- Line LW -->
+                <line x1="48" y1="44" x2="72" y2="44" stroke="#4A6B82" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polygon points="48,44 52,41 52,47" fill="#4A6B82"/>
+                <polygon points="72,44 68,41 68,47" fill="#4A6B82"/>
+                <!-- Texts -->
+                <text x="60" y="85" font-size="7" font-weight="700" fill="#D27C2C" text-anchor="middle">PD</text>
+                <text x="60" y="41" font-size="6" font-weight="700" fill="#4A6B82" text-anchor="middle">LM</text>
+              </svg>
+              <div style="font-size:12px; color:#554c44; line-height:1.6;">
+                <p style="margin:0 0 6px 0;"><strong style="color:#D27C2C;">■ Panjang Depan (PD):</strong> Diukur dari bawah dagu ke ujung depan khimar.</p>
+                <p style="margin:0;"><strong style="color:#4A6B82;">■ Lingkar Muka (LM):</strong> Lingkar kepala bagian wajah hijab.</p>
+              </div>
+            </div>
+
+            <!-- Sizing Table Khimar -->
+            <table style="width:100%; border-collapse:collapse; text-align:center; font-size:13px; border-radius:6px; overflow:hidden;">
+              <thead>
+                <tr style="background:#83513D; color:#FFFFFF;">
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Ukuran</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Panjang Depan (PD)</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Panjang Belakang (PB)</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Lingkar Muka (LM)</th>
+                </tr>
+              </thead>
+              <tbody style="color:#201916;">
+                @foreach ($sizes as $size)
+                  @php
+                    $row = $currentTemplate[$size] ?? ['pd' => '-', 'pb' => '-', 'lm' => '-'];
+                  @endphp
+                  <tr style="background: {{ $loop->even ? '#FAFAFA' : '#FFFFFF' }};">
+                    <td style="padding:10px; font-weight:700; border:1px solid rgba(211,192,172,0.4); background:#FCF8F3;">{{ $size }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['pd'] }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['pb'] }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['lm'] }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+
+          @elseif ($categorySlug === 'mukena')
+            <!-- Sizing Diagram Mukena (Inline SVG) -->
+            <div style="display:flex; justify-content:center; align-items:center; gap:20px; padding:12px; background:#FAFAFA; border-radius:8px; border:1px dashed rgba(211,192,172,0.6);">
+              <svg width="100" height="100" viewBox="0 0 120 120" style="flex-shrink:0;">
+                <!-- Mukena Top -->
+                <path d="M60 10 C42 10, 20 30, 20 65 L60 85 L100 65 C100 30, 78 10, 60 10 Z" fill="#F2EAE1" stroke="#83513D" stroke-width="1.5" stroke-linejoin="round"/>
+                <!-- Mukena Bottom -->
+                <path d="M40 85 L80 85 L75 115 L45 115 Z" fill="#F2EAE1" stroke="#83513D" stroke-width="1.5" stroke-linejoin="round"/>
+                <!-- Line PDA -->
+                <line x1="60" y1="20" x2="60" y2="82" stroke="#D27C2C" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polygon points="60,20 57,25 63,25" fill="#D27C2C"/>
+                <polygon points="60,82 57,77 63,77" fill="#D27C2C"/>
+                <!-- Line Rok -->
+                <line x1="82" y1="85" x2="82" y2="115" stroke="#4A6B82" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polygon points="82,85 79,90 85,90" fill="#4A6B82"/>
+                <polygon points="82,115 79,110 85,110" fill="#4A6B82"/>
+                <!-- Texts -->
+                <text x="60" y="55" font-size="7" font-weight="700" fill="#D27C2C" text-anchor="middle">Atasan</text>
+                <text x="87" y="100" font-size="7" font-weight="700" fill="#4A6B82" text-anchor="start">Rok</text>
+              </svg>
+              <div style="font-size:12px; color:#554c44; line-height:1.6;">
+                <p style="margin:0 0 6px 0;"><strong style="color:#D27C2C;">■ Panjang Atasan:</strong> Diukur dari dahi sampai ujung mukena atasan.</p>
+                <p style="margin:0;"><strong style="color:#4A6B82;">■ Panjang Rok:</strong> Diukur dari karet pinggang sampai bawah rok bawahan.</p>
+              </div>
+            </div>
+
+            <!-- Sizing Table Mukena -->
+            <table style="width:100%; border-collapse:collapse; text-align:center; font-size:13px; border-radius:6px; overflow:hidden;">
+              <thead>
+                <tr style="background:#83513D; color:#FFFFFF;">
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Ukuran</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Panjang Atasan Depan</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Panjang Atasan Belakang</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Panjang Rok Bawahan</th>
+                </tr>
+              </thead>
+              <tbody style="color:#201916;">
+                @foreach ($sizes as $size)
+                  @php
+                    $row = $currentTemplate[$size] ?? ['pda' => '-', 'pba' => '-', 'pr' => '-'];
+                  @endphp
+                  <tr style="background: {{ $loop->even ? '#FAFAFA' : '#FFFFFF' }};">
+                    <td style="padding:10px; font-weight:700; border:1px solid rgba(211,192,172,0.4); background:#FCF8F3;">{{ $size }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['pda'] }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['pba'] }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">{{ $row['pr'] }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+
+          @else
+            <!-- Sizing Diagram Default (Inline SVG) -->
+            <div style="display:flex; justify-content:center; align-items:center; gap:20px; padding:12px; background:#FAFAFA; border-radius:8px; border:1px dashed rgba(211,192,172,0.6);">
+              <svg width="100" height="100" viewBox="0 0 120 120" style="flex-shrink:0;">
+                <!-- Package Box Shape -->
+                <rect x="30" y="30" width="60" height="60" fill="#F2EAE1" stroke="#83513D" stroke-width="2" rx="4"/>
+                <line x1="30" y1="60" x2="90" y2="60" stroke="#83513D" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <line x1="60" y1="30" x2="60" y2="90" stroke="#83513D" stroke-width="1.5" stroke-dasharray="3 3"/>
+              </svg>
+              <div style="font-size:12px; color:#554c44; line-height:1.6;">
+                <p style="margin:0 0 6px 0;"><strong style="color:#83513D;">■ Standar All Size:</strong> Produk ini didesain universal untuk semua ukuran.</p>
+                <p style="margin:0;">Informasi detail ukuran spesifik dapat dilihat langsung pada deskripsi produk.</p>
+              </div>
+            </div>
+
+            <!-- Sizing Table Default -->
+            <table style="width:100%; border-collapse:collapse; text-align:center; font-size:13px; border-radius:6px; overflow:hidden;">
+              <thead>
+                <tr style="background:#83513D; color:#FFFFFF;">
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Ukuran</th>
+                  <th style="padding:10px; font-weight:600; border:1px solid #83513D;">Keterangan</th>
+                </tr>
+              </thead>
+              <tbody style="color:#201916;">
+                @foreach ($sizes as $size)
+                  <tr style="background: {{ $loop->even ? '#FAFAFA' : '#FFFFFF' }};">
+                    <td style="padding:10px; font-weight:700; border:1px solid rgba(211,192,172,0.4); background:#FCF8F3;">{{ $size }}</td>
+                    <td style="padding:10px; border:1px solid rgba(211,192,172,0.4);">Cocok untuk semua ukuran standar (One size fits most)</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          @endif
+
+          <!-- Note / Warning -->
+          <div style="font-size:11px; color:#8c8279; line-height:1.5; background:#FFFDFB; padding:10px 14px; border-left:3px solid #83513D; border-radius:0 4px 4px 0;">
+            <strong>Catatan Penting:</strong>
+            <ul style="margin:4px 0 0 0; padding-left:16px;">
+              <li>Toleransi ukuran ±1-2 cm dapat terjadi dikarenakan metode pemotongan bahan dan proses produksi jahit massal.</li>
+              <li>Warna produk pada foto mungkin sedikit berbeda dengan produk asli karena pencahayaan studio foto.</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="display:flex; justify-content:flex-end; padding:12px 20px; border-top:1px solid rgba(211,192,172,0.2); background:#FAFAFA;">
+          <button type="button" onclick="closeSizeChartModal()" style="padding:8px 16px; font-size:12px; font-weight:600; color:#554c44; background:#FFFFFF; border:1px solid rgba(211,192,172,0.6); border-radius:4px; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='#F5F0EA'" onmouseout="this.style.background='#FFFFFF'">Tutup</button>
+        </div>
+
+      </div>
+    </div>
+
+    <style>
+      @keyframes modalFadeIn {
+        from { opacity: 0; transform: scale(0.96); }
+        to { opacity: 1; transform: scale(1); }
+      }
+    </style>
   </body>
 </html>

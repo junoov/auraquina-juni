@@ -126,6 +126,7 @@ class Pesanan extends Model
             ],
             self::STATUS_SHIPPED => [
                 self::STATUS_DELIVERED,
+                self::STATUS_COMPLETED,
                 self::STATUS_REFUNDED,
             ],
             self::STATUS_DELIVERED => [

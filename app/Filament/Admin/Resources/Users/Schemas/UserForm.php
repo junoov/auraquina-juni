@@ -31,7 +31,6 @@ class UserForm
                 ->label('Peran')
                 ->multiple()
                 ->relationship('roles', 'name')
-                ->options(fn () => Role::pluck('name', 'name'))
                 ->preload()
                 ->searchable()
                 ->required(),

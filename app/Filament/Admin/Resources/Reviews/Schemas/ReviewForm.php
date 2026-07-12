@@ -17,8 +17,16 @@ class ReviewForm
             Section::make('Informasi Ulasan')
                 ->columns(2)
                 ->schema([
-                    TextInput::make('produk.nama')->label('Produk')->disabled()->dehydrated(false),
-                    TextInput::make('user.name')->label('Pelanggan')->disabled()->dehydrated(false),
+                    TextInput::make('produk_nama')
+                        ->label('Produk')
+                        ->formatStateUsing(fn ($record) => $record?->produk?->nama)
+                        ->disabled()
+                        ->dehydrated(false),
+                    TextInput::make('user_name')
+                        ->label('Pelanggan')
+                        ->formatStateUsing(fn ($record) => $record?->user?->name)
+                        ->disabled()
+                        ->dehydrated(false),
                     TextInput::make('rating')->label('Rating')->disabled()->dehydrated(false),
                     Select::make('status')
                         ->label('Status')

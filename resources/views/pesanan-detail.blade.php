@@ -146,6 +146,16 @@
 
       @php
         $midtransData = $pesanan->midtrans_raw_response ? json_decode($pesanan->midtrans_raw_response) : null;
+        $paymentDetailsDisplayed = false;
+        if ($pesanan->status === 'pending_payment') {
+            if ($midtransData && (
+                (($midtransData->payment_type ?? '') === 'gopay' && isset($midtransData->actions[0]->url)) ||
+                isset($midtransData->va_numbers[0]->va_number) ||
+                (isset($midtransData->biller_code) && isset($midtransData->bill_key))
+            )) {
+                $paymentDetailsDisplayed = true;
+            }
+        }
       @endphp
 
       {{-- Midtrans Payment (QRIS, Transfer Bank, GoPay, OVO, etc.) --}}
@@ -292,17 +302,87 @@
         <h3 class="mb-4 text-[13px] font-bold text-[var(--ink)]">Order Summary</h3>
 
         @foreach ($pesanan->items as $item)
-          <div class="flex items-start gap-3 {{ !$loop->last ? 'mb-4 pb-4 border-b border-[var(--border)]' : 'mb-4' }}">
-            <div class="h-[56px] w-[44px] flex-shrink-0 overflow-hidden rounded bg-[#F5F5F5]">
-              @if ($item->gambar_url)
-                <img src="{{ $item->full_gambar_url }}" alt="{{ $item->nama_produk }}" class="h-full w-full object-cover" />
-              @endif
+          @php
+            $produk = $item->produk;
+            $existingReview = null;
+            if ($produk && auth()->check()) {
+                $existingReview = \App\Models\Review::where('user_id', auth()->id())
+                    ->where('produk_id', $item->produk_id)
+                    ->first();
+            }
+          @endphp
+          <div class="{{ !$loop->last ? 'mb-4 pb-4 border-b border-[var(--border)]' : 'mb-4' }}">
+            <!-- Main Item Row -->
+            <div class="flex items-start gap-3">
+              <div class="h-[56px] w-[44px] flex-shrink-0 overflow-hidden rounded bg-[#F5F5F5]">
+                @if ($item->gambar_url)
+                  <img src="{{ $item->full_gambar_url }}" alt="{{ $item->nama_produk }}" class="h-full w-full object-cover" />
+                @endif
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[12px] font-bold text-[var(--ink)]">{{ $item->nama_produk }}</p>
+                <p class="text-[11px] text-[var(--muted)]">{{ $item->varian_label }} · x{{ $item->jumlah }}</p>
+              </div>
+              <p class="flex-shrink-0 text-[12px] font-bold text-[var(--ink)]">Rp {{ number_format($item->harga * $item->jumlah, 0, ',', '.') }}</p>
             </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-[12px] font-bold text-[var(--ink)]">{{ $item->nama_produk }}</p>
-              <p class="text-[11px] text-[var(--muted)]">{{ $item->varian_label }} · x{{ $item->jumlah }}</p>
-            </div>
-            <p class="flex-shrink-0 text-[12px] font-bold text-[var(--ink)]">Rp {{ number_format($item->harga * $item->jumlah, 0, ',', '.') }}</p>
+
+            <!-- Review Button and Form Block -->
+            @if ($produk && in_array($pesanan->status, ['delivered', 'completed'], true))
+              <div class="mt-3 pl-[56px] text-left">
+                @if ($existingReview)
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                      <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/>
+                      </svg>
+                      Sudah Diulas ({{ $existingReview->rating }} ★)
+                    </span>
+                    <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="text-[11px] font-bold text-[var(--brown)] hover:underline">
+                      Ubah Ulasan
+                    </button>
+                  </div>
+                @else
+                  <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[28px] items-center justify-center rounded bg-[var(--brown)] px-3.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
+                    Beri Ulasan
+                  </button>
+                @endif
+
+                <!-- Review Form -->
+                <div id="review-form-{{ $item->id }}" class="mt-3 hidden rounded border border-[var(--border)] bg-[#FCF8F3]/60 p-4 transition-all duration-300">
+                  <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" enctype="multipart/form-data">
+                    @csrf
+                    
+                    <div class="mb-3">
+                      <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1">Rating</label>
+                      <select name="rating" class="block h-[34px] w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] text-[var(--ink)] outline-none" required>
+                        @for ($i = 5; $i >= 1; $i--)
+                          <option value="{{ $i }}" {{ ($existingReview && (int)$existingReview->rating === $i) ? 'selected' : '' }}>{{ $i }} Bintang</option>
+                        @endfor
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Ulasan</label>
+                      <textarea name="review" rows="3" class="block w-full rounded border border-[var(--border)] bg-white px-3 py-2 text-[12px] text-[var(--ink)] outline-none" placeholder="Ceritakan pengalaman Anda memakai produk ini (minimal 20 karakter)." required minlength="20">{{ $existingReview ? $existingReview->review : '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Foto Produk (Opsional)</label>
+                      <input type="file" name="photos[]" accept="image/*" multiple class="block w-full text-[11px] text-[var(--muted)]" />
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                      <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[30px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">
+                        Batal
+                      </button>
+                      <button type="submit" class="inline-flex h-[30px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
+                        Kirim Ulasan
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            @endif
           </div>
         @endforeach
 
@@ -473,7 +553,7 @@
 
       {{-- Back --}}
       <div class="space-y-3 pb-10 pt-4 text-center">
-        @if ($pesanan->status === 'pending_payment')
+        @if ($pesanan->status === 'pending_payment' && !str_contains(strtolower($pesanan->metode_pembayaran), 'cod') && !$paymentDetailsDisplayed)
           <button
             type="button"
             id="btn-pay-now"
@@ -488,7 +568,7 @@
             @csrf
             <button type="submit" class="inline-flex h-[42px] items-center justify-center rounded border border-[#DC2626] bg-white px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-[#DC2626] transition hover:bg-[#DC2626] hover:text-white">Batalkan Pesanan</button>
           </form>
-        @elseif ($pesanan->status === 'delivered')
+        @elseif ($pesanan->status === 'shipped' || $pesanan->status === 'delivered')
           <form method="POST" action="{{ URL::temporarySignedRoute('pesanan.confirm-received', now()->addDays(30), ['kode' => $pesanan->kode_pesanan]) }}">
             @csrf
             <button type="submit" class="inline-flex h-[42px] items-center justify-center rounded bg-[var(--brown)] px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:opacity-85">Konfirmasi Diterima</button>
@@ -499,7 +579,51 @@
 
     </main>
 
+    @if ($pesanan->status === 'pending_payment' && !str_contains(strtolower($pesanan->metode_pembayaran), 'cod'))
+      @php
+        $isProduction = config('services.midtrans.is_production', false);
+        $snapJsUrl = $isProduction ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js';
+        $clientKey = config('services.midtrans.client_key');
+      @endphp
+      @if ($pesanan->midtrans_snap_token)
+        <script type="text/javascript" src="{{ $snapJsUrl }}" data-client-key="{{ $clientKey }}"></script>
+      @endif
+    @endif
+
     <script>
+      function payWithMidtrans() {
+        @if ($pesanan->status === 'pending_payment')
+          @if ($pesanan->midtrans_snap_token)
+            if (typeof snap !== 'undefined') {
+              snap.pay('{{ $pesanan->midtrans_snap_token }}', {
+                onSuccess: function(result) {
+                  window.location.reload();
+                },
+                onPending: function(result) {
+                  window.location.reload();
+                },
+                onError: function(result) {
+                  window.location.reload();
+                },
+                onClose: function() {
+                  console.log('customer closed the popup without finishing the payment');
+                }
+              });
+            } else {
+              @if ($pesanan->midtrans_redirect_url)
+                window.location.href = "{{ $pesanan->midtrans_redirect_url }}";
+              @else
+                alert('Gagal memuat pembayaran Midtrans. Coba muat ulang halaman.');
+              @endif
+            }
+          @elseif ($pesanan->midtrans_redirect_url)
+            window.location.href = "{{ $pesanan->midtrans_redirect_url }}";
+          @else
+            window.location.href = "{{ route('pesanan.pay', $pesanan->kode_pesanan) }}";
+          @endif
+        @endif
+      }
+
       @if ($pesanan->status === 'pending_payment' && $pesanan->batas_bayar)
         (function() {
           const deadline = new Date('{{ $pesanan->batas_bayar->toISOString() }}').getTime();
@@ -532,7 +656,7 @@
           if (!isPolling) return;
           
           try {
-            const response = await fetch('{{ route('pesanan.show', $pesanan->kode_pesanan) }}', {
+            const response = await fetch(window.location.href, {
               headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
@@ -562,6 +686,13 @@
         // Start polling
         setTimeout(checkPaymentStatus, 5000);
       @endif
+
+      function toggleReviewForm(itemId) {
+        const el = document.getElementById(`review-form-${itemId}`);
+        if (el) {
+          el.classList.toggle('hidden');
+        }
+      }
     </script>
   </body>
 </html>

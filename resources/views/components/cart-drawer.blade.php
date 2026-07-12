@@ -388,4 +388,13 @@
       btn.disabled = false;
     });
   }
+
+  window.addEventListener('pageshow', () => {
+    const btn = document.getElementById('cart-drawer-checkout');
+    if (btn) {
+      btn.textContent = 'Check Out';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  });
 </script>

@@ -152,6 +152,39 @@ class CheckoutController extends Controller
 
         $pesanan->expireIfOverdue();
 
+        if ($pesanan->status === Pesanan::STATUS_PENDING_PAYMENT) {
+            try {
+                \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+                \Midtrans\Config::$isProduction = config('services.midtrans.is_production', false);
+                if (app()->environment('local')) {
+                    \Midtrans\Config::$curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+                    \Midtrans\Config::$curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
+                    \Midtrans\Config::$curlOptions[CURLOPT_HTTPHEADER] = [];
+                }
+                
+                $statusResponse = \Midtrans\Transaction::status($pesanan->kode_pesanan);
+                if (isset($statusResponse->transaction_status)) {
+                    $transactionStatus = $statusResponse->transaction_status;
+                    $fraudStatus = $statusResponse->fraud_status ?? null;
+                    
+                    if ($transactionStatus === 'capture' && $fraudStatus === 'accept') {
+                        $pesanan->transitionTo(Pesanan::STATUS_PAID, 'midtrans_check');
+                    } elseif ($transactionStatus === 'settlement') {
+                        $pesanan->transitionTo(Pesanan::STATUS_PAID, 'midtrans_check');
+                    } elseif (in_array($transactionStatus, ['deny', 'cancel', 'expire'], true)) {
+                        $pesanan->transitionTo(Pesanan::STATUS_CANCELLED, 'midtrans_check');
+                    }
+                    
+                    $pesanan->forceFill([
+                        'midtrans_status' => $transactionStatus,
+                        'midtrans_raw_response' => json_encode($statusResponse),
+                    ])->save();
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Midtrans Status Check Error: ' . $e->getMessage());
+            }
+        }
+
         return $pesanan->refresh()->load('items');
     }
 
@@ -644,6 +677,12 @@ class CheckoutController extends Controller
             \Midtrans\Config::$isProduction = config('services.midtrans.is_production', false);
             \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
             \Midtrans\Config::$clientKey = config('services.midtrans.client_key');
+
+            if (app()->environment('local')) {
+                \Midtrans\Config::$curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+                \Midtrans\Config::$curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
+                \Midtrans\Config::$curlOptions[CURLOPT_HTTPHEADER] = [];
+            }
 
             // Build item details
             $itemDetails = $pesanan->items->map(function ($item) {

@@ -259,6 +259,6 @@ class ProdukController extends Controller
             'rating_star' => round((float) $produk->reviews()->where('status', 'approved')->avg('rating'), 2),
         ])->save();
 
-        return redirect()->route('produk.detail', $produk->slug)->with('status', 'Ulasan berhasil dikirim dan sedang ditinjau admin.');
+        return back()->with('status', 'Ulasan berhasil dikirim dan sedang ditinjau admin.');
     }
 }
