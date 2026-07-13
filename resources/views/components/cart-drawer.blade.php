@@ -207,8 +207,11 @@
           const variantLabel = [warna, ukuran].filter(Boolean).join(' / ');
 
           return `
-          <div style="display:flex;gap:16px;padding:20px 0;border-bottom:1px solid var(--border);" data-id="${itemId}" data-harga="${itemHarga}">
-            <div style="width:80px;height:100px;flex-shrink:0;border-radius:3px;overflow:hidden;background:var(--cream);">
+          <div style="display:flex;gap:12px;padding:20px 0;border-bottom:1px solid var(--border);" data-id="${itemId}" data-harga="${itemHarga}">
+            <div style="display:flex;align-items:center;justify-content:center;padding-right:4px;flex-shrink:0;">
+              <input type="checkbox" data-cart-select value="${itemId}" checked style="width:16px;height:16px;accent-color:var(--brown);cursor:pointer;" onchange="recalcSubtotal()" />
+            </div>
+            <div style="width:72px;height:90px;flex-shrink:0;border-radius:3px;overflow:hidden;background:var(--cream);">
               <img src="${gambar}" alt="${nama}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" />
             </div>
             <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;">
@@ -296,10 +299,13 @@
     let total = 0;
     let totalItems = 0;
     document.querySelectorAll('#cart-list [data-id]').forEach(el => {
-      const harga = parseInt(el.dataset.harga) || 0;
-      const qty = parseInt(el.querySelector('span[style*="font-weight:700"][style*="width:32px"]')?.textContent) || 0;
-      total += harga * qty;
-      totalItems += qty;
+      const selectCheckbox = el.querySelector('input[data-cart-select]');
+      if (selectCheckbox && selectCheckbox.checked) {
+        const harga = parseInt(el.dataset.harga) || 0;
+        const qty = parseInt(el.querySelector('span[style*="font-weight:700"][style*="width:32px"]')?.textContent) || 0;
+        total += harga * qty;
+        totalItems += qty;
+      }
     });
     document.getElementById('cart-subtotal').textContent = cartDrawerFormatRupiah(total);
     if (typeof syncCartBadges === 'function') {
@@ -347,10 +353,13 @@
   }
 
   function checkoutFromDrawer() {
-    const itemNodes = document.querySelectorAll('#cart-list [data-id]');
-    const itemIds = Array.from(itemNodes).map(el => parseInt(el.dataset.id));
+    const checkedBoxes = document.querySelectorAll('#cart-list input[data-cart-select]:checked');
+    const itemIds = Array.from(checkedBoxes).map(el => parseInt(el.value));
     
-    if (itemIds.length === 0) return;
+    if (itemIds.length === 0) {
+      alert('Pilih minimal satu produk untuk di-checkout');
+      return;
+    }
 
     const btn = document.getElementById('cart-drawer-checkout');
     const oldText = btn.textContent;

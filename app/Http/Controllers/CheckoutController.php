@@ -470,6 +470,10 @@ class CheckoutController extends Controller
     {
         $pesanan = $this->authorizedOrder($request, $kode);
 
+        if ($pesanan->status === 'pending_payment') {
+            abort(403, 'Invoice belum tersedia sebelum pembayaran selesai.');
+        }
+
         return view('pesanan-invoice', compact('pesanan'));
     }
 
@@ -730,7 +734,7 @@ class CheckoutController extends Controller
             $metode = strtolower($pesanan->metode_pembayaran);
 
             $enabledPayments = $this->getEnabledPayments($pesanan->metode_pembayaran);
-            $snapOnlyPayments = ['bsi_va', 'cimb_va', 'seabank_va', 'danamon_va', 'saqu_va', 'other_va'];
+            $snapOnlyPayments = ['cimb_va', 'seabank_va', 'danamon_va', 'saqu_va', 'other_va'];
 
             if (array_intersect($enabledPayments, $snapOnlyPayments)) {
                 $params['enabled_payments'] = $enabledPayments;
@@ -762,6 +766,9 @@ class CheckoutController extends Controller
             } elseif (str_contains($metode, 'bni')) {
                 $params['payment_type'] = 'bank_transfer';
                 $params['bank_transfer'] = ['bank' => 'bni'];
+            } elseif (str_contains($metode, 'bsi')) {
+                $params['payment_type'] = 'bank_transfer';
+                $params['bank_transfer'] = ['bank' => 'bsi'];
             } elseif (str_contains($metode, 'permata')) {
                 $params['payment_type'] = 'bank_transfer';
                 $params['bank_transfer'] = ['bank' => 'permata'];

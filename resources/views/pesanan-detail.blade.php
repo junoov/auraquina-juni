@@ -7,14 +7,14 @@
     <link rel="icon" href="{{ asset('images/logo.png') }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
   </head>
-  <body class="min-h-screen overflow-x-hidden bg-white text-[var(--ink)] antialiased" style="font-family:'Plus Jakarta Sans',sans-serif;">
+  <body class="min-h-screen overflow-x-hidden bg-[var(--warm)] text-[var(--text)] antialiased [text-rendering:geometricPrecision]" style="font-family: Lato, system-ui, sans-serif;">
 
     @include('components.site-header', ['kategoris' => collect(), 'backHref' => route('account.orders')])
 
-    <main class="mx-auto max-w-[560px] px-5 py-8">
+    <main class="mx-auto max-w-[560px] bg-white rounded-[10px] border border-[var(--border)] px-5 py-8 my-8 shadow-[0_8px_24px_rgba(131,81,61,0.04)]">
       @php
         $afterSalesTypeMap = [
           'return' => 'Penukaran / Return',
@@ -53,103 +53,153 @@
 
       {{-- Order Info --}}
       <div class="mb-6 flex">
-        <button onclick="if(document.referrer){window.history.back()}else{window.location.href='{{ route('account.orders') }}'}" class="inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--brown)] hover:opacity-80 transition cursor-pointer" style="background:none; border:none; padding:0;">
+        <button onclick="if(document.referrer && !document.referrer.includes('/invoice')){window.history.back()}else{window.location.href='{{ route('account.orders') }}'}" class="inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--brown)] hover:opacity-85 transition cursor-pointer" style="background:none; border:none; padding:0;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           Kembali
         </button>
       </div>
 
-      <section class="mb-8">
-        @if (session('status'))
-          <div class="mb-5 rounded border border-green-200 bg-green-50 px-4 py-3 text-[12px] font-bold text-green-800">{{ session('status') }}</div>
-        @endif
-        @if (session('error'))
-          <div class="mb-5 rounded border border-red-200 bg-red-50 px-4 py-3 text-[12px] font-bold text-red-800">{{ session('error') }}</div>
-        @endif
-        <p class="mb-1 text-[11px] uppercase tracking-[0.1em] text-[var(--muted)]">Pesanan Kamu</p>
-        <div class="mb-5 flex items-center gap-2">
-          <span class="text-[15px] font-bold text-[var(--ink)]">ID #{{ $pesanan->kode_pesanan }}</span>
-          <button onclick="navigator.clipboard.writeText('{{ $pesanan->kode_pesanan }}')" class="text-[var(--muted)] hover:text-[var(--ink)]" aria-label="Copy">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          </button>
-        </div>
+      @if (session('status') || session('error') || $pesanan->status === 'pending_payment')
+        <section class="mb-8">
+          @if (session('status'))
+            <div class="mb-5 rounded border border-green-200 bg-green-50 px-4 py-3 text-[12px] font-bold text-green-800">{{ session('status') }}</div>
+          @endif
+          @if (session('error'))
+            <div class="mb-5 rounded border border-red-200 bg-red-50 px-4 py-3 text-[12px] font-bold text-red-800">{{ session('error') }}</div>
+          @endif
 
-        {{-- Status rows --}}
-        <div class="space-y-2 text-[13px]">
-          <div class="flex justify-between">
-            <span class="text-[var(--muted)]">Status</span>
-            @if ($pesanan->status === 'pending_payment')
-              <span class="font-bold text-[#B45309]">Belum Dibayar</span>
-            @elseif ($pesanan->status === 'paid')
-              <span class="font-bold text-green-700">Sudah Dibayar</span>
-            @else
-              <span class="font-bold capitalize text-[var(--ink)]">{{ str_replace('_', ' ', $pesanan->status) }}</span>
-            @endif
-          </div>
-          <div class="flex justify-between">
-            <span class="text-[var(--muted)]">Tanggal Pesanan</span>
-            <span class="text-[var(--ink)]">{{ $pesanan->created_at->translatedFormat('d M Y') }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-[var(--muted)]">Total Pembayaran</span>
-            <span class="font-bold text-[var(--ink)]">Rp {{ number_format($pesanan->total, 0, ',', '.') }}</span>
-          </div>
-          @if ($pesanan->status === 'pending_payment' && $pesanan->batas_bayar)
-            <div class="flex justify-between">
-              <span class="text-[var(--muted)]">Sisa Waktu</span>
-              <div class="text-right">
-                <span id="countdown" class="font-bold text-[#DC2626]"></span>
-                <p class="text-[11px] text-[var(--muted)]">Batas: {{ $pesanan->batas_bayar->translatedFormat('d M Y, H:i') }}</p>
+          @if ($pesanan->status === 'pending_payment')
+            <p class="mb-1 text-[11px] uppercase tracking-[0.1em] text-[var(--muted)]">Pesanan Kamu</p>
+            <div class="mb-5 flex items-center gap-2">
+              <span class="text-[15px] font-bold text-[var(--ink)]">ID #{{ $pesanan->kode_pesanan }}</span>
+              <button onclick="navigator.clipboard.writeText('{{ $pesanan->kode_pesanan }}')" class="text-[var(--muted)] hover:text-[var(--ink)]" aria-label="Copy">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
+
+            {{-- Status rows --}}
+            <div class="space-y-2 text-[13px]">
+              <div class="flex justify-between">
+                <span class="text-[var(--muted)]">Status</span>
+                <span class="font-bold text-[#B45309]">Belum Dibayar</span>
               </div>
+              <div class="flex justify-between">
+                <span class="text-[var(--muted)]">Tanggal Pesanan</span>
+                <span class="text-[var(--ink)]">{{ $pesanan->created_at->translatedFormat('d M Y') }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[var(--muted)]">Total Pembayaran</span>
+                <span class="font-bold text-[var(--ink)]">Rp {{ number_format($pesanan->total, 0, ',', '.') }}</span>
+              </div>
+              @if ($pesanan->batas_bayar)
+                <div class="flex justify-between">
+                  <span class="text-[var(--muted)]">Sisa Waktu</span>
+                  <div class="text-right">
+                    <span id="countdown" class="font-bold text-[#DC2626]"></span>
+                    <p class="text-[11px] text-[var(--muted)]">Batas: {{ $pesanan->batas_bayar->translatedFormat('d M Y, H:i') }}</p>
+                  </div>
+                </div>
+              @endif
             </div>
           @endif
-        </div>
-      </section>
+        </section>
+      @endif
 
-      <hr class="border-[var(--border)]" />
+      @if ($pesanan->status === 'pending_payment')
+        <hr class="border-[var(--border)]" />
+      @endif
 
-      <section class="py-6" aria-labelledby="status-timeline-title">
-        <div class="mb-5 flex items-end justify-between gap-4">
-          <div>
-            <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--brown)]">Update Pesanan</p>
-            <h2 id="status-timeline-title" class="text-[18px] font-bold text-[var(--ink)]" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Perjalanan Pesanan</h2>
-            <p class="mt-1 text-[11px] text-[var(--muted)]">Status Pesanan</p>
-          </div>
-          <span class="rounded-full bg-[var(--cream)] px-3 py-1 text-[11px] font-bold text-[var(--brown)]">{{ $statusLabels[$pesanan->status] ?? ucfirst(str_replace('_', ' ', $pesanan->status)) }}</span>
-        </div>
-
-        <div class="space-y-4">
-          @foreach ($statusFlow as $index => $status)
-            @php
-              $isDone = $currentStep >= $index;
-              $isCurrent = $currentStep === $index;
-            @endphp
-            <div class="flex gap-3">
-              <div class="flex flex-col items-center">
-                <span class="flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-bold {{ $isDone ? 'border-[var(--brown)] bg-[var(--brown)] text-white' : 'border-[var(--border)] bg-white text-[var(--muted)]' }}">{{ $index + 1 }}</span>
-                @if (! $loop->last)
-                  <span class="h-7 w-px {{ $currentStep > $index ? 'bg-[var(--brown)]' : 'bg-[var(--border)]' }}"></span>
+      @if ($pesanan->status !== 'pending_payment')
+        <div class="mb-6 rounded-[10px] border border-[var(--border)] bg-[#FCF8F3] p-4 text-[12px] leading-relaxed text-[var(--ink)] shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="flex h-2.5 w-2.5 rounded-full {{ in_array($pesanan->status, ['delivered', 'completed'], true) ? 'bg-green-500' : (in_array($pesanan->status, ['cancelled', 'expired', 'refunded'], true) ? 'bg-red-500' : 'bg-amber-500') }}"></span>
+            <div>
+              <p class="font-bold">
+                Status Pesanan: 
+                @if ($pesanan->status === 'paid')
+                  Sudah Dibayar
+                @elseif ($pesanan->status === 'processing')
+                  Sedang Diproses
+                @elseif ($pesanan->status === 'packed')
+                  Sedang Dikemas
+                @elseif ($pesanan->status === 'shipped')
+                  Sedang Dikirim (Dalam Perjalanan)
+                @elseif ($pesanan->status === 'delivered')
+                  Sudah Diterima
+                @elseif ($pesanan->status === 'completed')
+                  Selesai
+                @elseif ($pesanan->status === 'cancelled')
+                  Dibatalkan
+                @elseif ($pesanan->status === 'expired')
+                  Kedaluwarsa
+                @elseif ($pesanan->status === 'refunded')
+                  Dana Dikembalikan
+                @else
+                  {{ ucfirst($pesanan->status) }}
                 @endif
-              </div>
-              <div class="pb-3">
-                <p class="text-[13px] font-bold {{ $isCurrent ? 'text-[var(--brown)]' : 'text-[var(--ink)]' }}">{{ $statusLabels[$status] }}</p>
-                <p class="mt-0.5 text-[11px] leading-5 text-[var(--muted)]">
-                  @if ($status === 'pending_payment') Pesanan berhasil dibuat dan menunggu pembayaran.
-                  @elseif ($status === 'paid') Pembayaran sudah diterima oleh sistem.
-                  @elseif ($status === 'processing') Tim Auraquina sedang menyiapkan pesanan.
-                  @elseif ($status === 'packed') Pesanan sudah dikemas dan siap dikirim.
-                  @elseif ($status === 'shipped') Pesanan sudah diserahkan ke kurir.
-                  @elseif ($status === 'delivered') Paket sudah sampai ke alamat tujuan.
-                  @else Pesanan selesai. Terima kasih sudah berbelanja.
-                  @endif
-                </p>
-              </div>
+              </p>
+              <p class="text-[11px] text-[var(--muted)] mt-0.5">
+                @if (in_array($pesanan->status, ['paid', 'processing', 'packed'], true))
+                  Kami sedang memproses pesanan Anda untuk segera diserahkan ke kurir.
+                @elseif ($pesanan->status === 'shipped')
+                  Paket Anda sedang diantar oleh kurir. Silakan pantau pengiriman di bawah ini.
+                @elseif (in_array($pesanan->status, ['delivered', 'completed'], true))
+                  Pesanan telah sampai di tujuan. Terima kasih telah berbelanja di Auraquina!
+                @elseif ($pesanan->status === 'cancelled')
+                  Pesanan ini telah dibatalkan. Hubungi CS jika ada kendala.
+                @else
+                  Pesanan telah berakhir.
+                @endif
+              </p>
             </div>
-          @endforeach
+          </div>
         </div>
-      </section>
+      @endif
 
-      <hr class="border-[var(--border)]" />
+      @if (in_array($pesanan->status, ['paid', 'processing', 'packed', 'shipped'], true))
+        <section class="py-6" aria-labelledby="status-timeline-title">
+          <div class="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--brown)]">Update Pesanan</p>
+              <h2 id="status-timeline-title" class="text-[18px] font-bold text-[var(--ink)]" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Perjalanan Pesanan</h2>
+              <p class="mt-1 text-[11px] text-[var(--muted)]">Status Pesanan</p>
+            </div>
+            <span class="rounded-full bg-[var(--cream)] px-3 py-1 text-[11px] font-bold text-[var(--brown)]">{{ $statusLabels[$pesanan->status] ?? ucfirst(str_replace('_', ' ', $pesanan->status)) }}</span>
+          </div>
+  
+          <div class="space-y-4">
+            @foreach ($statusFlow as $index => $status)
+              @php
+                $isDone = $currentStep >= $index;
+                $isCurrent = $currentStep === $index;
+              @endphp
+              <div class="flex gap-3">
+                <div class="flex flex-col items-center">
+                  <span class="flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-bold {{ $isDone ? 'border-[var(--brown)] bg-[var(--brown)] text-white' : 'border-[var(--border)] bg-white text-[var(--muted)]' }}">{{ $index + 1 }}</span>
+                  @if (! $loop->last)
+                    <span class="h-7 w-px {{ $currentStep > $index ? 'bg-[var(--brown)]' : 'bg-[var(--border)]' }}"></span>
+                  @endif
+                </div>
+                <div class="pb-3">
+                  <p class="text-[13px] font-bold {{ $isCurrent ? 'text-[var(--brown)]' : 'text-[var(--ink)]' }}">{{ $statusLabels[$status] }}</p>
+                  <p class="mt-0.5 text-[11px] leading-5 text-[var(--muted)]">
+                    @if ($status === 'pending_payment') Pesanan berhasil dibuat dan menunggu pembayaran.
+                    @elseif ($status === 'paid') Pembayaran sudah diterima oleh sistem.
+                    @elseif ($status === 'processing') Tim Auraquina sedang menyiapkan pesanan.
+                    @elseif ($status === 'packed') Pesanan sudah dikemas dan siap dikirim.
+                    @elseif ($status === 'shipped') Pesanan sudah diserahkan ke kurir.
+                    @elseif ($status === 'delivered') Paket sudah sampai ke alamat tujuan.
+                    @else Pesanan selesai. Terima kasih sudah berbelanja.
+                    @endif
+                  </p>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </section>
+  
+        <hr class="border-[var(--border)]" />
+      @endif
 
       @php
         $midtransData = $pesanan->midtrans_raw_response ? json_decode($pesanan->midtrans_raw_response) : null;
@@ -304,207 +354,317 @@
         <hr class="border-[var(--border)]" />
       @endif
 
-      {{-- Order Summary --}}
-      <section class="py-6">
-        <h3 class="mb-4 text-[13px] font-bold text-[var(--ink)]">Order Summary</h3>
+      @if ($pesanan->status === 'pending_payment')
+        <hr class="border-[var(--border)]" />
 
-        @foreach ($pesanan->items as $item)
-          @php
-            $produk = $item->produk;
-            $existingReview = null;
-            if ($produk && auth()->check()) {
-                $existingReview = \App\Models\Review::where('user_id', auth()->id())
-                    ->where('produk_id', $item->produk_id)
-                    ->first();
-            }
-          @endphp
-          <div class="{{ !$loop->last ? 'mb-4 pb-4 border-b border-[var(--border)]' : 'mb-4' }}">
-            <!-- Main Item Row -->
-            <div class="flex items-start gap-3">
-              <div class="h-[56px] w-[44px] flex-shrink-0 overflow-hidden rounded bg-[#F5F5F5]">
-                @if ($item->gambar_url)
-                  <img src="{{ $item->full_gambar_url }}" alt="{{ $item->nama_produk }}" class="h-full w-full object-cover" />
-                @endif
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-[12px] font-bold text-[var(--ink)]">{{ $item->nama_produk }}</p>
-                <p class="text-[11px] text-[var(--muted)]">{{ $item->varian_label }} · x{{ $item->jumlah }}</p>
-              </div>
-              <p class="flex-shrink-0 text-[12px] font-bold text-[var(--ink)]">Rp {{ number_format($item->harga * $item->jumlah, 0, ',', '.') }}</p>
-            </div>
+        {{-- Order Summary --}}
+        <section class="py-6">
+          <h3 class="mb-4 text-[13px] font-bold text-[var(--ink)]">Order Summary</h3>
 
-            <!-- Review Button and Form Block -->
-            @if ($produk && in_array($pesanan->status, ['delivered', 'completed'], true))
-              <div class="mt-3 pl-[56px] text-left">
-                @if ($existingReview)
-                  <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                      <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/>
-                      </svg>
-                      Sudah Diulas ({{ $existingReview->rating }} ★)
-                    </span>
-                    <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="text-[11px] font-bold text-[var(--brown)] hover:underline">
-                      Ubah Ulasan
-                    </button>
-                  </div>
-                @else
-                  <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[28px] items-center justify-center rounded bg-[var(--brown)] px-3.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
-                    Beri Ulasan
-                  </button>
-                @endif
-
-                <!-- Review Form -->
-                <div id="review-form-{{ $item->id }}" class="mt-3 hidden rounded border border-[var(--border)] bg-[#FCF8F3]/60 p-4 transition-all duration-300">
-                  <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" enctype="multipart/form-data">
-                    @csrf
-                    
-                    <div class="mb-3">
-                      <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1">Rating</label>
-                      <select name="rating" class="block h-[34px] w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] text-[var(--ink)] outline-none" required>
-                        @for ($i = 5; $i >= 1; $i--)
-                          <option value="{{ $i }}" {{ ($existingReview && (int)$existingReview->rating === $i) ? 'selected' : '' }}>{{ $i }} Bintang</option>
-                        @endfor
-                      </select>
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Ulasan</label>
-                      <textarea name="review" rows="3" class="block w-full rounded border border-[var(--border)] bg-white px-3 py-2 text-[12px] text-[var(--ink)] outline-none" placeholder="Ceritakan pengalaman Anda memakai produk ini (minimal 20 karakter)." required minlength="20">{{ $existingReview ? $existingReview->review : '' }}</textarea>
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Foto Produk (Opsional)</label>
-                      <input type="file" name="photos[]" accept="image/*" multiple class="block w-full text-[11px] text-[var(--muted)]" />
-                    </div>
-
-                    <div class="flex justify-end gap-2 pt-2">
-                      <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[30px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">
-                        Batal
-                      </button>
-                      <button type="submit" class="inline-flex h-[30px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
-                        Kirim Ulasan
-                      </button>
-                    </div>
-                  </form>
+          @foreach ($pesanan->items as $item)
+            @php
+              $produk = $item->produk;
+              $existingReview = null;
+              if ($produk && auth()->check()) {
+                  $existingReview = \App\Models\Review::where('user_id', auth()->id())
+                      ->where('produk_id', $item->produk_id)
+                      ->first();
+              }
+            @endphp
+            <div class="{{ !$loop->last ? 'mb-4 pb-4 border-b border-[var(--border)]' : 'mb-4' }}">
+              <!-- Main Item Row -->
+              <div class="flex items-start gap-3">
+                <div class="h-[56px] w-[44px] flex-shrink-0 overflow-hidden rounded bg-[#F5F5F5]">
+                  @if ($item->gambar_url)
+                    <img src="{{ $item->full_gambar_url }}" alt="{{ $item->nama_produk }}" class="h-full w-full object-cover" />
+                  @endif
                 </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[12px] font-bold text-[var(--ink)]">{{ $item->nama_produk }}</p>
+                  <p class="text-[11px] text-[var(--muted)]">{{ $item->varian_label }} · x{{ $item->jumlah }}</p>
+                </div>
+                <p class="flex-shrink-0 text-[12px] font-bold text-[var(--ink)]">Rp {{ number_format($item->harga * $item->jumlah, 0, ',', '.') }}</p>
               </div>
-            @endif
-          </div>
-        @endforeach
 
-        {{-- Totals --}}
-        <div class="space-y-1.5 border-t border-[var(--border)] pt-4 text-[12px]">
-          <div class="flex justify-between">
-            <span class="text-[var(--muted)]">Subtotal · {{ $pesanan->items->sum('jumlah') }} Items</span>
-            <span class="text-[var(--ink)]">Rp {{ number_format($pesanan->subtotal, 0, ',', '.') }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-[var(--muted)]">Shipment Price</span>
-            <span class="text-[var(--ink)]">Rp {{ number_format($pesanan->ongkir, 0, ',', '.') }}</span>
-          </div>
-          @if ($pesanan->diskon > 0)
-            <div class="flex justify-between">
-              <span class="text-[var(--muted)]">Diskon</span>
-              <span class="text-green-600">-Rp {{ number_format($pesanan->diskon, 0, ',', '.') }}</span>
-            </div>
-          @endif
-          <div class="flex justify-between border-t border-[var(--border)] pt-2 text-[13px] font-bold">
-            <span class="text-[var(--ink)]">Total</span>
-            <span class="text-[var(--ink)]">Rp {{ number_format($pesanan->total, 0, ',', '.') }}</span>
-          </div>
-        </div>
-      </section>
+              <!-- Review Button and Form Block -->
+              @if ($produk && in_array($pesanan->status, ['delivered', 'completed'], true))
+                <div class="mt-3 pl-[56px] text-left">
+                  @if ($existingReview)
+                    <div class="flex items-center gap-2">
+                      <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/>
+                        </svg>
+                        Sudah Diulas ({{ $existingReview->rating }} ★)
+                      </span>
+                      <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="text-[11px] font-bold text-[var(--brown)] hover:underline">
+                        Ubah Ulasan
+                      </button>
+                    </div>
+                  @else
+                    <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[28px] items-center justify-center rounded bg-[var(--brown)] px-3.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
+                      Beri Ulasan
+                    </button>
+                  @endif
 
-      <hr class="border-[var(--border)]" />
+                  <!-- Review Form -->
+                  <div id="review-form-{{ $item->id }}" class="mt-3 hidden rounded border border-[var(--border)] bg-[#FCF8F3]/60 p-4 transition-all duration-300">
+                    <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" enctype="multipart/form-data">
+                      @csrf
+                      
+                      <div class="mb-3">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1">Rating</label>
+                        <select name="rating" class="block h-[34px] w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] text-[var(--ink)] outline-none" required>
+                          @for ($i = 5; $i >= 1; $i--)
+                            <option value="{{ $i }}" {{ ($existingReview && (int)$existingReview->rating === $i) ? 'selected' : '' }}>{{ $i }} Bintang</option>
+                          @endfor
+                        </select>
+                      </div>
 
-      {{-- Shipping --}}
-      <section class="py-6">
-        <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">Pengiriman</h3>
-        <div class="space-y-1.5 text-[12px]">
-          <div class="flex justify-between">
-            <span class="text-[var(--muted)]">Penerima</span>
-            <span class="font-medium text-[var(--ink)]">{{ $pesanan->nama_penerima }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-[var(--muted)]">Telepon</span>
-            <span class="text-[var(--ink)]">{{ $pesanan->telepon }}</span>
-          </div>
-          @if ($pesanan->kota)
-            <div class="flex justify-between">
-              <span class="text-[var(--muted)]">Kota</span>
-              <span class="text-[var(--ink)]">{{ $pesanan->kota }}</span>
-            </div>
-          @endif
-          @if ($pesanan->alamat_lengkap)
-            <div class="flex justify-between gap-6">
-              <span class="flex-shrink-0 text-[var(--muted)]">Alamat</span>
-              <span class="text-right text-[var(--ink)]">{{ $pesanan->alamat_lengkap }}</span>
-            </div>
-          @endif
-          @if ($pesanan->catatan)
-            <div class="flex justify-between gap-6">
-              <span class="flex-shrink-0 text-[var(--muted)]">Catatan</span>
-              <span class="text-right text-[var(--ink)] font-medium text-[var(--brown)]">{{ $pesanan->catatan }}</span>
-            </div>
-          @endif
-          <div class="flex justify-between">
-            <span class="text-[var(--muted)]">Kurir</span>
-            <span class="text-[var(--ink)]">{{ $pesanan->kurir_pengiriman ?: $pesanan->metode_pengiriman }}</span>
-          </div>
-          @if ($pesanan->nomor_resi)
-            <div class="flex justify-between">
-              <span class="text-[var(--muted)]">Nomor Resi</span>
-              <span class="text-[var(--ink)]">{{ $pesanan->nomor_resi }}</span>
-            </div>
-          @endif
-          @if ($pesanan->dikirim_pada)
-            <div class="flex justify-between">
-              <span class="text-[var(--muted)]">Dikirim Pada</span>
-              <span class="text-[var(--ink)]">{{ $pesanan->dikirim_pada->translatedFormat('d M Y, H:i') }}</span>
-            </div>
-          @endif
-        </div>
-      </section>
+                      <div class="mb-3">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Ulasan</label>
+                        <textarea name="review" rows="3" class="block w-full rounded border border-[var(--border)] bg-white px-3 py-2 text-[12px] text-[var(--ink)] outline-none" placeholder="Ceritakan pengalaman Anda memakai produk ini (minimal 20 karakter)." required minlength="20">{{ $existingReview ? $existingReview->review : '' }}</textarea>
+                      </div>
 
-      <section class="py-6" aria-labelledby="tracking-title">
-        <div class="rounded-[10px] border border-[var(--border)] bg-[var(--warm)] p-5 shadow-[0_10px_30px_rgba(131,81,61,0.06)]">
-          <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--brown)]">Pantau Paket</p>
-          <h3 id="tracking-title" class="mb-3 text-[18px] font-bold text-[var(--ink)]" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Tracking Pengiriman</h3>
-          @if ($pesanan->nomor_resi)
-            <p class="mb-4 text-[12px] leading-6 text-[var(--muted)]">Pesanan sudah dikirim. Gunakan nomor resi berikut untuk melacak paket di website kurir.</p>
-            <div class="space-y-2 rounded-[8px] bg-white p-4 text-[12px]">
-              <div class="flex justify-between gap-4">
-                <span class="text-[var(--muted)]">Kurir</span>
-                <span class="font-bold text-[var(--ink)]">{{ $pesanan->kurir_pengiriman ?: $pesanan->metode_pengiriman }}</span>
-              </div>
-              <div class="flex justify-between gap-4">
-                <span class="text-[var(--muted)]">Nomor Resi</span>
-                <span class="font-bold text-[var(--ink)]">{{ $pesanan->nomor_resi }}</span>
-              </div>
-              @if ($pesanan->dikirim_pada)
-                <div class="flex justify-between gap-4">
-                  <span class="text-[var(--muted)]">Dikirim Pada</span>
-                  <span class="font-bold text-[var(--ink)]">{{ $pesanan->dikirim_pada->translatedFormat('d M Y, H:i') }}</span>
+                      <div class="mb-3">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Foto Produk (Opsional)</label>
+                        <input type="file" name="photos[]" accept="image/*" multiple class="block w-full text-[11px] text-[var(--muted)]" />
+                      </div>
+
+                      <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[30px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">
+                          Batal
+                        </button>
+                        <button type="submit" class="inline-flex h-[30px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
+                          Kirim Ulasan
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
               @endif
             </div>
-            <div class="mt-4 flex flex-wrap gap-2">
-              <button type="button" onclick="navigator.clipboard.writeText('{{ $pesanan->nomor_resi }}')" class="inline-flex h-[38px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">Salin Resi</button>
-              <a href="{{ $trackingUrl }}" target="_blank" rel="noopener" class="inline-flex h-[38px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">Lacak di Website Kurir</a>
-            </div>
-          @else
-            <p class="text-[12px] leading-6 text-[var(--muted)]">Nomor resi akan muncul di sini setelah pesanan diserahkan ke kurir.</p>
-          @endif
-        </div>
-      </section>
+          @endforeach
 
-      <hr class="border-[var(--border)]" />
+          {{-- Totals --}}
+          <div class="space-y-1.5 border-t border-[var(--border)] pt-4 text-[12px]">
+            <div class="flex justify-between">
+              <span class="text-[var(--muted)]">Subtotal · {{ $pesanan->items->sum('jumlah') }} Items</span>
+              <span class="text-[var(--ink)]">Rp {{ number_format($pesanan->subtotal, 0, ',', '.') }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-[var(--muted)]">Shipment Price</span>
+              <span class="text-[var(--ink)]">Rp {{ number_format($pesanan->ongkir, 0, ',', '.') }}</span>
+            </div>
+            @if ($pesanan->diskon > 0)
+              <div class="flex justify-between">
+                <span class="text-[var(--muted)]">Diskon</span>
+                <span class="text-green-600">-Rp {{ number_format($pesanan->diskon, 0, ',', '.') }}</span>
+              </div>
+            @endif
+            <div class="flex justify-between border-t border-[var(--border)] pt-2 text-[13px] font-bold">
+              <span class="text-[var(--ink)]">Total</span>
+              <span class="text-[var(--ink)]">Rp {{ number_format($pesanan->total, 0, ',', '.') }}</span>
+            </div>
+          </div>
+        </section>
+
+        <hr class="border-[var(--border)]" />
+
+        {{-- Shipping --}}
+        <section class="py-6">
+          <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">Pengiriman</h3>
+          <div class="space-y-1.5 text-[12px]">
+            <div class="flex justify-between">
+              <span class="text-[var(--muted)]">Penerima</span>
+              <span class="font-medium text-[var(--ink)]">{{ $pesanan->nama_penerima }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-[var(--muted)]">Telepon</span>
+              <span class="text-[var(--ink)]">{{ $pesanan->telepon }}</span>
+            </div>
+            @if ($pesanan->kota)
+              <div class="flex justify-between">
+                <span class="text-[var(--muted)]">Kota</span>
+                <span class="text-[var(--ink)]">{{ $pesanan->kota }}</span>
+              </div>
+            @endif
+            @if ($pesanan->alamat_lengkap)
+              <div class="flex justify-between gap-6">
+                <span class="flex-shrink-0 text-[var(--muted)]">Alamat</span>
+                <span class="text-right text-[var(--ink)]">{{ $pesanan->alamat_lengkap }}</span>
+              </div>
+            @endif
+            @if ($pesanan->catatan)
+              <div class="flex justify-between gap-6">
+                <span class="flex-shrink-0 text-[var(--muted)]">Catatan</span>
+                <span class="text-right text-[var(--ink)] font-medium text-[var(--brown)]">{{ $pesanan->catatan }}</span>
+              </div>
+            @endif
+            <div class="flex justify-between">
+              <span class="text-[var(--muted)]">Kurir</span>
+              <span class="text-[var(--ink)]">{{ $pesanan->kurir_pengiriman ?: $pesanan->metode_pengiriman }}</span>
+            </div>
+            @if ($pesanan->nomor_resi)
+              <div class="flex justify-between">
+                <span class="text-[var(--muted)]">Nomor Resi</span>
+                <span class="text-[var(--ink)]">{{ $pesanan->nomor_resi }}</span>
+              </div>
+            @endif
+            @if ($pesanan->dikirim_pada)
+              <div class="flex justify-between">
+                <span class="text-[var(--muted)]">Dikirim Pada</span>
+                <span class="text-[var(--ink)]">{{ $pesanan->dikirim_pada->translatedFormat('d M Y, H:i') }}</span>
+              </div>
+            @endif
+          </div>
+        </section>
+      @endif
+
+      @if ($pesanan->status === 'shipped')
+        <section class="py-6" aria-labelledby="tracking-title">
+          <div class="rounded-[10px] border border-[var(--border)] bg-[var(--warm)] p-5 shadow-[0_10px_30px_rgba(131,81,61,0.06)]">
+            <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--brown)]">Pantau Paket</p>
+            <h3 id="tracking-title" class="mb-3 text-[18px] font-bold text-[var(--ink)]" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Tracking Pengiriman</h3>
+            @if ($pesanan->nomor_resi)
+              <p class="mb-4 text-[12px] leading-6 text-[var(--muted)]">Pesanan sudah dikirim. Gunakan nomor resi berikut untuk melacak paket di website kurir.</p>
+              <div class="space-y-2 rounded-[8px] bg-white p-4 text-[12px]">
+                <div class="flex justify-between gap-4">
+                  <span class="text-[var(--muted)]">Kurir</span>
+                  <span class="font-bold text-[var(--ink)]">{{ $pesanan->kurir_pengiriman ?: $pesanan->metode_pengiriman }}</span>
+                </div>
+                <div class="flex justify-between gap-4">
+                  <span class="text-[var(--muted)]">Nomor Resi</span>
+                  <span class="font-bold text-[var(--ink)]">{{ $pesanan->nomor_resi }}</span>
+                </div>
+                @if ($pesanan->dikirim_pada)
+                  <div class="flex justify-between gap-4">
+                    <span class="text-[var(--muted)]">Dikirim Pada</span>
+                    <span class="font-bold text-[var(--ink)]">{{ $pesanan->dikirim_pada->translatedFormat('d M Y, H:i') }}</span>
+                  </div>
+                @endif
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button type="button" onclick="navigator.clipboard.writeText('{{ $pesanan->nomor_resi }}')" class="inline-flex h-[38px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">Salin Resi</button>
+                <a href="{{ $trackingUrl }}" target="_blank" rel="noopener" class="inline-flex h-[38px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">Lacak di Website Kurir</a>
+              </div>
+            @else
+              <p class="text-[12px] leading-6 text-[var(--muted)]">Nomor resi akan muncul di sini setelah pesanan diserahkan ke kurir.</p>
+            @endif
+          </div>
+        </section>
+  
+      @endif
+
+      {{-- Ulasan Produk (Rating & Kata-kata) — Hanya tampil jika status Delivered / Completed --}}
+      @if (in_array($pesanan->status, ['delivered', 'completed'], true))
+        <section class="py-6">
+          <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--brown)]">Ulasan Produk</p>
+          <h2 class="mb-4 text-[18px] font-bold text-[var(--ink)]" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Berikan Rating & Ulasan</h2>
+          
+          <div class="space-y-4">
+            @foreach ($pesanan->items as $item)
+              @php
+                $produk = $item->produk;
+                $existingReview = null;
+                if ($produk && auth()->check()) {
+                    $existingReview = \App\Models\Review::where('user_id', auth()->id())
+                        ->where('produk_id', $item->produk_id)
+                        ->first();
+                }
+              @endphp
+              @if ($produk)
+                <div class="{{ !$loop->last ? 'pb-4 border-b border-[var(--border)]' : '' }}">
+                  <!-- Main Item Row -->
+                  <div class="flex items-start gap-3">
+                    <div class="h-[56px] w-[44px] flex-shrink-0 overflow-hidden rounded bg-[#F5F5F5]">
+                      @if ($item->gambar_url)
+                        <img src="{{ $item->full_gambar_url }}" alt="{{ $item->nama_produk }}" class="h-full w-full object-cover" />
+                      @endif
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-bold text-[var(--ink)]">{{ $item->nama_produk }}</p>
+                      <p class="text-[11px] text-[var(--muted)]">{{ $item->varian_label }} · x{{ $item->jumlah }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Review Button and Form Block -->
+                  <div class="mt-3 pl-[56px] text-left">
+                    @if ($existingReview)
+                      <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                          <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/>
+                          </svg>
+                          Sudah Diulas ({{ $existingReview->rating }} ★)
+                        </span>
+                        <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="text-[11px] font-bold text-[var(--brown)] hover:underline">
+                          Ubah Ulasan
+                        </button>
+                      </div>
+                    @else
+                      <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[28px] items-center justify-center rounded bg-[var(--brown)] px-3.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
+                        Beri Ulasan
+                      </button>
+                    @endif
+
+                    <!-- Review Form -->
+                    <div id="review-form-{{ $item->id }}" class="mt-3 hidden rounded border border-[var(--border)] bg-[#FCF8F3]/60 p-4 transition-all duration-300">
+                      <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" enctype="multipart/form-data">
+                        @csrf
+                        
+                        <div class="mb-3">
+                          <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1">Rating</label>
+                          <input type="hidden" name="rating" id="rating-input-{{ $item->id }}" value="{{ $existingReview ? $existingReview->rating : 5 }}" />
+                          @php
+                            $initialRating = $existingReview ? (int)$existingReview->rating : 5;
+                          @endphp
+                          <div class="flex items-center gap-1.5 my-2" id="star-container-{{ $item->id }}" data-rating="{{ $initialRating }}">
+                            @for ($star = 1; $star <= 5; $star++)
+                              @php
+                                $isActive = $star <= $initialRating;
+                              @endphp
+                              <button type="button" onclick="setRating({{ $item->id }}, {{ $star }})" onmouseover="hoverStars({{ $item->id }}, {{ $star }})" onmouseout="resetStars({{ $item->id }})" class="star-btn-{{ $item->id }} focus:outline-none transition-all duration-150 transform hover:scale-110 {{ $isActive ? 'text-amber-400' : 'text-gray-300' }}" data-star="{{ $star }}">
+                                <svg class="h-7 w-7 fill-current" viewBox="0 0 24 24">
+                                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                </svg>
+                              </button>
+                            @endfor
+                          </div>
+                        </div>
+
+                        <div class="mb-3">
+                          <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Ulasan</label>
+                          <textarea name="review" rows="3" class="block w-full rounded border border-[var(--border)] bg-white px-3 py-2 text-[12px] text-[var(--ink)] outline-none" placeholder="Ceritakan pengalaman Anda memakai produk ini (minimal 20 karakter)." required minlength="20">{{ $existingReview ? $existingReview->review : '' }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                          <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Foto Produk (Opsional)</label>
+                          <input type="file" name="photos[]" accept="image/*" multiple class="block w-full text-[11px] text-[var(--muted)]" />
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-2">
+                          <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[30px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">
+                            Batal
+                          </button>
+                          <button type="submit" class="inline-flex h-[30px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
+                            Kirim Ulasan
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              @endif
+            @endforeach
+          </div>
+        </section>
+        <hr class="border-[var(--border)]" />
+      @endif
 
       <section id="after-sales" class="py-6">
-        <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">After-Sales Care</h3>
-
         @if ($pesanan->after_sales_status)
+          <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">After-Sales Care</h3>
           <div class="rounded border border-[#FEDF89] bg-[#FFFAEB] px-4 py-4 text-[12px] leading-5 text-[#B54708]">
             <p class="font-bold">Request sudah dikirim</p>
             <p class="mt-1">Jenis: {{ $afterSalesTypeMap[$pesanan->after_sales_type] ?? ucfirst((string) $pesanan->after_sales_type) }}</p>
@@ -525,41 +685,51 @@
             @endif
           </div>
         @elseif ($pesanan->canRequestAfterSales())
-          <p class="mb-4 text-[12px] leading-relaxed text-[var(--muted)]">Jika ada kendala dengan pesanan yang sudah diterima, Anda dapat mengajukan request after-sales melalui form berikut.</p>
-          <form method="POST" action="{{ URL::temporarySignedRoute('pesanan.after-sales', now()->addDays(30), ['kode' => $pesanan->kode_pesanan]) }}" class="space-y-3">
-            @csrf
-            <label class="block">
-              <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Jenis Request</span>
-              <select name="type" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none">
-                <option value="return">Penukaran / Return</option>
-                <option value="refund">Refund</option>
-                <option value="issue">Komplain Pesanan</option>
-              </select>
-            </label>
-            <label class="block">
-              <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Solusi yang Diinginkan</span>
-              <select name="solution" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none">
-                <option value="return_refund">Return & Refund</option>
-                <option value="refund_only">Refund Only</option>
-                <option value="exchange">Tukar Produk</option>
-                <option value="item_check">Cek Kendala Produk</option>
-              </select>
-            </label>
-            <label class="block">
-              <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Item Terkait</span>
-              <input name="items[]" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none" placeholder="Contoh: Khimar Mocha - warna tidak sesuai" />
-            </label>
-            <label class="block">
-              <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Link Bukti Foto/Video</span>
-              <input name="evidence_urls[]" type="url" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none" placeholder="https://..." />
-            </label>
-            <label class="block">
-              <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Keterangan</span>
-              <textarea name="reason" rows="4" class="block w-full rounded border border-[var(--border)] bg-white px-3 py-2 text-[12px] text-[var(--ink)] outline-none" placeholder="Jelaskan kendala Anda, misalnya ukuran tidak sesuai atau ada masalah pada produk." required>{{ old('reason') }}</textarea>
-            </label>
-            <button type="submit" class="inline-flex h-[42px] items-center justify-center rounded bg-[var(--brown)] px-6 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:opacity-85">Kirim Request</button>
-          </form>
+          <button type="button" onclick="toggleAfterSales()" class="w-full flex items-center justify-between py-2 text-left outline-none border-none bg-transparent cursor-pointer">
+            <span class="text-[13px] font-bold text-[var(--ink)]">Ajukan After-Sales Care</span>
+            <svg id="after-sales-arrow" class="transition-transform duration-200 text-[var(--muted)]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          
+          <div id="after-sales-content" class="hidden mt-3 transition-all duration-300">
+            <p class="mb-4 text-[12px] leading-relaxed text-[var(--muted)]">Jika ada kendala dengan pesanan yang sudah diterima, Anda dapat mengajukan request after-sales melalui form berikut.</p>
+            <form method="POST" action="{{ URL::temporarySignedRoute('pesanan.after-sales', now()->addDays(30), ['kode' => $pesanan->kode_pesanan]) }}" class="space-y-3">
+              @csrf
+              <div class="space-y-3">
+                <label class="block">
+                  <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Jenis Request</span>
+                  <select name="type" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none">
+                    <option value="return">Penukaran / Return</option>
+                    <option value="refund">Refund</option>
+                    <option value="issue">Komplain Pesanan</option>
+                  </select>
+                </label>
+                <label class="block">
+                  <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Solusi yang Diinginkan</span>
+                  <select name="solution" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none">
+                    <option value="return_refund">Return & Refund</option>
+                    <option value="refund_only">Refund Only</option>
+                    <option value="exchange">Tukar Produk</option>
+                    <option value="item_check">Cek Kendala Produk</option>
+                  </select>
+                </label>
+                <label class="block">
+                  <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Item Terkait</span>
+                  <input name="items[]" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none" placeholder="Contoh: Khimar Mocha - warna tidak sesuai" />
+                </label>
+                <label class="block">
+                  <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Link Bukti Foto/Video</span>
+                  <input name="evidence_urls[]" type="url" class="block h-[42px] w-full rounded border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--ink)] outline-none" placeholder="https://..." />
+                </label>
+                <label class="block">
+                  <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]">Keterangan</span>
+                  <textarea name="reason" rows="4" class="block w-full rounded border border-[var(--border)] bg-white px-3 py-2 text-[12px] text-[var(--ink)] outline-none" placeholder="Jelaskan kendala Anda, misalnya ukuran tidak sesuai atau ada masalah pada produk." required>{{ old('reason') }}</textarea>
+                </label>
+                <button type="submit" class="inline-flex h-[42px] items-center justify-center rounded bg-[var(--brown)] px-6 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:opacity-85">Kirim Request</button>
+              </div>
+            </form>
+          </div>
         @else
+          <h3 class="mb-3 text-[13px] font-bold text-[var(--ink)]">After-Sales Care</h3>
           <p class="text-[12px] leading-relaxed text-[var(--muted)]">Request after-sales tersedia setelah pesanan berstatus terkirim atau selesai.</p>
         @endif
       </section>
@@ -575,7 +745,9 @@
             Bayar Sekarang
           </button>
         @endif
-        <a href="{{ route('pesanan.invoice', $pesanan->kode_pesanan) }}" class="inline-flex h-[42px] items-center justify-center rounded px-8 text-[11px] font-bold uppercase tracking-[0.1em] transition {{ $pesanan->status === 'cancelled' ? 'bg-[var(--brown)] text-white hover:opacity-85' : 'border border-[var(--border)] bg-white text-[var(--ink)] hover:bg-[var(--cream)]' }}">Buka Invoice</a>
+        @if ($pesanan->status !== 'pending_payment')
+          <a href="{{ route('pesanan.invoice', $pesanan->kode_pesanan) }}" class="inline-flex h-[42px] items-center justify-center rounded px-8 text-[11px] font-bold uppercase tracking-[0.1em] transition {{ $pesanan->status === 'cancelled' ? 'bg-[var(--brown)] text-white hover:opacity-85' : 'border border-[var(--border)] bg-white text-[var(--ink)] hover:bg-[var(--cream)]' }}">Buka Invoice</a>
+        @endif
         @if ($pesanan->status === 'pending_payment')
           <form method="POST" action="{{ URL::temporarySignedRoute('pesanan.cancel', now()->addDays(30), ['kode' => $pesanan->kode_pesanan]) }}">
             @csrf
@@ -704,6 +876,53 @@
         const el = document.getElementById(`review-form-${itemId}`);
         if (el) {
           el.classList.toggle('hidden');
+        }
+      }
+
+      function setRating(itemId, val) {
+        const input = document.getElementById(`rating-input-${itemId}`);
+        const container = document.getElementById(`star-container-${itemId}`);
+        if (input && container) {
+          input.value = val;
+          container.setAttribute('data-rating', val);
+          updateStars(itemId, val);
+        }
+      }
+
+      function hoverStars(itemId, val) {
+        updateStars(itemId, val);
+      }
+
+      function resetStars(itemId) {
+        const container = document.getElementById(`star-container-${itemId}`);
+        if (container) {
+          const val = parseInt(container.getAttribute('data-rating') || '5', 10);
+          updateStars(itemId, val);
+        }
+      }
+
+      function updateStars(itemId, val) {
+        const stars = document.querySelectorAll(`.star-btn-${itemId}`);
+        stars.forEach(star => {
+          const starIdx = parseInt(star.getAttribute('data-star'), 10);
+          if (starIdx <= val) {
+            star.classList.remove('text-gray-300');
+            star.classList.add('text-amber-400');
+          } else {
+            star.classList.remove('text-amber-400');
+            star.classList.add('text-gray-300');
+          }
+        });
+      }
+
+      function toggleAfterSales() {
+        const content = document.getElementById('after-sales-content');
+        const arrow = document.getElementById('after-sales-arrow');
+        if (content) {
+          content.classList.toggle('hidden');
+        }
+        if (arrow) {
+          arrow.classList.toggle('rotate-180');
         }
       }
     </script>

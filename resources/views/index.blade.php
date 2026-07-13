@@ -226,11 +226,11 @@
 
         <section class="bg-[var(--cream)] py-20 max-sm:py-14" aria-label="Brand philosophy">
           <div class="{{ $containerClass }} text-center">
-            <p class="mb-6 text-[11px] font-bold tracking-[0.22em] uppercase text-[var(--sand)]">Our Philosophy</p>
+            <p class="mb-6 text-[11px] font-bold tracking-[0.22em] uppercase text-[var(--brown)]">Our Philosophy</p>
             <blockquote class="mx-auto max-w-[580px] text-[32px] leading-[1.35] font-medium tracking-[-0.01em] text-[var(--ink)] max-lg:text-[26px] max-sm:text-[22px]" style="font-family:'Cormorant Garamond',Georgia,serif">
               <em>"Designed for women who find beauty in simplicity."</em>
             </blockquote>
-            <div class="mx-auto mt-7 mb-0 h-px w-12 bg-[var(--sand)]"></div>
+            <div class="mx-auto mt-7 mb-0 h-px w-12 bg-[var(--brown)]/40"></div>
             <p class="mt-6 text-[14px] leading-[1.75] text-[var(--muted)] max-w-[480px] mx-auto max-sm:text-[13px]">Setiap helai kain dipilih dengan hati, setiap jahitan dibuat dengan niat — untuk menemani langkahmu dengan tenang dan percaya diri.</p>
           </div>
         </section>
@@ -239,7 +239,7 @@
         <section aria-labelledby="bestseller-title" class="{{ $containerClass }} py-14 max-sm:py-8">
           <div class="mb-7 flex items-center justify-between gap-5 max-sm:mb-5 max-sm:flex-col max-sm:items-start">
             <div>
-              <p class="mb-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--sand)]">Most Loved</p>
+              <p class="mb-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--brown)]">Most Loved</p>
               <h2 id="bestseller-title" class="text-[28px] leading-[1.15] font-medium text-[var(--ink)] max-sm:text-[24px]" style="font-family:'Cormorant Garamond',Georgia,serif">Customer Picks</h2>
             </div>
             <a class="inline-flex items-center gap-7 whitespace-nowrap text-[14px] leading-5 font-bold text-[var(--brown)]" href="/shop">View All {!! $arrowIcon !!}</a>
@@ -264,7 +264,7 @@
         <section aria-labelledby="instagram-title" class="border-t border-[var(--border)] bg-[var(--warm)] pt-12 pb-0 max-sm:pt-8 max-sm:pb-0">
           <div class="{{ $containerClass }} mb-7 flex items-center justify-between gap-5 max-sm:mb-5 max-sm:flex-col max-sm:items-start">
             <div>
-              <p class="mb-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--sand)]">Community</p>
+              <p class="mb-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--brown)]">Community</p>
               <h2 id="instagram-title" class="text-[28px] leading-[1.15] font-medium text-[var(--ink)] max-sm:text-[24px]" style="font-family:'Cormorant Garamond',Georgia,serif">Follow Us on Instagram</h2>
               <p class="mt-1.5 text-[14px] leading-5 text-[var(--muted)] max-sm:text-[13px]">See how our community styles Auraquina</p>
             </div>

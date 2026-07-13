@@ -18,7 +18,7 @@
     <main class="flex flex-1 items-center justify-center px-5 py-12 max-sm:py-8">
       <section class="w-full max-w-[420px] rounded-[8px] border border-[var(--border)] bg-[var(--white)] px-7 pt-8 pb-7 shadow-[0_8px_32px_rgba(131,81,61,0.08)] max-sm:px-5 max-sm:pt-7 max-sm:pb-6">
         <header class="mb-6 text-center">
-          <p class="mb-2 text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--sand)]">Password Recovery</p>
+          <p class="mb-2 text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--brown)]">Password Recovery</p>
           <h1 class="text-[32px] leading-[1.15] font-medium tracking-[-0.01em] text-[var(--ink)] max-sm:text-[28px]" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif">Reset <em>Password</em></h1>
           <p class="mt-2 text-[13px] leading-[18px] text-[var(--muted)]">Masukkan email akun Anda dan kami akan mengirimkan tautan untuk membuat password baru.</p>
         </header>

@@ -56,17 +56,17 @@
 
       <section class="mx-auto flex w-[min(1000px,calc(100vw-32px))] gap-8 max-md:flex-col" aria-labelledby="account-title">
         <aside class="w-[300px] shrink-0 max-md:w-full" aria-label="My Settings">
-          <div class="rounded-[8px] bg-white p-6 shadow-sm">
-            <h1 id="account-title" class="mb-4 text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Pengaturan Saya</h1>
-            <nav class="flex flex-col gap-3">
+          <div class="rounded-[8px] bg-white p-6 shadow-sm max-md:p-2 max-md:bg-transparent max-md:shadow-none">
+            <h1 id="account-title" class="mb-4 text-[18px] font-medium text-[#333] max-md:hidden" style="font-family:sans-serif;">Pengaturan Saya</h1>
+            <nav class="flex flex-col gap-3 max-md:flex-row max-md:overflow-x-auto max-md:scrollbar-none max-md:border-b max-md:border-[#e5e5e5] max-md:gap-5 max-md:pb-3.5 no-scrollbar">
               @foreach ($settingLinks as $link)
-                <a href="{{ $link['href'] }}" class="text-[14px] text-[#555] transition-colors hover:text-[var(--brown)] {{ $section === $link['key'] ? 'font-medium !text-[var(--brown)]' : '' }}">
+                <a href="{{ $link['href'] }}" class="text-[14px] text-[#555] transition-colors hover:text-[var(--brown)] whitespace-nowrap {{ $section === $link['key'] ? 'font-bold !text-[var(--brown)] max-md:border-b-2 max-md:border-[var(--brown)] max-md:pb-3.5' : 'max-md:pb-3.5' }}">
                   {{ $link['label'] }}
                 </a>
               @endforeach
-              <form method="POST" action="{{ route('logout') }}" class="mt-2">
+              <form method="POST" action="{{ route('logout') }}" class="mt-2 max-md:mt-0 max-md:ml-auto">
                 @csrf
-                <button type="submit" class="text-left text-[14px] text-[#555] transition-colors hover:text-[var(--brown)]">Keluar</button>
+                <button type="submit" class="text-left text-[14px] text-[#555] transition-colors hover:text-[var(--brown)] whitespace-nowrap max-md:pb-3.5">Keluar</button>
               </form>
             </nav>
           </div>
@@ -74,7 +74,7 @@
 
         <section class="flex-1" aria-label="Account detail">
           @if ($section === 'delivery')
-            <div class="rounded-[8px] bg-white p-8 shadow-sm">
+            <div class="rounded-[8px] bg-white p-8 shadow-sm max-md:p-5">
               <h2 class="mb-6 text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Informasi pengiriman</h2>
 
               {{-- Saved Addresses --}}
@@ -83,7 +83,9 @@
                   <h3 class="text-[15px] font-medium text-[#333]">Alamat Tersimpan</h3>
                   <div class="flex items-center gap-3">
                     <span class="text-[12px] text-[#888]">{{ ($addresses ?? collect())->count() }} alamat</span>
-                    <button type="button" onclick="openAddressModal()" class="inline-flex h-8 items-center justify-center gap-1 rounded-[4px] bg-[var(--brown)] px-3 text-[12px] font-medium text-white transition-colors hover:bg-[var(--ink)]">+ Tambah</button>
+                    @if (($addresses ?? collect())->isNotEmpty())
+                      <button type="button" onclick="openAddressModal()" class="inline-flex h-8 items-center justify-center gap-1 rounded-[4px] bg-[var(--brown)] px-3 text-[12px] font-medium text-white transition-colors hover:bg-[var(--ink)]">+ Tambah</button>
+                    @endif
                   </div>
                 </div>
                 @if (($addresses ?? collect())->isEmpty())
@@ -105,7 +107,7 @@
                               <span class="ml-1.5 rounded-full bg-[var(--cream)] px-2 py-0.5 text-[10px] font-bold text-[var(--brown)]">Utama</span>
                             @endif
                           </div>
-                          <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                          <div class="flex items-center gap-1 opacity-100 md:opacity-0 transition-opacity group-hover:opacity-100">
                             <button type="button" onclick='openEditModal(@json($address))' class="inline-flex h-7 items-center justify-center rounded px-2 text-[11px] text-[#83513D] transition-colors hover:bg-[#f5f0eb]">Ubah</button>
                             <button type="button" onclick="deleteAddress({{ $address->id }})" class="inline-flex h-7 items-center justify-center rounded px-2 text-[11px] text-[#c0392b] transition-colors hover:bg-[#fef3f2]">Hapus</button>
                           </div>
@@ -155,6 +157,8 @@
             </div>
 
             <style>
+              .no-scrollbar::-webkit-scrollbar { display: none; }
+              .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
               .address-modal { display:none; position:fixed; inset:0; z-index:9999; background:rgba(32,25,22,0.45); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); align-items:center; justify-content:center; opacity:0; transition:opacity 0.25s ease; }
               .address-modal.open { display:flex; opacity:1; }
               .address-modal-card { background:#fff; border-radius:14px; padding:28px 26px 24px; width:min(440px,calc(100vw - 32px)); max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.18); transform:translateY(12px) scale(0.98); transition:transform 0.25s ease; }
@@ -220,8 +224,8 @@
               document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAddressModal(); });
             </script>
           @elseif ($section === 'information')
-            <div class="rounded-[8px] bg-white p-8 shadow-sm">
-              <h2 class="mb-6 text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Informasi Akun</h2>
+            <div class="rounded-[8px] bg-white p-8 shadow-sm max-md:p-5">
+              <h2 class="mb-6 text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Buyer - Account Information</h2>
               
               <div class="mb-8 grid grid-cols-3 gap-4 max-sm:grid-cols-1">
                 <div class="rounded-[4px] border border-[#eee] p-4 text-center">
@@ -238,7 +242,7 @@
                 </div>
               </div>
               
-              <div class="space-y-4">
+              <div class="space-y-4 mb-8">
                 <div class="flex flex-col border-b border-[#eee] pb-3">
                   <span class="text-[12px] text-[#888]">Email</span>
                   <span class="mt-1 text-[14px] text-[#333]">{{ $user->email }}</span>
@@ -252,9 +256,29 @@
                   <span class="mt-1 text-[14px] text-[#333]">{{ $user->address ?: 'Belum diatur' }}</span>
                 </div>
               </div>
+
+              {{-- Danger Zone: Delete Account --}}
+              <div class="border-t border-[#eee] pt-6">
+                <h3 class="mb-4 text-[13px] font-semibold text-[#c0392b] uppercase tracking-[0.05em]">Danger Zone</h3>
+                <div class="rounded-[8px] border border-[#f5c6cb] bg-[#fff5f5] p-5">
+                  <form method="POST" action="{{ route('account.destroy') }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun Anda secara permanen? Semua riwayat belanja dan data profil akan dihapus dan tindakan ini TIDAK dapat dibatalkan.')" class="space-y-4">
+                    @csrf
+                    @method('DELETE')
+                    
+                    <button type="submit" class="inline-flex h-[38px] items-center justify-center rounded-full border border-[#dc3545] bg-white px-5 text-[12px] font-medium text-[#dc3545] transition-all hover:bg-[#dc3545] hover:text-white focus:outline-none">
+                      Delete My Account
+                    </button>
+                    
+                    <div class="text-[13px] leading-[1.6] text-[#666]">
+                      <p>You will lose all your data in our webstore and will not be able to retrieve any content, such as personal informations, purchase history, points, and loyalty.</p>
+                      <p class="mt-2 font-semibold text-[#dc3545]">This action can't be undone.</p>
+                    </div>
+                  </form>
+                </div>
+              </div>
             </div>
           @elseif ($section === 'orders')
-            <div class="rounded-[8px] bg-white p-8 shadow-sm">
+            <div class="rounded-[8px] bg-white p-8 shadow-sm max-md:p-5">
               <div class="mb-6 flex items-center justify-between border-b border-[#eee] pb-4">
                 <h2 class="text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Pesanan Saya</h2>
               </div>
@@ -310,28 +334,85 @@
             @endif
             </div>
           @else
-            <div class="rounded-[8px] bg-white p-8 shadow-sm">
-              <h2 class="mb-6 text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Info Profil Saya</h2>
-              <form method="POST" action="{{ route('account.profile.update') }}" class="space-y-4">
+            <div class="rounded-[8px] bg-white p-8 shadow-sm max-md:p-5">
+              <div class="mb-6 flex items-center justify-between">
+                <h2 class="text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Info Profil Saya</h2>
+                <button type="button" id="btn-edit-profile" onclick="enableProfileEdit()" class="inline-flex h-8 items-center justify-center rounded-[4px] border border-[var(--brown)] bg-transparent px-4 text-[12px] font-medium text-[var(--brown)] transition-colors hover:bg-[var(--brown)] hover:text-white">Edit</button>
+              </div>
+              <form method="POST" id="profile-form" action="{{ route('account.profile.update') }}" class="space-y-4">
                 @csrf
                 @method('PATCH')
                 <div>
                   <label class="mb-1.5 block text-[13px] text-[#888]">Nama Lengkap</label>
-                  <input type="text" name="name" value="{{ old('name', $user->name) }}" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
+                  <input type="text" id="profile-name" name="name" value="{{ old('name', $user->name) }}" data-original="{{ $user->name }}" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa] disabled:bg-[#f5f5f5] disabled:text-[#999] disabled:cursor-not-allowed" disabled required />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-[13px] text-[#888]">Email</label>
-                  <input type="email" name="email" value="{{ old('email', $user->email) }}" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
+                  <input type="email" id="profile-email" name="email" value="{{ old('email', $user->email) }}" data-original="{{ $user->email }}" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa] disabled:bg-[#f5f5f5] disabled:text-[#999] disabled:cursor-not-allowed" disabled required />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-[13px] text-[#888]">Nomor Telepon</label>
-                  <input type="tel" name="phone" value="{{ old('phone', $user->phone) }}" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" />
+                  <input type="tel" id="profile-phone" name="phone" value="{{ old('phone', $user->phone) }}" data-original="{{ $user->phone }}" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa] disabled:bg-[#f5f5f5] disabled:text-[#999] disabled:cursor-not-allowed" disabled />
                 </div>
-                <div class="pt-2">
+                <div id="profile-action-buttons" class="hidden pt-2 flex items-center gap-3">
                   <button type="submit" class="inline-flex h-10 items-center justify-center rounded-[4px] bg-[var(--brown)] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[var(--ink)]">Simpan Profil</button>
+                  <button type="button" onclick="disableProfileEdit()" class="inline-flex h-10 items-center justify-center rounded-[4px] border border-[#ddd] bg-white px-5 text-[13px] font-medium text-[#555] transition-colors hover:bg-[#f5f5f5]">Batal</button>
                 </div>
               </form>
             </div>
+
+            <script>
+              function enableProfileEdit() {
+                const nameInput = document.getElementById('profile-name');
+                const emailInput = document.getElementById('profile-email');
+                const phoneInput = document.getElementById('profile-phone');
+                if (nameInput) { nameInput.disabled = false; nameInput.focus(); }
+                if (emailInput) emailInput.disabled = false;
+                if (phoneInput) phoneInput.disabled = false;
+
+                const editBtn = document.getElementById('btn-edit-profile');
+                const actionsDiv = document.getElementById('profile-action-buttons');
+                if (editBtn) editBtn.style.display = 'none';
+                if (actionsDiv) {
+                  actionsDiv.classList.remove('hidden');
+                  actionsDiv.classList.add('flex');
+                }
+              }
+
+              function disableProfileEdit() {
+                const nameInput = document.getElementById('profile-name');
+                const emailInput = document.getElementById('profile-email');
+                const phoneInput = document.getElementById('profile-phone');
+                if (nameInput) {
+                  nameInput.disabled = true;
+                  nameInput.value = nameInput.getAttribute('data-original');
+                }
+                if (emailInput) {
+                  emailInput.disabled = true;
+                  emailInput.value = emailInput.getAttribute('data-original');
+                }
+                if (phoneInput) {
+                  phoneInput.disabled = true;
+                  phoneInput.value = phoneInput.getAttribute('data-original') || '';
+                }
+
+                const editBtn = document.getElementById('btn-edit-profile');
+                const actionsDiv = document.getElementById('profile-action-buttons');
+                if (editBtn) editBtn.style.display = 'inline-flex';
+                if (actionsDiv) {
+                  actionsDiv.classList.remove('flex');
+                  actionsDiv.classList.add('hidden');
+                }
+              }
+            </script>
+
+            @if ($errors->any() || old('name') || old('email') || old('phone'))
+              <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                  enableProfileEdit();
+                });
+              </script>
+            @endif
           @endif
         </section>
       </section>

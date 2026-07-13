@@ -201,4 +201,17 @@ class AccountController extends Controller
 
         return view('account.show', compact('user', 'kategoris', 'pesanans', 'stats', 'section', 'addresses'));
     }
+
+    public function destroy(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        auth()->logout();
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home')->with('status', 'Akun Anda berhasil dihapus.');
+    }
 }

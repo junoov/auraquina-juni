@@ -82,22 +82,27 @@ class PesananActions
             ->visible(fn (Pesanan $record): bool => $record->status === Pesanan::STATUS_PACKED
                 && auth()->user()?->can('process_pesanan'))
             ->schema([
-                Select::make('kurir')
-                    ->label('Kurir')
-                    ->options(['JNE' => 'JNE', 'JNT' => 'J&T', 'SiCepat' => 'SiCepat', 'AnterAja' => 'AnterAja'])
-                    ->required(),
                 TextInput::make('awb')
                     ->label('Nomor Resi')
                     ->required(),
             ])
             ->action(function (Pesanan $record, array $data): void {
+                $kurir = match (true) {
+                    str_contains(strtolower($record->metode_pengiriman), 'jne') => 'JNE',
+                    str_contains(strtolower($record->metode_pengiriman), 'j&t') || str_contains(strtolower($record->metode_pengiriman), 'jnt') => 'J&T',
+                    str_contains(strtolower($record->metode_pengiriman), 'sicepat') => 'SiCepat',
+                    str_contains(strtolower($record->metode_pengiriman), 'anteraja') => 'AnterAja',
+                    str_contains(strtolower($record->metode_pengiriman), 'gosend') => 'GoSend',
+                    default => $record->metode_pengiriman,
+                };
+
                 $record->forceFill([
-                    'kurir_pengiriman' => $data['kurir'],
+                    'kurir_pengiriman' => $kurir,
                     'nomor_resi' => $data['awb'],
                     'dikirim_pada' => now(),
                 ])->save();
 
-                if (! self::transition($record, Pesanan::STATUS_SHIPPED, ['kurir' => $data['kurir'], 'awb' => $data['awb']])) {
+                if (! self::transition($record, Pesanan::STATUS_SHIPPED, ['kurir' => $kurir, 'awb' => $data['awb']])) {
                     return;
                 }
 

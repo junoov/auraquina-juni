@@ -111,24 +111,30 @@ class PesanansTable
                     ->icon('heroicon-o-cube')
                     ->visible(fn ($record) => $record->status === 'processing' && auth()->user()?->can('process_pesanan'))
                     ->action(fn ($record) => self::transitionOrder($record, Pesanan::STATUS_PACKED)),
-                Action::make('ship')
+                 Action::make('ship')
                     ->label('Kirim')
                     ->icon('heroicon-o-truck')
                     ->visible(fn ($record) => $record->status === 'packed' && auth()->user()?->can('process_pesanan'))
                     ->schema([
                         TextInput::make('awb')->label('Nomor Resi')->required(),
-                        Select::make('kurir')
-                            ->options(['JNE' => 'JNE', 'JNT' => 'J&T', 'SiCepat' => 'SiCepat', 'AnterAja' => 'AnterAja'])
-                            ->required(),
                     ])
                     ->action(function ($record, array $data) {
+                        $kurir = match (true) {
+                            $record && str_contains(strtolower($record->metode_pengiriman), 'jne') => 'JNE',
+                            $record && (str_contains(strtolower($record->metode_pengiriman), 'j&t') || str_contains(strtolower($record->metode_pengiriman), 'jnt')) => 'J&T',
+                            $record && str_contains(strtolower($record->metode_pengiriman), 'sicepat') => 'SiCepat',
+                            $record && str_contains(strtolower($record->metode_pengiriman), 'anteraja') => 'AnterAja',
+                            $record && str_contains(strtolower($record->metode_pengiriman), 'gosend') => 'GoSend',
+                            default => $record ? $record->metode_pengiriman : null,
+                        };
+
                         $record->forceFill([
-                            'kurir_pengiriman' => $data['kurir'],
+                            'kurir_pengiriman' => $kurir,
                             'nomor_resi' => $data['awb'],
                             'dikirim_pada' => now(),
                         ])->save();
                         $transitioned = self::transitionOrder($record, Pesanan::STATUS_SHIPPED, [
-                            'kurir' => $data['kurir'],
+                            'kurir' => $kurir,
                             'awb' => $data['awb'],
                         ]);
 

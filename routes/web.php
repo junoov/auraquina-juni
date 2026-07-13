@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/akun/alamat', [AccountController::class, 'storeAddress'])->name('account.addresses.store');
     Route::patch('/akun/alamat/{address}', [AccountController::class, 'updateAddress'])->name('account.addresses.update');
     Route::delete('/akun/alamat/{address}', [AccountController::class, 'destroyAddress'])->name('account.addresses.destroy');
+    Route::delete('/akun', [AccountController::class, 'destroy'])->name('account.destroy');
 
 
     Route::post('/shop/{slug}/reviews', [ProdukController::class, 'storeReview'])->name('produk.reviews.store');

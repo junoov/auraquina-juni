@@ -44,7 +44,7 @@
               </div>
               <div id="saved-address-cards" style="display:grid;gap:10px;">
                 @foreach ($savedAddresses as $address)
-                  <button type="button" data-name="{{ $address->recipient_name }}" data-email="{{ auth()->user()?->email }}" data-phone="{{ $address->phone }}" data-city="{{ $address->city }}" data-address="{{ $address->address }}" onclick="selectSavedAddress(this)" style="display:block;width:100%;text-align:left;border:1.5px solid {{ $address->is_default ? '#83513D' : 'rgba(211,192,172,0.58)' }};border-radius:10px;background:#FFFFFF;padding:14px 16px;cursor:pointer;transition:border-color 0.15s;">
+                  <button type="button" class="saved-address-btn {{ $address->is_default ? 'is-default' : '' }}" data-name="{{ $address->recipient_name }}" data-email="{{ auth()->user()?->email }}" data-phone="{{ $address->phone }}" data-city="{{ $address->city }}" data-address="{{ $address->address }}" onclick="selectSavedAddress(this)" style="display:block;width:100%;text-align:left;border:1.5px solid {{ $address->is_default ? '#83513D' : 'rgba(211,192,172,0.58)' }};border-radius:10px;background:#FFFFFF;padding:14px 16px;cursor:pointer;transition:border-color 0.15s;">
                     <span style="display:flex;justify-content:space-between;gap:10px;margin-bottom:4px;">
                       <strong style="font-size:13px;color:#201916;">{{ $address->label }} · {{ $address->recipient_name }}</strong>
                       @if ($address->is_default)
@@ -164,7 +164,7 @@
     </main>
 
     {{-- TOAST --}}
-    <div id="toast" style="display:none;position:fixed;top:28px;left:50%;transform:translateX(-50%);z-index:300;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;color:#FFFFFF;box-shadow:0 4px 20px rgba(0,0,0,0.12);pointer-events:none;opacity:0;transition:opacity 0.3s,transform 0.3s;"></div>
+    <div id="toast" style="display:none;position:fixed;top:28px;left:50%;transform:translateX(-50%);z-index:99999;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;color:#FFFFFF;box-shadow:0 4px 20px rgba(0,0,0,0.12);pointer-events:none;opacity:0;transition:opacity 0.3s,transform 0.3s;"></div>
 
     {{-- POPUP / BOTTOM SHEET --}}
     <div id="sheet-overlay" onclick="closeSheet()" style="display:none;position:fixed;inset:0;background:rgba(122,80,62,0.10);z-index:200;"></div>
@@ -448,6 +448,13 @@
           }
         });
       }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const defaultBtn = document.querySelector('.saved-address-btn.is-default') || document.querySelector('.saved-address-btn');
+        if (defaultBtn) {
+          selectSavedAddress(defaultBtn);
+        }
+      });
     </script>
   </body>
 </html>
