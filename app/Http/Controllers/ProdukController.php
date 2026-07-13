@@ -241,19 +241,23 @@ class ProdukController extends Controller
             ->values()
             ->all();
 
-        Review::updateOrCreate(
-            [
-                'produk_id' => $produk->id,
-                'user_id' => $request->user()->id,
-            ],
-            [
-                'pesanan_id' => $eligibleOrder->id,
-                'rating' => $validated['rating'],
-                'review' => trim($validated['review']),
-                'photos' => $photos,
-                'status' => Review::STATUS_PENDING,
-            ]
-        );
+        $exists = Review::where('produk_id', $produk->id)
+            ->where('user_id', $request->user()->id)
+            ->exists();
+
+        if ($exists) {
+            return back()->with('error', 'Anda sudah memberikan ulasan untuk produk ini.');
+        }
+
+        Review::create([
+            'produk_id' => $produk->id,
+            'user_id' => $request->user()->id,
+            'pesanan_id' => $eligibleOrder->id,
+            'rating' => $validated['rating'],
+            'review' => trim($validated['review']),
+            'photos' => $photos,
+            'status' => Review::STATUS_APPROVED,
+        ]);
 
         $produk->forceFill([
             'rating_star' => round((float) $produk->reviews()->where('status', 'approved')->avg('rating'), 2),

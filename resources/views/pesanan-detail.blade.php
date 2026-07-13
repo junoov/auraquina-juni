@@ -397,50 +397,47 @@
                         </svg>
                         Sudah Diulas ({{ $existingReview->rating }} ★)
                       </span>
-                      <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="text-[11px] font-bold text-[var(--brown)] hover:underline">
-                        Ubah Ulasan
-                      </button>
                     </div>
                   @else
                     <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[28px] items-center justify-center rounded bg-[var(--brown)] px-3.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
                       Beri Ulasan
                     </button>
+
+                    <!-- Review Form -->
+                    <div id="review-form-{{ $item->id }}" class="mt-3 hidden rounded border border-[var(--border)] bg-[#FCF8F3]/60 p-4 transition-all duration-300">
+                      <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" enctype="multipart/form-data">
+                        @csrf
+                        
+                        <div class="mb-3">
+                          <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1">Rating</label>
+                          <select name="rating" class="block h-[34px] w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] text-[var(--ink)] outline-none" required>
+                            @for ($i = 5; $i >= 1; $i--)
+                              <option value="{{ $i }}">{{ $i }} Bintang</option>
+                            @endfor
+                          </select>
+                        </div>
+
+                        <div class="mb-3">
+                          <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Ulasan</label>
+                          <textarea name="review" rows="3" class="block w-full rounded border border-[var(--border)] bg-white px-3 py-2 text-[12px] text-[var(--ink)] outline-none" placeholder="Ceritakan pengalaman Anda memakai produk ini (minimal 20 karakter)." required minlength="20"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                          <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Foto Produk (Opsional)</label>
+                          <input type="file" name="photos[]" accept="image/*" multiple class="block w-full text-[11px] text-[var(--muted)]" />
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-2">
+                          <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[30px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">
+                            Batal
+                          </button>
+                          <button type="submit" class="inline-flex h-[30px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
+                            Kirim Ulasan
+                          </button>
+                        </div>
+                      </form>
+                    </div>
                   @endif
-
-                  <!-- Review Form -->
-                  <div id="review-form-{{ $item->id }}" class="mt-3 hidden rounded border border-[var(--border)] bg-[#FCF8F3]/60 p-4 transition-all duration-300">
-                    <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" enctype="multipart/form-data">
-                      @csrf
-                      
-                      <div class="mb-3">
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1">Rating</label>
-                        <select name="rating" class="block h-[34px] w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] text-[var(--ink)] outline-none" required>
-                          @for ($i = 5; $i >= 1; $i--)
-                            <option value="{{ $i }}" {{ ($existingReview && (int)$existingReview->rating === $i) ? 'selected' : '' }}>{{ $i }} Bintang</option>
-                          @endfor
-                        </select>
-                      </div>
-
-                      <div class="mb-3">
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Ulasan</label>
-                        <textarea name="review" rows="3" class="block w-full rounded border border-[var(--border)] bg-white px-3 py-2 text-[12px] text-[var(--ink)] outline-none" placeholder="Ceritakan pengalaman Anda memakai produk ini (minimal 20 karakter)." required minlength="20">{{ $existingReview ? $existingReview->review : '' }}</textarea>
-                      </div>
-
-                      <div class="mb-3">
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Foto Produk (Opsional)</label>
-                        <input type="file" name="photos[]" accept="image/*" multiple class="block w-full text-[11px] text-[var(--muted)]" />
-                      </div>
-
-                      <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[30px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">
-                          Batal
-                        </button>
-                        <button type="submit" class="inline-flex h-[30px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
-                          Kirim Ulasan
-                        </button>
-                      </div>
-                    </form>
-                  </div>
                 </div>
               @endif
             </div>
@@ -598,61 +595,52 @@
                           </svg>
                           Sudah Diulas ({{ $existingReview->rating }} ★)
                         </span>
-                        <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="text-[11px] font-bold text-[var(--brown)] hover:underline">
-                          Ubah Ulasan
-                        </button>
                       </div>
                     @else
                       <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[28px] items-center justify-center rounded bg-[var(--brown)] px-3.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
                         Beri Ulasan
                       </button>
-                    @endif
 
-                    <!-- Review Form -->
-                    <div id="review-form-{{ $item->id }}" class="mt-3 hidden rounded border border-[var(--border)] bg-[#FCF8F3]/60 p-4 transition-all duration-300">
-                      <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" enctype="multipart/form-data">
-                        @csrf
-                        
-                        <div class="mb-3">
-                          <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1">Rating</label>
-                          <input type="hidden" name="rating" id="rating-input-{{ $item->id }}" value="{{ $existingReview ? $existingReview->rating : 5 }}" />
-                          @php
-                            $initialRating = $existingReview ? (int)$existingReview->rating : 5;
-                          @endphp
-                          <div class="flex items-center gap-1.5 my-2" id="star-container-{{ $item->id }}" data-rating="{{ $initialRating }}">
-                            @for ($star = 1; $star <= 5; $star++)
-                              @php
-                                $isActive = $star <= $initialRating;
-                              @endphp
-                              <button type="button" onclick="setRating({{ $item->id }}, {{ $star }})" onmouseover="hoverStars({{ $item->id }}, {{ $star }})" onmouseout="resetStars({{ $item->id }})" class="star-btn-{{ $item->id }} focus:outline-none transition-all duration-150 transform hover:scale-110 {{ $isActive ? 'text-amber-400' : 'text-gray-300' }}" data-star="{{ $star }}">
-                                <svg class="h-7 w-7 fill-current" viewBox="0 0 24 24">
-                                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                                </svg>
-                              </button>
-                            @endfor
+                      <!-- Review Form -->
+                      <div id="review-form-{{ $item->id }}" class="mt-3 hidden rounded border border-[var(--border)] bg-[#FCF8F3]/60 p-4 transition-all duration-300">
+                        <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" enctype="multipart/form-data">
+                          @csrf
+                          
+                          <div class="mb-3">
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1">Rating</label>
+                            <input type="hidden" name="rating" id="rating-input-{{ $item->id }}" value="5" />
+                            <div class="flex items-center gap-1.5 my-2" id="star-container-{{ $item->id }}" data-rating="5">
+                              @for ($star = 1; $star <= 5; $star++)
+                                <button type="button" onclick="setRating({{ $item->id }}, {{ $star }})" onmouseover="hoverStars({{ $item->id }}, {{ $star }})" onmouseout="resetStars({{ $item->id }})" class="star-btn-{{ $item->id }} focus:outline-none transition-all duration-150 transform hover:scale-110 text-amber-400" data-star="{{ $star }}">
+                                  <svg class="h-7 w-7 fill-current" viewBox="0 0 24 24">
+                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                  </svg>
+                                </button>
+                              @endfor
+                            </div>
                           </div>
-                        </div>
 
-                        <div class="mb-3">
-                          <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Ulasan</label>
-                          <textarea name="review" rows="3" class="block w-full rounded border border-[var(--border)] bg-white px-3 py-2 text-[12px] text-[var(--ink)] outline-none" placeholder="Ceritakan pengalaman Anda memakai produk ini (minimal 20 karakter)." required minlength="20">{{ $existingReview ? $existingReview->review : '' }}</textarea>
-                        </div>
+                          <div class="mb-3">
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Ulasan</label>
+                            <textarea name="review" rows="3" class="block w-full rounded border border-[var(--border)] bg-white px-3 py-2 text-[12px] text-[var(--ink)] outline-none" placeholder="Ceritakan pengalaman Anda memakai produk ini (minimal 20 karakter)." required minlength="20"></textarea>
+                          </div>
 
-                        <div class="mb-3">
-                          <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Foto Produk (Opsional)</label>
-                          <input type="file" name="photos[]" accept="image/*" multiple class="block w-full text-[11px] text-[var(--muted)]" />
-                        </div>
+                          <div class="mb-3">
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-[var(--ink)] mb-1 font-bold">Foto Produk (Opsional)</label>
+                            <input type="file" name="photos[]" accept="image/*" multiple class="block w-full text-[11px] text-[var(--muted)]" />
+                          </div>
 
-                        <div class="flex justify-end gap-2 pt-2">
-                          <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[30px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">
-                            Batal
-                          </button>
-                          <button type="submit" class="inline-flex h-[30px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
-                            Kirim Ulasan
-                          </button>
-                        </div>
-                      </form>
-                    </div>
+                          <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" onclick="toggleReviewForm({{ $item->id }})" class="inline-flex h-[30px] items-center justify-center rounded border border-[var(--border)] bg-white px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)] transition hover:bg-[var(--cream)]">
+                              Batal
+                            </button>
+                            <button type="submit" class="inline-flex h-[30px] items-center justify-center rounded bg-[var(--brown)] px-4 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:opacity-85">
+                              Kirim Ulasan
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    @endif
                   </div>
                 </div>
               @endif

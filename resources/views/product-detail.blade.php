@@ -179,19 +179,19 @@
           <div style="font-size:13px;color:#71665d;">{{ $ratingCount > 0 ? number_format($ratingAverage, 1) . ' / 5 dari ' . $ratingCount . ' ulasan' : 'Jadilah yang pertama memberi ulasan' }}</div>
         </div>
 
-        @if (auth()->check() && $eligibleOrder)
+        @if (auth()->check() && $eligibleOrder && ! $existingReview)
           <form method="POST" action="{{ route('produk.reviews.store', $produk->slug) }}" enctype="multipart/form-data" style="margin-bottom:24px;border:1px solid rgba(211,192,172,0.4);border-radius:8px;background:#FFFFFF;padding:18px 18px 16px;">
             @csrf
-            <div style="margin-bottom:12px;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#201916;">{{ $existingReview ? 'Perbarui Ulasan Anda' : 'Tulis Ulasan' }}</div>
+            <div style="margin-bottom:12px;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#201916;">Tulis Ulasan</div>
             <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
               <label for="rating" style="font-size:13px;color:#71665d;">Rating</label>
               <select id="rating" name="rating" style="height:40px;border:1.5px solid rgba(211,192,172,0.58);border-radius:6px;padding:0 12px;background:#FFFFFF;color:#201916;font-size:13px;outline:none;" required>
                 @for ($i = 5; $i >= 1; $i--)
-                  <option value="{{ $i }}" {{ (int) old('rating', $existingReview?->rating) === $i ? 'selected' : '' }}>{{ $i }} Bintang</option>
+                  <option value="{{ $i }}" {{ (int) old('rating', 5) === $i ? 'selected' : '' }}>{{ $i }} Bintang</option>
                 @endfor
               </select>
             </div>
-            <textarea name="review" rows="4" style="width:100%;border:1.5px solid rgba(211,192,172,0.58);border-radius:6px;padding:12px 14px;background:#FFFFFF;color:#201916;font-size:13px;line-height:1.7;outline:none;resize:vertical;" placeholder="Ceritakan pengalaman Anda memakai produk ini." required>{{ old('review', $existingReview?->review) }}</textarea>
+            <textarea name="review" rows="4" style="width:100%;border:1.5px solid rgba(211,192,172,0.58);border-radius:6px;padding:12px 14px;background:#FFFFFF;color:#201916;font-size:13px;line-height:1.7;outline:none;resize:vertical;" placeholder="Ceritakan pengalaman Anda memakai produk ini." required>{{ old('review') }}</textarea>
             <label style="display:block;margin-top:12px;">
               <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#201916;">Foto dari pelanggan</span>
               <input type="file" name="photos[]" accept="image/*" multiple style="width:100%;border:1.5px dashed rgba(211,192,172,0.8);border-radius:6px;padding:12px;background:#FFFDF9;color:#71665d;font-size:12px;" />
@@ -201,6 +201,10 @@
               <button type="submit" style="height:42px;padding:0 18px;border:none;border-radius:6px;background:#83513D;color:#FFFFFF;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Simpan Ulasan</button>
             </div>
           </form>
+        @elseif (auth()->check() && $eligibleOrder && $existingReview)
+          <div style="margin-bottom:24px;border:1px solid rgba(211,192,172,0.4);border-radius:8px;background:#FFFDF9;padding:16px 18px;font-size:13px;color:#83513D;line-height:1.7;">
+            Anda telah memberikan ulasan untuk produk ini. Terima kasih atas masukan Anda!
+          </div>
         @elseif(auth()->check())
           <div style="margin-bottom:24px;border:1px solid rgba(211,192,172,0.4);border-radius:8px;background:#FFFFFF;padding:16px 18px;font-size:13px;color:#71665d;line-height:1.7;">Ulasan tersedia setelah pesanan untuk produk ini berstatus diterima atau selesai.</div>
         @else
