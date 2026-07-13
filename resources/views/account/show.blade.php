@@ -248,38 +248,6 @@
       </section>
     </main>
 
-    <footer class="bg-[#f3f3f3] text-[var(--ink)]">
-      <div class="{{ $containerClass }} grid grid-cols-[1fr_1.2fr_1fr] gap-12 py-10 text-[13px] leading-5 max-lg:grid-cols-1 max-lg:gap-8 max-sm:py-7">
-        <div>
-          <p class="mb-4 text-[15px] italic leading-5 text-[var(--ink)]" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif">Auraquina Official</p>
-          <p class="mb-2">Admin : +62 859-4200-3395</p>
-          <p>Malang, East Java, Indonesia.</p>
-        </div>
-
-        <div class="space-y-8">
-          <div>
-            <p class="mb-4 text-[14px] leading-5">Payment Method</p>
-            <div class="flex flex-wrap items-center gap-2">
-              @foreach ($payments as $payment)
-                <span class="inline-flex h-6 items-center justify-center font-bold tracking-tight text-[var(--ink)]">{{ $payment }}</span>
-              @endforeach
-            </div>
-          </div>
-          <div>
-            <p class="mb-4 text-[14px] leading-5">Shipment Method</p>
-            <div class="flex flex-wrap items-center gap-4">
-              @foreach ($shipments as $shipment)
-                <span class="inline-flex h-6 items-center justify-center font-bold tracking-tight text-[var(--ink)]">{{ $shipment }}</span>
-              @endforeach
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <p class="mb-8 text-[14px] leading-5">Terms &amp; Conditions</p>
-          <a href="{{ route('pages.show', 'terms-conditions') }}" class="text-[13px] underline underline-offset-2">Terms &amp; Conditions</a>
-        </div>
-      </div>
-    </footer>
+    @include('components.site-footer')
   </body>
 </html>

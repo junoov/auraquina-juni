@@ -10,6 +10,15 @@
     @vite(['resources/css/app.css'])
   </head>
   <body class="min-h-screen bg-[#f8f4ee] px-5 py-8 text-[var(--ink)]">
+    <div class="mx-auto mb-5 max-w-[760px]">
+      <a href="{{ route('pesanan.show', $pesanan->kode_pesanan) }}" class="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--brown)] hover:opacity-85 transition-opacity">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-3.5 w-3.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+        </svg>
+        Kembali ke Detail Pesanan
+      </a>
+    </div>
+
     <main class="mx-auto max-w-[760px] rounded-[8px] border border-[var(--border)] bg-white p-8 shadow-[0_8px_28px_rgba(131,81,61,0.06)] max-sm:p-5">
       <div class="flex items-start justify-between gap-4 border-b border-[var(--border)] pb-6 max-sm:flex-col">
         <div>

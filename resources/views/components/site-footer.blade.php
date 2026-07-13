@@ -48,7 +48,7 @@
       'Kebijakan Privasi' => '/pages/privacy-policy',
       'Syarat & Ketentuan' => '/pages/terms-conditions',
   ];
-  $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-28px)]';
+  $containerClass = 'mx-auto w-[min(1184px,calc(100vw-32px))] max-lg:w-[calc(100vw-48px)] max-sm:w-[calc(100vw-40px)]';
 @endphp
 
 <footer class="site-footer bg-[var(--white)] text-[var(--ink)] border-t border-[var(--border)] mt-16">

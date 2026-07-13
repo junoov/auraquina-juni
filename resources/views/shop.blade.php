@@ -19,8 +19,10 @@
       $selectedSort = $filterState['sort'] ?? 'featured';
       $filters = [
           'Kategori' => collect([['label' => 'Semua Produk', 'value' => '']])->merge($kategoris->map(fn ($kategori) => ['label' => $kategori->nama, 'value' => $kategori->slug]))->values(),
-          'Ukuran' => collect($availableSizes ?? ['XS', 'S', 'M', 'L', 'XL'])->map(fn ($size) => ['label' => $size, 'value' => $size])->values(),
-          'Warna' => collect($availableColors ?? [])->map(fn ($color) => ['label' => $color, 'value' => $color])->values(),
+          'Ukuran' => collect([
+              ['label' => 'XXL', 'value' => 'XXL'],
+              ['label' => 'All Size', 'value' => 'All Size'],
+          ]),
           'Harga' => collect([
             ['label' => '< Rp 300.000', 'value' => 'under_300'],
             ['label' => 'Rp 300.000 - 500.000', 'value' => '300_500'],
@@ -36,7 +38,7 @@
         'name_asc' => 'Nama A-Z',
       ];
 
-      $containerClass = 'mx-auto w-full max-w-[1440px] px-12 max-lg:px-8 max-sm:px-3';
+      $containerClass = 'mx-auto w-full max-w-[1184px] px-4 max-sm:px-3';
       $imageVariants = app(\App\Services\ProductImageVariantService::class);
       $productImageUrl = fn (?string $path, string $variant = 'card') => $imageVariants->url($path, $variant);
       $productImageSrcset = fn (?string $path) => $imageVariants->srcset($path, ['card' => 600, 'detail' => 1200]);
@@ -242,7 +244,7 @@
                   <a class="group block text-[var(--ink)]" href="/shop/{{ $produk->slug }}" data-product-card data-category="{{ $produk->kategori->nama }}" data-category-slug="{{ $produk->kategori->slug }}" data-price="{{ $produk->harga }}" data-sizes="{{ $produk->varians->pluck('ukuran')->unique()->implode(',') }}" data-colors="{{ $produk->varians->pluck('warna')->unique()->implode(',') }}">
                     <span class="block overflow-hidden rounded-[4px] bg-[var(--sand)]" style="aspect-ratio:3/4;">
                       @if ($cardImage !== '')
-                        <img src="{{ $cardImage }}" @if ($cardSrcset) srcset="{{ $cardSrcset }}" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 400px" @endif alt="{{ $produk->nama }}" loading="{{ $index < 3 ? 'eager' : 'lazy' }}" fetchpriority="{{ $index < 3 ? 'high' : 'auto' }}" decoding="async" width="480" height="640" class="h-full w-full rounded-[4px] object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.01]" />
+                        <img src="{{ $cardImage }}" @if ($cardSrcset) srcset="{{ $cardSrcset }}" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 310px" @endif alt="{{ $produk->nama }}" loading="{{ $index < 3 ? 'eager' : 'lazy' }}" fetchpriority="{{ $index < 3 ? 'high' : 'auto' }}" decoding="async" width="480" height="640" class="h-full w-full rounded-[4px] object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.01]" />
                       @else
                         <span class="flex h-full w-full items-center justify-center px-4 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--brown)]">Foto segera hadir</span>
                       @endif

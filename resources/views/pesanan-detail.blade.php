@@ -562,7 +562,7 @@
             Bayar Sekarang
           </button>
         @endif
-        <a href="{{ route('pesanan.invoice', $pesanan->kode_pesanan) }}" class="inline-flex h-[42px] items-center justify-center rounded border border-[var(--border)] bg-white px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] transition hover:bg-[var(--cream)]">Buka Invoice</a>
+        <a href="{{ route('pesanan.invoice', $pesanan->kode_pesanan) }}" class="inline-flex h-[42px] items-center justify-center rounded px-8 text-[11px] font-bold uppercase tracking-[0.1em] transition {{ $pesanan->status === 'cancelled' ? 'bg-[var(--brown)] text-white hover:opacity-85' : 'border border-[var(--border)] bg-white text-[var(--ink)] hover:bg-[var(--cream)]' }}">Buka Invoice</a>
         @if ($pesanan->status === 'pending_payment')
           <form method="POST" action="{{ URL::temporarySignedRoute('pesanan.cancel', now()->addDays(30), ['kode' => $pesanan->kode_pesanan]) }}">
             @csrf
