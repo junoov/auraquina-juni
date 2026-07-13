@@ -315,6 +315,7 @@ class CheckoutController extends Controller
             'email' => 'nullable|email|max:255',
             'kota' => 'nullable|string|max:255',
             'alamat_lengkap' => 'nullable|string|max:1000',
+            'catatan' => 'nullable|string|max:1000',
             'metode_pengiriman' => 'required|string|max:100',
             'metode_pembayaran' => 'required|string|max:100',
         ]);
@@ -356,6 +357,7 @@ class CheckoutController extends Controller
                     'email' => $validated['email'] ?? auth()->user()?->email,
                     'kota' => $validated['kota'] ?? null,
                     'alamat_lengkap' => $validated['alamat_lengkap'] ?? null,
+                    'catatan' => $validated['catatan'] ?? null,
                     'metode_pengiriman' => $validated['metode_pengiriman'],
                     'metode_pembayaran' => $validated['metode_pembayaran'],
                     'subtotal' => $subtotal,

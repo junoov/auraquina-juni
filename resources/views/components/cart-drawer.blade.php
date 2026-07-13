@@ -54,7 +54,7 @@
   </div>
 
   {{-- Order Note --}}
-  <div id="cart-order-note-wrap" class="cart-slide-item" style="display:none;padding:16px 24px 8px;">
+  <div id="cart-order-note-wrap" class="cart-slide-item" style="display:none !important;padding:16px 24px 8px;">
     <label style="display:block;margin-bottom:8px;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--brown);" for="cart-order-note">Order Note</label>
     <textarea id="cart-order-note" rows="3" style="width:100%;border:1px solid var(--brown);border-radius:3px;padding:12px 16px;font-size:13px;color:var(--brown);background:#fff;resize:none;outline:none;font-family:inherit;box-sizing:border-box;" onfocus="this.style.borderColor='var(--brown)'" onblur="this.style.borderColor='var(--brown)'"></textarea>
   </div>

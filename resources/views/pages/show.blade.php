@@ -16,6 +16,13 @@
 
     <main class="mx-auto w-[min(860px,calc(100vw-32px))] py-10 max-sm:w-[calc(100vw-24px)] max-sm:py-7">
       <section class="rounded-[8px] border border-[var(--border)] bg-[var(--white)] px-7 py-8 shadow-[0_8px_28px_rgba(131,81,61,0.06)] max-sm:px-5 max-sm:py-6">
+        <div class="mb-6 flex">
+          <button onclick="if(document.referrer){window.history.back()}else{window.location.href='/'}" class="inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--brown)] hover:opacity-80 transition cursor-pointer" style="background:none; border:none; padding:0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Kembali
+          </button>
+        </div>
+
         <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brown)]">{{ $page['eyebrow'] }}</p>
         <h1 class="text-[34px] leading-[1.1] text-[var(--ink)] max-sm:text-[28px]" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-weight:500;">{{ $page['title'] }}</h1>
         <p class="mt-3 max-w-[640px] text-[14px] leading-7 text-[var(--muted)]">{{ $page['description'] }}</p>
@@ -31,6 +38,10 @@
               </div>
             </section>
           @endforeach
+        </div>
+
+        <div class="mt-10 pt-6 border-t border-[var(--border)] flex justify-center">
+          <button onclick="if(document.referrer){window.history.back()}else{window.location.href='/'}" class="inline-flex h-[42px] items-center justify-center rounded border border-[var(--border)] bg-white px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] transition hover:bg-[var(--cream)] cursor-pointer">Kembali ke Halaman Sebelumnya</button>
         </div>
       </section>
     </main>

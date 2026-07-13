@@ -52,6 +52,13 @@
       @endphp
 
       {{-- Order Info --}}
+      <div class="mb-6 flex">
+        <button onclick="if(document.referrer){window.history.back()}else{window.location.href='{{ route('account.orders') }}'}" class="inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--brown)] hover:opacity-80 transition cursor-pointer" style="background:none; border:none; padding:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Kembali
+        </button>
+      </div>
+
       <section class="mb-8">
         @if (session('status'))
           <div class="mb-5 rounded border border-green-200 bg-green-50 px-4 py-3 text-[12px] font-bold text-green-800">{{ session('status') }}</div>
@@ -180,11 +187,11 @@
             </div>
           @elseif ($midtransData && isset($midtransData->va_numbers[0]->va_number))
             {{-- Virtual Account Display --}}
-            <div class="mx-auto mb-3 flex flex-col items-center justify-center p-6 rounded-xl border border-[var(--border)] bg-white max-w-[320px] shadow-sm">
+            <div class="mx-auto mb-3 flex flex-col items-center justify-center p-6 rounded-xl border border-[var(--border)] bg-white w-full max-w-[420px] shadow-sm">
               <p class="text-[12px] text-[var(--muted)] mb-1">Nomor Virtual Account</p>
-              <div class="flex items-center gap-3 mb-2">
-                <p class="text-[24px] font-bold tracking-wider text-[var(--ink)]" id="va-number">{{ $midtransData->va_numbers[0]->va_number }}</p>
-                <button onclick="navigator.clipboard.writeText('{{ $midtransData->va_numbers[0]->va_number }}'); alert('Tersalin!')" class="text-[var(--brown)] hover:opacity-80" aria-label="Copy">
+              <div class="flex flex-wrap items-center justify-center gap-2 mb-2 w-full px-2">
+                <p class="text-[16px] sm:text-[20px] font-bold tracking-wider text-[var(--ink)] break-all text-center" id="va-number">{{ $midtransData->va_numbers[0]->va_number }}</p>
+                <button onclick="navigator.clipboard.writeText('{{ $midtransData->va_numbers[0]->va_number }}'); alert('Tersalin!')" class="text-[var(--brown)] hover:opacity-80 shrink-0" aria-label="Copy">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
               </div>
@@ -192,19 +199,19 @@
             </div>
           @elseif ($midtransData && isset($midtransData->biller_code) && isset($midtransData->bill_key))
             {{-- Mandiri Bill Payment Display --}}
-            <div class="mx-auto mb-3 flex flex-col items-center justify-center p-6 rounded-xl border border-[var(--border)] bg-white max-w-[320px] shadow-sm">
+            <div class="mx-auto mb-3 flex flex-col items-center justify-center p-6 rounded-xl border border-[var(--border)] bg-white w-full max-w-[420px] shadow-sm">
               <p class="text-[12px] text-[var(--muted)] mb-1">Kode Perusahaan</p>
-              <div class="flex items-center gap-3 mb-4">
-                <p class="text-[20px] font-bold tracking-wider text-[var(--ink)]">{{ $midtransData->biller_code }}</p>
-                <button onclick="navigator.clipboard.writeText('{{ $midtransData->biller_code }}'); alert('Tersalin!')" class="text-[var(--brown)] hover:opacity-80" aria-label="Copy">
+              <div class="flex flex-wrap items-center justify-center gap-2 mb-4 w-full px-2">
+                <p class="text-[16px] sm:text-[20px] font-bold tracking-wider text-[var(--ink)] break-all text-center">{{ $midtransData->biller_code }}</p>
+                <button onclick="navigator.clipboard.writeText('{{ $midtransData->biller_code }}'); alert('Tersalin!')" class="text-[var(--brown)] hover:opacity-80 shrink-0" aria-label="Copy">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
               </div>
               
               <p class="text-[12px] text-[var(--muted)] mb-1">Nomor Pembayaran</p>
-              <div class="flex items-center gap-3 mb-2">
-                <p class="text-[20px] font-bold tracking-wider text-[var(--ink)]">{{ $midtransData->bill_key }}</p>
-                <button onclick="navigator.clipboard.writeText('{{ $midtransData->bill_key }}'); alert('Tersalin!')" class="text-[var(--brown)] hover:opacity-80" aria-label="Copy">
+              <div class="flex flex-wrap items-center justify-center gap-2 mb-2 w-full px-2">
+                <p class="text-[16px] sm:text-[20px] font-bold tracking-wider text-[var(--ink)] break-all text-center">{{ $midtransData->bill_key }}</p>
+                <button onclick="navigator.clipboard.writeText('{{ $midtransData->bill_key }}'); alert('Tersalin!')" class="text-[var(--brown)] hover:opacity-80 shrink-0" aria-label="Copy">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
               </div>
@@ -433,6 +440,12 @@
             <div class="flex justify-between gap-6">
               <span class="flex-shrink-0 text-[var(--muted)]">Alamat</span>
               <span class="text-right text-[var(--ink)]">{{ $pesanan->alamat_lengkap }}</span>
+            </div>
+          @endif
+          @if ($pesanan->catatan)
+            <div class="flex justify-between gap-6">
+              <span class="flex-shrink-0 text-[var(--muted)]">Catatan</span>
+              <span class="text-right text-[var(--ink)] font-medium text-[var(--brown)]">{{ $pesanan->catatan }}</span>
             </div>
           @endif
           <div class="flex justify-between">

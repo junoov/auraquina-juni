@@ -76,22 +76,39 @@
           @if ($section === 'delivery')
             <div class="rounded-[8px] bg-white p-8 shadow-sm">
               <h2 class="mb-6 text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Informasi pengiriman</h2>
-              <div class="mb-8 rounded-[8px] border border-[#eee] bg-[#fbfaf8] p-5">
+
+              {{-- Saved Addresses --}}
+              <div class="mb-6 rounded-[8px] border border-[#eee] bg-[#fbfaf8] p-5">
                 <div class="mb-4 flex items-center justify-between gap-4">
                   <h3 class="text-[15px] font-medium text-[#333]">Alamat Tersimpan</h3>
-                  <span class="text-[12px] text-[#888]">{{ ($addresses ?? collect())->count() }} alamat</span>
+                  <div class="flex items-center gap-3">
+                    <span class="text-[12px] text-[#888]">{{ ($addresses ?? collect())->count() }} alamat</span>
+                    <button type="button" onclick="openAddressModal()" class="inline-flex h-8 items-center justify-center gap-1 rounded-[4px] bg-[var(--brown)] px-3 text-[12px] font-medium text-white transition-colors hover:bg-[var(--ink)]">+ Tambah</button>
+                  </div>
                 </div>
                 @if (($addresses ?? collect())->isEmpty())
-                  <p class="text-[13px] leading-6 text-[#777]">Belum ada alamat tersimpan. Tambahkan alamat rumah, kantor, atau tujuan pengiriman favorit.</p>
+                  <div class="py-6 text-center">
+                    <p class="mb-3 text-[13px] text-[#999]">Belum ada alamat tersimpan.</p>
+                    <button type="button" onclick="openAddressModal()" class="inline-flex h-9 items-center justify-center gap-1 rounded-[4px] border border-[var(--brown)] bg-transparent px-4 text-[12px] font-medium text-[var(--brown)] transition-colors hover:bg-[var(--brown)] hover:text-white">+ Tambah Alamat</button>
+                  </div>
                 @else
                   <div class="space-y-3">
                     @foreach ($addresses as $address)
-                      <div class="rounded-[6px] border border-[#e8ded4] bg-white p-4">
-                        <div class="mb-2 flex items-center justify-between gap-3">
-                          <strong class="text-[14px] text-[#333]">{{ $address->label }} · {{ $address->recipient_name }}</strong>
-                          @if ($address->is_default)
-                            <span class="rounded-full bg-[var(--cream)] px-2.5 py-1 text-[11px] font-bold text-[var(--brown)]">Alamat utama</span>
-                          @endif
+                      <div class="group rounded-[8px] border border-[#e8ded4] bg-white p-4 transition-shadow hover:shadow-sm">
+                        <div class="mb-1.5 flex items-start justify-between gap-3">
+                          <div>
+                            <strong class="text-[14px] text-[#333]">{{ $address->recipient_name }}</strong>
+                            @if ($address->label)
+                              <span class="ml-1.5 rounded bg-[#f5f0eb] px-1.5 py-0.5 text-[11px] font-medium text-[#83513D]">{{ $address->label }}</span>
+                            @endif
+                            @if ($address->is_default)
+                              <span class="ml-1.5 rounded-full bg-[var(--cream)] px-2 py-0.5 text-[10px] font-bold text-[var(--brown)]">Utama</span>
+                            @endif
+                          </div>
+                          <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                            <button type="button" onclick='openEditModal(@json($address))' class="inline-flex h-7 items-center justify-center rounded px-2 text-[11px] text-[#83513D] transition-colors hover:bg-[#f5f0eb]">Ubah</button>
+                            <button type="button" onclick="deleteAddress({{ $address->id }})" class="inline-flex h-7 items-center justify-center rounded px-2 text-[11px] text-[#c0392b] transition-colors hover:bg-[#fef3f2]">Hapus</button>
+                          </div>
                         </div>
                         <p class="text-[13px] leading-6 text-[#666]">{{ $address->phone }} · {{ $address->city }}<br>{{ $address->address }}</p>
                       </div>
@@ -99,37 +116,109 @@
                   </div>
                 @endif
               </div>
-              <form method="POST" action="{{ route('account.addresses.store') }}" class="mb-8 grid gap-3 rounded-[8px] border border-[#eee] p-5">
-                @csrf
-                <h3 class="text-[15px] font-medium text-[#333]">Tambah Alamat Baru</h3>
-                <input type="text" name="label" placeholder="Label alamat, contoh: Rumah" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
-                <input type="text" name="recipient_name" placeholder="Nama penerima" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
-                <input type="tel" name="phone" placeholder="Nomor telepon" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
-                <input type="text" name="city" placeholder="Kota / Wilayah" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
-                <textarea name="address" rows="3" placeholder="Alamat lengkap" class="block w-full rounded-[4px] border border-[#ddd] bg-white px-3 py-2 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required></textarea>
-                <label class="flex items-center gap-2 text-[13px] text-[#666]"><input type="checkbox" name="is_default" value="1" class="accent-[var(--brown)]" /> Jadikan alamat utama</label>
-                <button type="submit" class="inline-flex h-10 items-center justify-center rounded-[4px] bg-[var(--brown)] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[var(--ink)]">Simpan Alamat</button>
-              </form>
-              <form method="POST" action="{{ route('account.delivery.update') }}" class="space-y-4">
-                @csrf
-                @method('PATCH')
-                <div>
-                  <label class="mb-1.5 block text-[13px] text-[#888]">Nama Penerima</label>
-                  <input type="text" name="recipient_name" value="{{ old('recipient_name', $user->recipient_name ?? $user->name) }}" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-[13px] text-[#888]">Kota / Wilayah</label>
-                  <input type="text" name="city" value="{{ old('city', $user->city) }}" class="block h-10 w-full rounded-[4px] border border-[#ddd] bg-white px-3 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-[13px] text-[#888]">Alamat Lengkap</label>
-                  <textarea name="address" rows="3" class="block w-full rounded-[4px] border border-[#ddd] bg-white px-3 py-2 text-[14px] text-[#333] outline-none focus:border-[#aaa]" required>{{ old('address', $user->address) }}</textarea>
-                </div>
-                <div class="pt-2">
-                  <button type="submit" class="inline-flex h-10 items-center justify-center rounded-[4px] bg-[var(--brown)] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[var(--ink)]">Simpan Pengiriman</button>
-                </div>
-              </form>
             </div>
+
+            {{-- Modal: Tambah / Ubah Alamat --}}
+            <div id="address-modal" class="address-modal" onclick="if(event.target===this) closeAddressModal()">
+              <div class="address-modal-card">
+                <div class="mb-5 flex items-center justify-between">
+                  <h3 id="address-modal-title" class="text-[17px] font-semibold text-[#201916]" style="font-family:sans-serif;">Tambah Alamat Baru</h3>
+                  <button type="button" onclick="closeAddressModal()" class="flex h-8 w-8 items-center justify-center rounded-full text-[#999] transition-colors hover:bg-[#f0f0f0] hover:text-[#333]">&times;</button>
+                </div>
+                <form id="address-form-el" method="POST" action="{{ route('account.addresses.store') }}" class="grid gap-3.5" onsubmit="disableBtn(this)">
+                  @csrf
+                  <div id="edit-method-slot"></div>
+                  <input type="hidden" id="addr-id" name="" value="" />
+                  <div>
+                    <label class="mb-1 block text-[12px] font-medium text-[#888]">Label</label>
+                    <input type="text" name="label" placeholder="Rumah, Kantor, dll." class="addr-input" required />
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-[12px] font-medium text-[#888]">Nama Penerima</label>
+                    <input type="text" name="recipient_name" placeholder="Nama lengkap" class="addr-input" required />
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-[12px] font-medium text-[#888]">Kota / Wilayah</label>
+                    <input type="text" name="city" placeholder="Kota / Wilayah" class="addr-input" required />
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-[12px] font-medium text-[#888]">Alamat Lengkap</label>
+                    <textarea name="address" rows="3" placeholder="Jalan, nomor rumah, RT/RW, dll." class="addr-input !h-auto min-h-[72px]" required></textarea>
+                  </div>
+                  <p class="text-[12px] text-[#999]">Telepon: <span class="font-medium text-[#555]">{{ $user->phone ?: 'Belum diatur' }}</span></p>
+                  <label class="flex items-center gap-2 text-[13px] text-[#666] cursor-pointer">
+                    <input type="checkbox" name="is_default" value="1" class="accent-[var(--brown)]" /> Jadikan alamat utama
+                  </label>
+                  <button type="submit" class="btn-address-submit mt-1 inline-flex h-11 items-center justify-center rounded-[6px] bg-[var(--brown)] px-6 text-[13px] font-semibold text-white transition-all hover:bg-[var(--ink)] hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">Simpan Alamat</button>
+                </form>
+              </div>
+            </div>
+
+            <style>
+              .address-modal { display:none; position:fixed; inset:0; z-index:9999; background:rgba(32,25,22,0.45); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); align-items:center; justify-content:center; opacity:0; transition:opacity 0.25s ease; }
+              .address-modal.open { display:flex; opacity:1; }
+              .address-modal-card { background:#fff; border-radius:14px; padding:28px 26px 24px; width:min(440px,calc(100vw - 32px)); max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.18); transform:translateY(12px) scale(0.98); transition:transform 0.25s ease; }
+              .address-modal.open .address-modal-card { transform:translateY(0) scale(1); }
+              .addr-input { display:block; height:42px; width:100%; border-radius:6px; border:1.5px solid #e0dbd5; background:#fff; padding:0 14px; font-size:14px; color:#201916; outline:none; transition:border-color 0.15s; }
+              .addr-input:focus { border-color:#83513D; box-shadow:0 0 0 3px rgba(131,81,61,0.08); }
+              .addr-input::placeholder { color:#bbb; }
+              textarea.addr-input { height:auto; padding:10px 14px; line-height:1.5; resize:vertical; }
+            </style>
+
+            <script>
+              const _csrf = '{{ csrf_token() }}';
+              const _userId = {{ $user->id }};
+
+              function openAddressModal() {
+                const m = document.getElementById('address-modal');
+                document.getElementById('address-modal-title').textContent = 'Tambah Alamat Baru';
+                const form = document.getElementById('address-form-el');
+                form.action = '{{ route("account.addresses.store") }}';
+                form.reset();
+                document.getElementById('edit-method-slot').innerHTML = '';
+                document.body.style.overflow = 'hidden';
+                m.classList.add('open');
+              }
+
+              function openEditModal(addr) {
+                const m = document.getElementById('address-modal');
+                document.getElementById('address-modal-title').textContent = 'Ubah Alamat';
+                const form = document.getElementById('address-form-el');
+                form.action = '/akun/alamat/' + addr.id;
+                form.reset();
+                document.getElementById('edit-method-slot').innerHTML = '<input type="hidden" name="_method" value="PATCH"><input type="hidden" name="_token" value="' + _csrf + '">';
+                form.querySelector('[name="label"]').value = addr.label || '';
+                form.querySelector('[name="recipient_name"]').value = addr.recipient_name || '';
+                form.querySelector('[name="city"]').value = addr.city || '';
+                form.querySelector('[name="address"]').value = addr.address || '';
+                form.querySelector('[name="is_default"]').checked = !!addr.is_default;
+                document.body.style.overflow = 'hidden';
+                m.classList.add('open');
+              }
+
+              function closeAddressModal() {
+                const m = document.getElementById('address-modal');
+                m.classList.remove('open');
+                document.body.style.overflow = '';
+              }
+
+              function deleteAddress(id) {
+                if (!confirm('Hapus alamat ini?')) return;
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/akun/alamat/' + id;
+                form.innerHTML = '<input type="hidden" name="_token" value="' + _csrf + '"><input type="hidden" name="_method" value="DELETE">';
+                document.body.appendChild(form);
+                form.submit();
+              }
+
+              function disableBtn(form) {
+                const btns = form.querySelectorAll('button[type="submit"]');
+                btns.forEach(function(b) { b.disabled = true; b.textContent = 'Menyimpan...'; });
+              }
+
+              document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAddressModal(); });
+            </script>
           @elseif ($section === 'information')
             <div class="rounded-[8px] bg-white p-8 shadow-sm">
               <h2 class="mb-6 text-[18px] font-medium text-[#333]" style="font-family:sans-serif;">Informasi Akun</h2>

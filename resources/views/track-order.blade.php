@@ -49,6 +49,12 @@
     <main class="mx-auto w-[min(1040px,calc(100vw-32px))] py-12 max-sm:w-[calc(100vw-24px)] max-sm:py-8">
       <section class="grid grid-cols-[0.9fr_1.1fr] gap-8 max-lg:grid-cols-1">
         <div class="rounded-[14px] border border-[var(--border)] bg-[var(--white)] p-7 shadow-[0_18px_50px_rgba(131,81,61,0.08)] max-sm:p-5">
+          <div class="mb-4">
+            <button onclick="if(document.referrer){window.history.back()}else{window.location.href='/'}" class="inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--brown)] hover:opacity-80 transition cursor-pointer" style="background:none; border:none; padding:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              Kembali
+            </button>
+          </div>
           <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--brown)]">Pantau Pesanan</p>
           <h1 class="text-[34px] leading-[1.08] text-[var(--ink)] max-sm:text-[28px]" style="font-family:'Cormorant Garamond',Georgia,serif;">Lacak Pesanan</h1>
           <p class="mt-3 text-[14px] leading-7 text-[var(--muted)]">Masukkan nomor pesanan dan email atau nomor HP yang digunakan saat checkout.</p>

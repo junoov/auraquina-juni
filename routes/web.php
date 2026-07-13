@@ -92,6 +92,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/akun/profil', [AccountController::class, 'updateProfile'])->name('account.profile.update');
     Route::patch('/akun/pengiriman', [AccountController::class, 'updateDelivery'])->name('account.delivery.update');
     Route::post('/akun/alamat', [AccountController::class, 'storeAddress'])->name('account.addresses.store');
+    Route::patch('/akun/alamat/{address}', [AccountController::class, 'updateAddress'])->name('account.addresses.update');
+    Route::delete('/akun/alamat/{address}', [AccountController::class, 'destroyAddress'])->name('account.addresses.destroy');
 
 
     Route::post('/shop/{slug}/reviews', [ProdukController::class, 'storeReview'])->name('produk.reviews.store');

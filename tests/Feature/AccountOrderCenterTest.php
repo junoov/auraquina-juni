@@ -119,13 +119,14 @@ class AccountOrderCenterTest extends TestCase
 
     public function test_authenticated_user_can_manage_multiple_saved_addresses(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'phone' => '081111111111',
+        ]);
 
         $this->actingAs($user)
             ->post(route('account.addresses.store'), [
                 'label' => 'Rumah',
                 'recipient_name' => 'Aisha Rumah',
-                'phone' => '081222222222',
                 'city' => 'Malang',
                 'address' => 'Jl. Melati No. 7',
                 'is_default' => '1',
@@ -136,15 +137,45 @@ class AccountOrderCenterTest extends TestCase
             'user_id' => $user->id,
             'label' => 'Rumah',
             'recipient_name' => 'Aisha Rumah',
+            'phone' => '081111111111',
             'is_default' => true,
         ]);
+
+        // Ensure only ONE address was created (no duplicate submission bug)
+        $this->assertEquals(1, $user->addresses()->count());
 
         $this->actingAs($user)
             ->get(route('account.delivery'))
             ->assertOk()
             ->assertSee('Alamat Tersimpan')
             ->assertSee('Aisha Rumah')
-            ->assertSee('Alamat utama');
+            ->assertSee('Utama');
+    }
+
+    public function test_duplicate_address_submission_is_prevented(): void
+    {
+        $user = User::factory()->create([
+            'phone' => '081111111111',
+        ]);
+
+        $payload = [
+            'label' => 'Rumah',
+            'recipient_name' => 'Aisha Rumah',
+            'city' => 'Malang',
+            'address' => 'Jl. Melati No. 7',
+            'is_default' => '1',
+        ];
+
+        // First submission creates the address
+        $this->actingAs($user)->post(route('account.addresses.store'), $payload)
+            ->assertRedirect(route('account.delivery'));
+
+        // Second identical submission should NOT create a duplicate
+        $this->actingAs($user)->post(route('account.addresses.store'), $payload)
+            ->assertRedirect(route('account.delivery'));
+
+        // Only ONE address should exist
+        $this->assertEquals(1, $user->addresses()->count());
     }
 
     public function test_checkout_renders_saved_address_selector(): void
@@ -181,9 +212,8 @@ class AccountOrderCenterTest extends TestCase
             ->assertOk()
             ->assertSee('Alamat Tersimpan')
             ->assertSee('Rumah · Aisha Rumah')
-            ->assertSee('selectSavedAddress(this.dataset)', false)
+            ->assertSee('selectSavedAddress(this)', false)
             ->assertSee('let selectedCheckoutAddress = null;', false)
-            ->assertSee('selectedCheckoutAddress || normalizeAddress', false)
             ->assertSee('data-address="Jl. Melati No. 7"', false);
     }
 

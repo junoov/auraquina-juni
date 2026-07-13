@@ -47,6 +47,7 @@ class Pesanan extends Model
         'email',
         'kota',
         'alamat_lengkap',
+        'catatan',
         'metode_pengiriman',
         'kurir_pengiriman',
         'nomor_resi',

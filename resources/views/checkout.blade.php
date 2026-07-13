@@ -37,28 +37,29 @@
 	          <h1 style="font-size:26px;font-weight:500;color:#201916;margin-bottom:28px;font-family:'Plus Jakarta Sans',system-ui,sans-serif;letter-spacing:-0.01em;">Alamat Pengiriman</h1>
 
           @if ($savedAddresses->isNotEmpty())
-            <div style="margin-bottom:24px;border:1.5px solid rgba(211,192,172,0.58);border-radius:12px;background:#FFFDF9;padding:16px 18px;">
-              <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px;">
-                <p style="font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#83513D;">Alamat Tersimpan</p>
+            <div style="margin-bottom:32px;">
+              <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;">
+                <p style="font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#83513D;">Pilih Alamat Tersimpan</p>
                 <a href="{{ route('account.delivery') }}" style="font-size:12px;font-weight:700;color:#83513D;text-decoration:none;">Kelola</a>
               </div>
-	              <div style="display:grid;gap:10px;">
-	                @foreach ($savedAddresses as $address)
-	                  <button type="button" data-name="{{ $address->recipient_name }}" data-email="{{ auth()->user()?->email }}" data-phone="{{ $address->phone }}" data-city="{{ $address->city }}" data-address="{{ $address->address }}" onclick="selectSavedAddress(this.dataset)" style="display:block;width:100%;text-align:left;border:1px solid {{ $address->is_default ? '#83513D' : 'rgba(211,192,172,0.58)' }};border-radius:8px;background:#FFFFFF;padding:12px 14px;cursor:pointer;">
+              <div id="saved-address-cards" style="display:grid;gap:10px;">
+                @foreach ($savedAddresses as $address)
+                  <button type="button" data-name="{{ $address->recipient_name }}" data-email="{{ auth()->user()?->email }}" data-phone="{{ $address->phone }}" data-city="{{ $address->city }}" data-address="{{ $address->address }}" onclick="selectSavedAddress(this)" style="display:block;width:100%;text-align:left;border:1.5px solid {{ $address->is_default ? '#83513D' : 'rgba(211,192,172,0.58)' }};border-radius:10px;background:#FFFFFF;padding:14px 16px;cursor:pointer;transition:border-color 0.15s;">
                     <span style="display:flex;justify-content:space-between;gap:10px;margin-bottom:4px;">
                       <strong style="font-size:13px;color:#201916;">{{ $address->label }} · {{ $address->recipient_name }}</strong>
                       @if ($address->is_default)
                         <em style="font-style:normal;font-size:10px;font-weight:700;text-transform:uppercase;color:#83513D;">Utama</em>
                       @endif
                     </span>
-                    <span style="display:block;font-size:12px;line-height:1.55;color:#71665d;">{{ $address->phone }} · {{ $address->city }} · {{ $address->address }}</span>
+                    <span style="display:block;font-size:12px;line-height:1.55;color:#71665d;">{{ $address->phone }} · {{ $address->city }}<br>{{ $address->address }}</span>
                   </button>
                 @endforeach
               </div>
+              <p style="margin-top:10px;font-size:11px;color:#71665d;">atau <button type="button" onclick="showManualForm()" style="font-size:11px;color:#83513D;font-weight:700;background:none;border:none;cursor:pointer;text-decoration:underline;">isi alamat manual</button></p>
             </div>
           @endif
 
-	          <div id="address-form" style="margin-bottom:32px;">
+          <div id="address-form" style="display:{{ $savedAddresses->isNotEmpty() ? 'none' : 'block' }};margin-bottom:32px;">
             <div style="margin-bottom:14px;">
                <input type="text" id="inp-name" value="{{ $defaultAddress['name'] }}" placeholder="Nama Lengkap Penerima" style="width:100%;height:48px;border:1.5px solid rgba(211,192,172,0.58);border-radius:8px;padding:0 16px;font-size:14px;color:#201916;background:#FFFFFF;outline:none;" />
             </div>
@@ -76,16 +77,10 @@
             </div>
           </div>
 
-          {{-- Saved address card (hidden initially) --}}
-          <div id="address-saved" style="display:none;margin-bottom:32px;padding:16px 20px;border:1.5px solid rgba(211,192,172,0.58);border-radius:10px;background:#FFFFFF;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-              <div>
-                <p id="saved-name" style="font-size:14px;font-weight:700;color:#201916;margin-bottom:2px;"></p>
-                <p id="saved-phone" style="font-size:13px;color:#71665d;margin-bottom:4px;"></p>
-                <p id="saved-addr" style="font-size:13px;color:#71665d;line-height:1.5;"></p>
-              </div>
-              <button type="button" onclick="editAddress()" style="font-size:12px;color:#83513D;font-weight:700;background:none;border:none;cursor:pointer;">Ubah</button>
-            </div>
+          {{-- Catatan Pesanan --}}
+          <h2 style="font-size:20px;font-weight:500;color:#201916;margin-bottom:16px;font-family:'Plus Jakarta Sans',system-ui,sans-serif;letter-spacing:-0.01em;">Catatan Pesanan (Opsional)</h2>
+          <div style="margin-bottom:32px;">
+             <textarea id="inp-note" rows="3" placeholder="Tulis catatan untuk toko (misal: warna cadangan, patokan alamat, dll)" style="width:100%;border:1.5px solid rgba(211,192,172,0.58);border-radius:8px;padding:12px 16px;font-size:14px;color:#201916;background:#FFFFFF;outline:none;resize:none;box-sizing:border-box;"></textarea>
           </div>
 
           {{-- Shipment Method --}}
@@ -146,7 +141,7 @@
             </div>
             <div style="margin-bottom:16px;display:flex;justify-content:space-between;">
               <span style="font-size:13px;color:#71665d;">Shipping</span>
-              <span style="font-size:13px;color:#201916;">Rp {{ number_format($shipping, 0, ',', '.') }}</span>
+              <span id="summary-shipping" style="font-size:13px;color:#201916;">Rp {{ number_format($shipping, 0, ',', '.') }}</span>
             </div>
             <div id="discount-row" style="margin-bottom:16px;display:{{ ($discount ?? 0) > 0 ? 'flex' : 'none' }};justify-content:space-between;">
               <span style="font-size:13px;color:#71665d;">Diskon</span>
@@ -168,9 +163,12 @@
       </div>
     </main>
 
+    {{-- TOAST --}}
+    <div id="toast" style="display:none;position:fixed;top:28px;left:50%;transform:translateX(-50%);z-index:300;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;color:#FFFFFF;box-shadow:0 4px 20px rgba(0,0,0,0.12);pointer-events:none;opacity:0;transition:opacity 0.3s,transform 0.3s;"></div>
+
     {{-- POPUP / BOTTOM SHEET --}}
     <div id="sheet-overlay" onclick="closeSheet()" style="display:none;position:fixed;inset:0;background:rgba(122,80,62,0.10);z-index:200;"></div>
-    <div id="sheet-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:201;background:#FFFFFF;border-radius:8px 8px 0 0;max-height:70vh;overflow-y:auto;padding:24px 20px 32px;box-shadow:0 -4px 24px rgba(122,80,62,0.09);">
+    <div id="sheet-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:201;background:#FFFFFF;border-radius:8px 8px 0 0;max-height:80vh;overflow-y:auto;padding:24px 20px 40px;box-shadow:0 -4px 24px rgba(122,80,62,0.09);">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(211,192,172,0.58);">
         <h3 id="sheet-title" style="font-size:16px;font-weight:700;color:#201916;"></h3>
         <button type="button" onclick="closeSheet()" style="background:none;border:none;cursor:pointer;padding:4px;">
@@ -193,10 +191,28 @@
     </style>
 
     <script>
-	      const addressStorageKey = @json($addressStorageKey);
-	      const defaultAddress = @json($defaultAddress);
-	      const isAuthenticated = @json(auth()->check());
-	      let selectedCheckoutAddress = null;
+      const addressStorageKey = @json($addressStorageKey);
+      const defaultAddress = @json($defaultAddress);
+      const isAuthenticated = @json(auth()->check());
+      const hasSavedAddresses = @json($savedAddresses->isNotEmpty());
+      let selectedCheckoutAddress = null;
+
+      // Shipping & payment selection tracking
+      let selectedShipIndex = 0;
+      let selectedPayIndex = 0;
+      const shippingOptions = [
+        { label: 'JNE Reguler (3-5 hari)', price: 11500, priceLabel: 'Rp 11.500' },
+        { label: 'J&T Express (2-4 hari)', price: 12000, priceLabel: 'Rp 12.000' },
+        { label: 'SiCepat BEST (1-3 hari)', price: 14000, priceLabel: 'Rp 14.000' },
+        { label: 'GoSend Same Day', price: 25000, priceLabel: 'Rp 25.000' },
+      ];
+      const paymentOptions = [
+        'Transfer BCA', 'Transfer Mandiri', 'Transfer BNI', 'Transfer BRI',
+        'Transfer Permata', 'Transfer CIMB Niaga', 'Transfer SeaBank',
+        'Transfer Danamon', 'Transfer BSI', 'Transfer Bank Saqu', 'Other Bank',
+      ];
+      let currentSubtotal = @json($subtotal);
+      let currentDiscount = @json($discount ?? 0);
 
       function normalizeAddress(data) {
         return {
@@ -208,66 +224,53 @@
         };
       }
 
-      function loadSavedAddress() {
-        if (isAuthenticated) {
-          return normalizeAddress(defaultAddress);
-        }
-
-        try {
-          const parsed = JSON.parse(localStorage.getItem(addressStorageKey) || 'null');
-          const normalized = normalizeAddress(parsed || defaultAddress);
-          return normalized;
-        } catch {
-          return normalizeAddress(defaultAddress);
-        }
-      }
-
       function persistAddress(data) {
-        if (isAuthenticated) {
-          return;
-        }
-
+        if (isAuthenticated) return;
         localStorage.setItem(addressStorageKey, JSON.stringify(normalizeAddress(data)));
       }
 
-      function hasCompleteAddress(data) {
-        return Boolean(data.name && data.phone && (data.city || data.address));
+      function showToast(msg, type) {
+        const toast = document.getElementById('toast');
+        const bg = type === 'error' ? '#83513D' : '#201916';
+        toast.textContent = msg;
+        toast.style.background = bg;
+        toast.style.display = 'block';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(-8px)';
+        requestAnimationFrame(() => {
+          toast.style.opacity = '1';
+          toast.style.transform = 'translateX(-50%) translateY(0)';
+        });
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(-50%) translateY(-8px)';
+          setTimeout(() => { toast.style.display = 'none'; }, 300);
+        }, 3000);
       }
 
-      const saved = loadSavedAddress();
-      if (hasCompleteAddress(saved)) {
-        showSaved(saved);
+      function highlightAddressButton(btn) {
+        const cards = document.getElementById('saved-address-cards');
+        if (!cards) return;
+        cards.querySelectorAll('button').forEach(b => {
+          b.style.borderColor = 'rgba(211,192,172,0.58)';
+        });
+        btn.style.borderColor = '#83513D';
       }
 
-      function showSaved(d) {
+      function selectSavedAddress(btn) {
+        const d = normalizeAddress(btn.dataset);
+        selectedCheckoutAddress = d;
+        highlightAddressButton(btn);
         document.getElementById('address-form').style.display = 'none';
-        document.getElementById('address-saved').style.display = 'block';
-        document.getElementById('saved-name').textContent = d.name;
-        document.getElementById('saved-phone').textContent = d.phone;
-        document.getElementById('saved-addr').textContent = [d.email, d.city, d.address].filter(Boolean).join('\n');
       }
 
-	      function editAddress() {
-	        selectedCheckoutAddress = null;
-	        document.getElementById('address-form').style.display = 'block';
-	        document.getElementById('address-saved').style.display = 'none';
-        const d = loadSavedAddress();
-        if (d.name) document.getElementById('inp-name').value = d.name;
-        if (d.email) document.getElementById('inp-email').value = d.email;
-        if (d.phone) document.getElementById('inp-phone').value = d.phone;
-        if (d.city) document.getElementById('inp-city').value = d.city;
-        if (d.address) document.getElementById('inp-address').value = d.address;
-	      }
-
-	      function selectSavedAddress(data) {
-	        const normalized = normalizeAddress(data);
-	        selectedCheckoutAddress = normalized;
-	        document.getElementById('inp-name').value = normalized.name;
-        document.getElementById('inp-email').value = normalized.email;
-        document.getElementById('inp-phone').value = normalized.phone;
-        document.getElementById('inp-city').value = normalized.city;
-        document.getElementById('inp-address').value = normalized.address;
-        showSaved(normalized);
+      function showManualForm() {
+        selectedCheckoutAddress = null;
+        const cards = document.getElementById('saved-address-cards');
+        if (cards) {
+          cards.parentElement.style.display = 'none';
+        }
+        document.getElementById('address-form').style.display = 'block';
       }
 
       // Sheet / Popup
@@ -280,76 +283,23 @@
         let html = '';
         if (type === 'ship') {
           title.textContent = 'Pilih Metode Pengiriman';
-          html = `
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectShip('JNE Reguler (3-5 hari)','Rp 11.500')">
-              <input type="radio" name="s" checked style="accent-color:#83513D;width:16px;height:16px;">
-              <div style="flex:1;"><p style="font-size:13px;font-weight:700;color:#201916;">JNE Reguler</p><p style="font-size:11px;color:#71665d;">3-5 hari kerja</p></div>
-              <span style="font-size:13px;font-weight:700;color:#201916;">Rp 11.500</span>
+          const shipNames = ['JNE Reguler', 'J&T Express', 'SiCepat BEST', 'GoSend Same Day'];
+          const shipTimes = ['3-5 hari kerja', '2-4 hari kerja', '1-3 hari kerja', 'Hari ini (Jabodetabek)'];
+          html = shippingOptions.map((opt, i) => `
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;${i < shippingOptions.length - 1 ? 'border-bottom:1px solid rgba(211,192,172,0.38);' : ''}cursor:pointer;" onclick="selectShip(${i})">
+              <input type="radio" name="s" ${i === selectedShipIndex ? 'checked' : ''} style="accent-color:#83513D;width:16px;height:16px;">
+              <div style="flex:1;"><p style="font-size:13px;font-weight:700;color:#201916;">${shipNames[i]}</p><p style="font-size:11px;color:#71665d;">${shipTimes[i]}</p></div>
+              <span style="font-size:13px;font-weight:700;color:#201916;">${opt.priceLabel}</span>
             </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectShip('J&T Express (2-4 hari)','Rp 12.000')">
-              <input type="radio" name="s" style="accent-color:#83513D;width:16px;height:16px;">
-              <div style="flex:1;"><p style="font-size:13px;font-weight:700;color:#201916;">J&T Express</p><p style="font-size:11px;color:#71665d;">2-4 hari kerja</p></div>
-              <span style="font-size:13px;font-weight:700;color:#201916;">Rp 12.000</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectShip('SiCepat BEST (1-3 hari)','Rp 14.000')">
-              <input type="radio" name="s" style="accent-color:#83513D;width:16px;height:16px;">
-              <div style="flex:1;"><p style="font-size:13px;font-weight:700;color:#201916;">SiCepat BEST</p><p style="font-size:11px;color:#71665d;">1-3 hari kerja</p></div>
-              <span style="font-size:13px;font-weight:700;color:#201916;">Rp 14.000</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;cursor:pointer;" onclick="selectShip('GoSend Same Day','Rp 25.000')">
-              <input type="radio" name="s" style="accent-color:#83513D;width:16px;height:16px;">
-              <div style="flex:1;"><p style="font-size:13px;font-weight:700;color:#201916;">GoSend Same Day</p><p style="font-size:11px;color:#71665d;">Hari ini (Jabodetabek)</p></div>
-              <span style="font-size:13px;font-weight:700;color:#201916;">Rp 25.000</span>
-            </label>
-          `;
+          `).join('');
         } else if (type === 'pay') {
           title.textContent = 'Pilih Metode Pembayaran';
-          html = `
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer BCA')">
-              <input type="radio" name="p" checked style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank BCA</span>
+          html = paymentOptions.map((opt, i) => `
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;${i < paymentOptions.length - 1 ? 'border-bottom:1px solid rgba(211,192,172,0.38);' : ''}cursor:pointer;" onclick="selectPay(${i})">
+              <input type="radio" name="p" ${i === selectedPayIndex ? 'checked' : ''} style="accent-color:#83513D;width:16px;height:16px;">
+              <span style="font-size:13px;font-weight:700;color:#201916;">${opt}</span>
             </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer Mandiri')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank Mandiri</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer BNI')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank BNI</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer BRI')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank BRI</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer Permata')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank Permata</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer CIMB Niaga')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank CIMB Niaga</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer SeaBank')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank SeaBank</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer Danamon')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank Danamon</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer BSI')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank BSI</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(211,192,172,0.38);cursor:pointer;" onclick="selectPay('Transfer Bank Saqu')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Transfer Bank Saqu</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:14px;padding:14px 0;cursor:pointer;" onclick="selectPay('Other Bank')">
-              <input type="radio" name="p" style="accent-color:#83513D;width:16px;height:16px;">
-              <span style="font-size:13px;font-weight:700;color:#201916;">Other Bank</span>
-            </label>
-          `;
+          `).join('');
         } else if (type === 'voucher') {
           title.textContent = 'Masukkan Kode Voucher';
           html = `
@@ -357,7 +307,7 @@
               <input id="voucher-code" type="text" value="{{ $voucher?->code }}" placeholder="Kode voucher" style="flex:1;height:46px;border:1.5px solid rgba(211,192,172,0.58);border-radius:6px;padding:0 14px;font-size:14px;color:#201916;background:#FFFFFF;outline:none;text-transform:uppercase;" />
             </div>
             <button type="button" onclick="applyVoucher()" style="width:100%;height:46px;background:#83513D;color:#FFFFFF;border:none;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;">Apply</button>
-            <p id="voucher-message" style="font-size:12px;color:#71665d;margin-top:12px;text-align:center;">Coba AURA10 atau FREESHIP500.</p>
+            <p style="font-size:11px;color:#71665d;margin-top:12px;text-align:center;">Coba AURA10 atau FREESHIP500.</p>
           `;
         }
 
@@ -371,14 +321,21 @@
         document.getElementById('sheet-panel').style.display = 'none';
       }
 
-      function selectShip(label, price) {
-        document.getElementById('ship-label').textContent = label;
-        document.getElementById('ship-price').textContent = price;
+      function selectShip(index) {
+        selectedShipIndex = index;
+        const opt = shippingOptions[index];
+        document.getElementById('ship-label').textContent = opt.label;
+        document.getElementById('ship-price').textContent = opt.priceLabel;
+        // Update order summary
+        document.getElementById('summary-shipping').textContent = opt.priceLabel;
+        const total = currentSubtotal + opt.price - currentDiscount;
+        document.getElementById('total-amount').textContent = formatRupiah(total);
         closeSheet();
       }
 
-      function selectPay(label) {
-        document.getElementById('pay-label').textContent = label;
+      function selectPay(index) {
+        selectedPayIndex = index;
+        document.getElementById('pay-label').textContent = paymentOptions[index];
         closeSheet();
       }
 
@@ -388,9 +345,8 @@
 
       function applyVoucher() {
         const code = document.getElementById('voucher-code')?.value?.trim();
-        const message = document.getElementById('voucher-message');
         if (!code) {
-          if (message) message.textContent = 'Masukkan kode voucher terlebih dahulu.';
+          showToast('Masukkan kode voucher terlebih dahulu.', 'error');
           return;
         }
 
@@ -402,18 +358,19 @@
         .then(r => r.json().then(data => ({ ok: r.ok, data })))
         .then(({ ok, data }) => {
           if (!ok || !data.success) {
-            if (message) message.textContent = data.error || 'Voucher tidak bisa dipakai.';
+            showToast(data.error || 'Voucher tidak bisa dipakai.', 'error');
             return;
           }
           document.getElementById('voucher-label').textContent = `Voucher: ${data.voucher}`;
           document.getElementById('discount-row').style.display = data.discount > 0 ? 'flex' : 'none';
           document.getElementById('discount-amount').textContent = `-${formatRupiah(data.discount)}`;
           document.getElementById('total-amount').textContent = formatRupiah(data.total);
-          if (message) message.textContent = data.message;
-          setTimeout(closeSheet, 500);
+          currentDiscount = data.discount;
+          showToast(data.message, 'success');
+          setTimeout(closeSheet, 600);
         })
         .catch(() => {
-          if (message) message.textContent = 'Voucher gagal diproses. Coba lagi.';
+          showToast('Voucher gagal diproses. Coba lagi.', 'error');
         });
       }
 
@@ -421,52 +378,50 @@
         const btn = document.querySelector('button[onclick="placeOrder()"]');
         if (btn && btn.disabled) return;
 
-        const name = document.getElementById('inp-name')?.value?.trim();
-        const phone = document.getElementById('inp-phone')?.value?.trim();
-        if (document.getElementById('address-form').style.display !== 'none') {
-          if (!name || !phone) { alert('Mohon isi nama dan nomor telepon.'); return; }
-          persistAddress({
+        const formVisible = document.getElementById('address-form').style.display !== 'none';
+        let addr;
+
+        if (formVisible) {
+          const name = document.getElementById('inp-name')?.value?.trim();
+          const phone = document.getElementById('inp-phone')?.value?.trim();
+          if (!name || !phone) {
+            showToast('Mohon isi nama dan nomor telepon.', 'error');
+            return;
+          }
+          addr = normalizeAddress({
             name, phone,
-            email: document.getElementById('inp-email').value.trim(),
-            city: document.getElementById('inp-city').value.trim(),
-            address: document.getElementById('inp-address').value.trim(),
+            email: document.getElementById('inp-email')?.value?.trim() || '',
+            city: document.getElementById('inp-city')?.value?.trim() || '',
+            address: document.getElementById('inp-address')?.value?.trim() || '',
           });
+          persistAddress(addr);
+        } else if (selectedCheckoutAddress) {
+          addr = selectedCheckoutAddress;
+        } else {
+          showToast('Pilih alamat pengiriman terlebih dahulu.', 'error');
+          return;
         }
 
-	        // Gather data
-	        const savedAddr = selectedCheckoutAddress || normalizeAddress({
-	          name,
-	          phone,
-	          email: document.getElementById('inp-email')?.value?.trim() || '',
-	          city: document.getElementById('inp-city')?.value?.trim() || '',
-	          address: document.getElementById('inp-address')?.value?.trim() || '',
-	        });
-        const namaPenerima = savedAddr.name || name;
-        const email = savedAddr.email || document.getElementById('inp-email')?.value?.trim() || '';
-        const telepon = savedAddr.phone || phone;
-        const kota = savedAddr.city || document.getElementById('inp-city')?.value?.trim() || '';
-        const alamat = savedAddr.address || document.getElementById('inp-address')?.value?.trim() || '';
         const metodePengiriman = document.getElementById('ship-label')?.textContent || 'JNE Reguler';
         const metodePembayaran = document.getElementById('pay-label')?.textContent || 'Transfer BCA';
-
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
-        // Disable button to prevent double-click
         if (btn) {
           btn.textContent = 'Memproses...';
           btn.disabled = true;
           btn.style.opacity = '0.7';
         }
 
-        fetch('/checkout/place-order', {
+         fetch('/checkout/place-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
           body: JSON.stringify({
-            nama_penerima: namaPenerima,
-            telepon: telepon,
-            email: email,
-            kota: kota,
-            alamat_lengkap: alamat,
+            nama_penerima: addr.name,
+            telepon: addr.phone,
+            email: addr.email,
+            kota: addr.city,
+            alamat_lengkap: addr.address,
+            catatan: document.getElementById('inp-note')?.value?.trim() || '',
             metode_pengiriman: metodePengiriman,
             metode_pembayaran: metodePembayaran,
           }),
@@ -476,7 +431,7 @@
           if (data.success && data.redirect) {
             window.location.href = data.redirect;
           } else {
-            alert(data.error || 'Terjadi kesalahan. Silakan coba lagi.');
+            showToast(data.error || 'Terjadi kesalahan. Silakan coba lagi.', 'error');
             if (btn) {
               btn.textContent = 'Pesan Sekarang';
               btn.disabled = false;
@@ -485,7 +440,7 @@
           }
         })
         .catch(() => {
-          alert('Terjadi kesalahan jaringan. Silakan coba lagi.');
+          showToast('Terjadi kesalahan jaringan. Silakan coba lagi.', 'error');
           if (btn) {
             btn.textContent = 'Pesan Sekarang';
             btn.disabled = false;
