@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Models\Pesanan;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Support\Facades\Cache;
 
 class StatusPesananChart extends ChartWidget
 {
@@ -24,12 +25,24 @@ class StatusPesananChart extends ChartWidget
             Pesanan::STATUS_CANCELLED => 'Batal',
         ];
 
+        // Single query with GROUP BY + cache - instead of 8 separate COUNT queries
+        $counts = Cache::remember('admin.dashboard.status_counts', 120, function () use ($labels) {
+            $results = Pesanan::query()
+                ->selectRaw('status, COUNT(*) as count')
+                ->groupBy('status')
+                ->pluck('count', 'status')
+                ->toArray();
+
+            // Map to label order with 0 for missing statuses
+            return collect(array_keys($labels))->mapWithKeys(
+                fn ($status) => [$status => $results[$status] ?? 0]
+            )->toArray();
+        });
+
         return [
             'datasets' => [[
                 'label' => 'Jumlah Pesanan',
-                'data' => collect(array_keys($labels))
-                    ->map(fn (string $status) => Pesanan::where('status', $status)->count())
-                    ->all(),
+                'data' => array_values($counts),
                 'backgroundColor' => [
                     '#F59E0B',
                     '#10B981',

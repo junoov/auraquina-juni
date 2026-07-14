@@ -19,6 +19,7 @@ class ReviewsTable
     {
         return $table
             ->deferLoading()
+            ->modifyQueryUsing(fn ($query) => $query->with(['produk', 'user']))
             ->paginationMode(PaginationMode::Simple)
             ->columns([
                 TextColumn::make('produk.nama')->label('Produk')->searchable()->wrap(),

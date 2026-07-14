@@ -33,7 +33,7 @@ class KategoriForm
                     ->label('Gambar')
                     ->image()
                     ->directory('kategori')
-                    ->disk('public')
+                    ->disk('r2')  // Consistent with table display
                     ->imageEditor()
                     ->maxSize(3072),
                 TextInput::make('urutan')

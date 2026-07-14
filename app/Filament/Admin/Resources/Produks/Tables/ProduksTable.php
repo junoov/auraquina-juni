@@ -14,6 +14,7 @@ use Filament\Tables\Enums\PaginationMode;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class ProduksTable
 {
@@ -21,12 +22,19 @@ class ProduksTable
     {
         return $table
             ->deferLoading()
-            ->modifyQueryUsing(fn ($query) => $query->withCount('varians')->with('varians'))
+            ->modifyQueryUsing(fn ($query) => $query
+                ->with(['varians', 'gambarUtama', 'kategori'])
+            )
             ->paginationMode(PaginationMode::Simple)
             ->columns([
                 ImageColumn::make('gambarUtama.url')
                     ->label('')
-                    ->disk('r2')
+                    ->getStateUsing(function ($record) {
+                        if (!$record->gambarUtama?->url) return null;
+                        $path = $record->gambarUtama->url;
+                        if (str_starts_with($path, 'http')) return $path;
+                        return config('filesystems.disks.r2.url') . '/' . ltrim($path, '/');
+                    })
                     ->square()
                     ->size(48)
                     ->extraImgAttributes(['class' => 'rounded-lg']),
@@ -53,14 +61,14 @@ class ProduksTable
 
                 TextColumn::make('totalStok')
                     ->label('Stok')
-                    ->state(fn ($record) => $record->totalStok())
+                    ->state(fn ($record) => $record->varians->sum('stok')) // Use loaded relation, not new query
                     ->badge()
                     ->color(fn ($state) => match (true) {
                         $state === null || $state <= 0 => 'danger',
                         $state < 10 => 'warning',
                         default => 'success',
                     })
-                    ->tooltip(fn ($record) => $record->totalStok() . ' unit tersedia dari ' . $record->varians()->count() . ' varian'),
+                    ->tooltip(fn ($record) => $record->varians->sum('stok') . ' unit tersedia dari ' . $record->varians->count() . ' varian'),
 
                 TextColumn::make('aktif')
                     ->label('Status')

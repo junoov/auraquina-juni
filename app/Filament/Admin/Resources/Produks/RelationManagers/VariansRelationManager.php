@@ -127,9 +127,13 @@ class VariansRelationManager extends RelationManager
                     ->disk('r2')
                     ->circular()
                     ->size(40)
-                    ->defaultImageUrl(fn ($record) => $record->kode_warna
-                        ? 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" rx="8" fill="'.urlencode($record->kode_warna).'"/></svg>'
-                        : null),
+                    ->defaultImageUrl(function ($record) {
+                        if ($record && $record->kode_warna) {
+                            $encoded = urlencode($record->kode_warna);
+                            return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='40' height='40' rx='8' fill='{$encoded}'/></svg>";
+                        }
+                        return null;
+                    }),
                 TextColumn::make('warna')
                     ->label('Warna')
                     ->searchable()

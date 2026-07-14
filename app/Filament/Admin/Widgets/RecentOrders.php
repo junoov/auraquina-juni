@@ -21,7 +21,7 @@ class RecentOrders extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(Pesanan::query()->latest()->limit(8))
+            ->query(Pesanan::query()->with('items')->latest()->limit(8))
             ->columns([
                 TextColumn::make('kode_pesanan')->label('Kode')->searchable()->copyable(),
                 TextColumn::make('nama_penerima')->label('Nama Penerima')->wrap(),

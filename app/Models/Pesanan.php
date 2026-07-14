@@ -92,6 +92,15 @@ class Pesanan extends Model
         return $this->hasMany(ItemPesanan::class, 'pesanan_id');
     }
 
+    /**
+     * Eager load items with produk relation for optimized queries.
+     */
+    public function itemsWithProduk(): HasMany
+    {
+        return $this->hasMany(ItemPesanan::class, 'pesanan_id')
+            ->with('produk');
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

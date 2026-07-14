@@ -27,6 +27,7 @@ class PesanansTable
     {
         return $table
             ->deferLoading()
+            ->modifyQueryUsing(fn ($query) => $query->withCount('items'))
             ->paginationMode(PaginationMode::Simple)
             ->columns([
                 TextColumn::make('kode_pesanan')

@@ -6,6 +6,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Infolist read-only untuk halaman "Lihat Pesanan".
@@ -117,7 +118,7 @@ class PesananInfolist
                     ->schema([
                         TextEntry::make('items')
                             ->hiddenLabel()
-                            ->state(fn ($record) => $record->items)
+                            ->state(fn ($record) => $record->itemsWithProduk()->get())
                             ->view('filament.admin.infolists.order-items'),
                     ]),
 
@@ -327,13 +328,18 @@ class PesananInfolist
 
     /**
      * Ambil aktivitas pesanan dari spatie/activitylog.
+     * Cached untuk menghindari query berulang.
      */
     public static function activityLog($record)
     {
-        return $record->activities()
-            ->latest()
-            ->limit(20)
-            ->get();
+        $cacheKey = "pesanan.activity.{$record->id}";
+
+        return Cache::remember($cacheKey, 300, function () use ($record) {
+            return $record->activities()
+                ->latest()
+                ->limit(20)
+                ->get();
+        });
     }
 
     public static function statusColor(string $state): string

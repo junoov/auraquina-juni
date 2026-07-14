@@ -18,6 +18,7 @@ class UsersTable
     {
         return $table
             ->deferLoading()
+            ->modifyQueryUsing(fn ($query) => $query->with('roles'))
             ->paginationMode(PaginationMode::Simple)
             ->columns([
                 TextColumn::make('name')->label('Nama')->searchable()->sortable(),

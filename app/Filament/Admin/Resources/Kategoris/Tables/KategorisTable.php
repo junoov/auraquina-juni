@@ -19,11 +19,22 @@ class KategorisTable
     {
         return $table
             ->deferLoading()
+            ->modifyQueryUsing(fn ($query) => $query->withCount('produks'))
             ->paginationMode(PaginationMode::Simple)
             ->columns([
                 ImageColumn::make('gambar')
                     ->label('Gambar')
-                    ->disk('public')
+                    ->getStateUsing(function ($record) {
+                        if (!$record->gambar) return null;
+
+                        $url = $record->gambar;
+                        if (str_starts_with($url, 'http')) return $url;
+
+                        $cacheKey = "kategori_image_url_{$url}";
+                        return \Cache::remember($cacheKey, 3600, function () use ($url) {
+                            return config('filesystems.disks.r2.url') . '/' . $url;
+                        });
+                    })
                     ->square()
                     ->size(48),
                 TextColumn::make('nama')
