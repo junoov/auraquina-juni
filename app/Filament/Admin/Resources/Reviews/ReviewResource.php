@@ -19,13 +19,13 @@ class ReviewResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftEllipsis;
 
-    protected static ?string $navigationLabel = 'Ulasan';
+    protected static ?string $navigationLabel = 'Ulasan Pelanggan';
 
     protected static ?string $modelLabel = 'Ulasan';
 
     protected static ?string $pluralModelLabel = 'Ulasan';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Katalog';
+    protected static string|\UnitEnum|null $navigationGroup = 'Produk & Stok';
 
     protected static ?int $navigationSort = 40;
 
@@ -49,9 +49,28 @@ class ReviewResource extends Resource
         ];
     }
 
-    public static function canViewAny(): bool { return auth()->user()?->can('view_review') ?? false; }
-    public static function canCreate(): bool { return false; }
-    public static function canEdit($record): bool { return auth()->user()?->can('update_review') ?? false; }
-    public static function canDelete($record): bool { return auth()->user()?->can('delete_review') ?? false; }
-    public static function canDeleteAny(): bool { return auth()->user()?->can('delete_review') ?? false; }
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_review') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->can('update_review') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->can('delete_review') ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->can('delete_review') ?? false;
+    }
 }

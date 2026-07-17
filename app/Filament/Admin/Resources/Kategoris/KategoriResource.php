@@ -20,13 +20,13 @@ class KategoriResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
-    protected static ?string $navigationLabel = 'Kategori';
+    protected static ?string $navigationLabel = 'Kategori Produk';
 
     protected static ?string $modelLabel = 'Kategori';
 
     protected static ?string $pluralModelLabel = 'Kategori';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Katalog';
+    protected static string|\UnitEnum|null $navigationGroup = 'Produk & Stok';
 
     protected static ?int $navigationSort = 10;
 
@@ -56,9 +56,28 @@ class KategoriResource extends Resource
         ];
     }
 
-    public static function canViewAny(): bool { return auth()->user()?->can('view_kategori') ?? false; }
-    public static function canCreate(): bool { return auth()->user()?->can('create_kategori') ?? false; }
-    public static function canEdit($record): bool { return auth()->user()?->can('update_kategori') ?? false; }
-    public static function canDelete($record): bool { return auth()->user()?->can('delete_kategori') ?? false; }
-    public static function canDeleteAny(): bool { return auth()->user()?->can('delete_kategori') ?? false; }
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_kategori') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create_kategori') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->can('update_kategori') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->can('delete_kategori') ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->can('delete_kategori') ?? false;
+    }
 }

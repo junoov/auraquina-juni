@@ -16,16 +16,19 @@ class RecentOrders extends BaseWidget
 
     protected int|string|array $columnSpan = 'full';
 
-    protected static ?string $heading = 'Pesanan Terbaru';
+    protected static ?string $heading = 'Pesanan terbaru';
 
     public function table(Table $table): Table
     {
         return $table
             ->query(Pesanan::query()->with('items')->latest()->limit(8))
+            ->searchPlaceholder('Cari pesanan')
+            ->emptyStateHeading('Belum ada pesanan')
+            ->emptyStateDescription('Pesanan baru akan muncul di sini setelah pelanggan checkout.')
             ->columns([
-                TextColumn::make('kode_pesanan')->label('Kode')->searchable()->copyable(),
-                TextColumn::make('nama_penerima')->label('Nama Penerima')->wrap(),
-                TextColumn::make('total')->label('Total')->money('IDR', divideBy: 1),
+                TextColumn::make('kode_pesanan')->label('Kode pesanan')->searchable()->copyable(),
+                TextColumn::make('nama_penerima')->label('Penerima')->searchable()->wrap()->visibleFrom('sm'),
+                TextColumn::make('total')->label('Total')->money('IDR', divideBy: 1)->visibleFrom('md'),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
@@ -38,13 +41,17 @@ class RecentOrders extends BaseWidget
                         'cancelled', 'expired' => 'danger',
                         default => 'gray',
                     }),
-                TextColumn::make('created_at')->label('Dibuat Pada')->since(),
+                TextColumn::make('created_at')->label('Masuk')->since()->visibleFrom('lg'),
             ])
             ->recordActions([
                 Action::make('view')
-                    ->label('Lihat')
-                    ->url(fn ($record) => PesananResource::getUrl('edit', ['record' => $record]))
-                    ->icon('heroicon-o-eye'),
+                    ->label('Buka pesanan')
+                    ->url(fn ($record) => PesananResource::getUrl('view', ['record' => $record]))
+                    ->icon('heroicon-o-eye')
+                    ->extraAttributes([
+                        'aria-label' => 'Buka pesanan',
+                        'class' => 'recent-order-open-action',
+                    ]),
             ])
             ->paginated(false);
     }

@@ -22,7 +22,7 @@ class PesananResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static ?string $navigationLabel = 'Pesanan';
+    protected static ?string $navigationLabel = 'Pesanan Masuk';
 
     protected static ?string $modelLabel = 'Pesanan';
 
@@ -77,9 +77,28 @@ class PesananResource extends Resource
         return 'warning';
     }
 
-    public static function canViewAny(): bool { return auth()->user()?->can('view_pesanan') ?? false; }
-    public static function canCreate(): bool { return false; }
-    public static function canEdit($record): bool { return auth()->user()?->can('update_pesanan') ?? false; }
-    public static function canDelete($record): bool { return auth()->user()?->can('delete_pesanan') ?? false; }
-    public static function canDeleteAny(): bool { return auth()->user()?->can('delete_pesanan') ?? false; }
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_pesanan') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->can('update_pesanan') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->can('delete_pesanan') ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->can('delete_pesanan') ?? false;
+    }
 }

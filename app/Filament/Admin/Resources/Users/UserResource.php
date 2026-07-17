@@ -20,13 +20,13 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
-    protected static ?string $navigationLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Tim Admin';
 
     protected static ?string $modelLabel = 'Pengguna';
 
     protected static ?string $pluralModelLabel = 'Pengguna';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Pengaturan';
+    protected static string|\UnitEnum|null $navigationGroup = 'Pengaturan Toko';
 
     protected static ?int $navigationSort = 90;
 
@@ -56,9 +56,28 @@ class UserResource extends Resource
         ];
     }
 
-    public static function canViewAny(): bool { return auth()->user()?->can('view_user') ?? false; }
-    public static function canCreate(): bool { return auth()->user()?->can('create_user') ?? false; }
-    public static function canEdit($record): bool { return auth()->user()?->can('update_user') ?? false; }
-    public static function canDelete($record): bool { return auth()->user()?->can('delete_user') ?? false; }
-    public static function canDeleteAny(): bool { return auth()->user()?->can('delete_user') ?? false; }
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_user') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create_user') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->can('update_user') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->can('delete_user') ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->can('delete_user') ?? false;
+    }
 }

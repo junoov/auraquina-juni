@@ -8,9 +8,15 @@ use Illuminate\Support\Facades\Cache;
 
 class StatusPesananChart extends ChartWidget
 {
-    protected ?string $heading = 'Sebaran Status Pesanan';
+    protected ?string $heading = 'Status pesanan';
+
+    protected ?string $description = 'Jumlah pesanan di setiap tahap.';
+
+    protected ?string $maxHeight = '320px';
 
     protected ?string $pollingInterval = null;
+
+    protected int|string|array $columnSpan = 'full';
 
     protected function getData(): array
     {
@@ -41,16 +47,16 @@ class StatusPesananChart extends ChartWidget
 
         return [
             'datasets' => [[
-                'label' => 'Jumlah Pesanan',
+                'label' => 'Jumlah pesanan',
                 'data' => array_values($counts),
                 'backgroundColor' => [
-                    '#F59E0B',
-                    '#10B981',
-                    '#3B82F6',
-                    '#6366F1',
-                    '#0EA5E9',
-                    '#22C55E',
-                    '#047857',
+                    '#6B7280',
+                    '#111827',
+                    '#4B5563',
+                    '#9CA3AF',
+                    '#374151',
+                    '#059669',
+                    '#059669',
                     '#DC2626',
                 ],
             ]],

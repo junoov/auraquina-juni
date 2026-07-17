@@ -20,13 +20,13 @@ class VoucherResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static ?string $navigationLabel = 'Voucher';
+    protected static ?string $navigationLabel = 'Voucher Diskon';
 
     protected static ?string $modelLabel = 'Voucher';
 
     protected static ?string $pluralModelLabel = 'Voucher';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Promo';
+    protected static string|\UnitEnum|null $navigationGroup = 'Promosi';
 
     protected static ?int $navigationSort = 10;
 
@@ -51,9 +51,28 @@ class VoucherResource extends Resource
         ];
     }
 
-    public static function canViewAny(): bool { return auth()->user()?->can('view_voucher') ?? false; }
-    public static function canCreate(): bool { return auth()->user()?->can('create_voucher') ?? false; }
-    public static function canEdit($record): bool { return auth()->user()?->can('update_voucher') ?? false; }
-    public static function canDelete($record): bool { return auth()->user()?->can('delete_voucher') ?? false; }
-    public static function canDeleteAny(): bool { return auth()->user()?->can('delete_voucher') ?? false; }
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_voucher') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create_voucher') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->can('update_voucher') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->can('delete_voucher') ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->can('delete_voucher') ?? false;
+    }
 }

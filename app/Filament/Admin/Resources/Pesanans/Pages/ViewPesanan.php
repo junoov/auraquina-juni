@@ -19,7 +19,7 @@ class ViewPesanan extends ViewRecord
      * tidak sesak. Tombol Edit Manual tetap standalone di luar group.
      *
      * Urutan = alur fulfillment natural:
-     * Konfirmasi Bayar → Proses → Kemas → Kirim → (Refund/After-Sales/Batal).
+     * Konfirmasi Bayar → Proses → Kemas → Kirim → (Kembalikan dana/Bantuan pelanggan/Batal).
      * Filament otomatis sembunyikan action yang gak relevan dengan status.
      */
     protected function getHeaderActions(): array
@@ -29,14 +29,15 @@ class ViewPesanan extends ViewRecord
                 ...PesananActions::workflow(),
                 PesananActions::editAddress(),
             ])
-                ->label('Tindakan')
+                ->label('Proses pesanan')
                 ->icon('heroicon-o-bolt')
                 ->color('primary')
                 ->button()
                 ->dropdownWidth('lg'),
 
             EditAction::make()
-                ->label('Edit Manual')
+                ->label('Ubah data khusus')
+                ->visible(fn (): bool => auth()->user()?->can('update_pesanan') ?? false)
                 ->color('gray'),
         ];
     }

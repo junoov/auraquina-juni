@@ -4,21 +4,32 @@
      * Vertical timeline yang clean, event terbaru di atas.
      * Semua styling ada di theme.css (.activity-* classes).
      *
-     * State yang masuk = collection of Activity.
+     * State yang masuk = array primitif agar aman disimpan di cache file.
      */
     $activities = $getState();
+
+    // Pastikan selalu dalam bentuk Collection
+    if (is_array($activities)) {
+        $activities = collect($activities);
+    } elseif (! $activities instanceof \Illuminate\Support\Collection && ! $activities instanceof \Illuminate\Database\Eloquent\Collection) {
+        $activities = collect([]);
+    }
+
 @endphp
 
-@if ($activities && $activities->isNotEmpty())
+@if ($activities->isNotEmpty())
     <div class="activity-timeline">
 
         @foreach ($activities as $index => $activity)
             @php
-                $props = $activity->properties ?? collect();
+                $props = collect($activity['properties'] ?? []);
                 $from = $props->get('from_status');
                 $to = $props->get('to_status');
                 $actor = $props->get('actor');
-                $causer = $activity->causer?->name ?? ($actor ? ucfirst($actor) : 'Sistem');
+                $causer = $activity['causer_name'] ?? ($actor ? ucfirst($actor) : 'Sistem');
+                $createdAt = filled($activity['created_at'] ?? null)
+                    ? \Illuminate\Support\Carbon::parse($activity['created_at'])
+                    : null;
                 $isFirst = $index === 0;
             @endphp
 
@@ -38,13 +49,13 @@
                         @elseif ($props->get('field') === 'shipping_address')
                             Alamat pengiriman diubah
                         @else
-                            {{ ucfirst(str_replace('_', ' ', (string) $activity->description)) }}
+                            {{ ucfirst(str_replace('_', ' ', (string) ($activity['description'] ?? ''))) }}
                         @endif
                     </p>
                     <p class="activity-meta">
-                        <strong>{{ $causer }}</strong> · {{ optional($activity->created_at)->diffForHumans() }}
-                        @if ($activity->created_at)
-                            ({{ $activity->created_at->format('d M Y, H:i') }})
+                        <strong>{{ $causer }}</strong> · {{ optional($createdAt)->diffForHumans() }}
+                        @if ($createdAt)
+                            ({{ $createdAt->format('d M Y, H:i') }})
                         @endif
                     </p>
 

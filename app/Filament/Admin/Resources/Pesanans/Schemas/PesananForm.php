@@ -17,7 +17,7 @@ use Filament\Schemas\Schema;
  * - Halaman ini hanya untuk admin yang BENAR-BENAR mau edit field manual.
  *
  * Yang bisa diedit di sini hanya field yang legitimate untuk diubah manual:
- *   status, nomor_resi, kurir, dan field after-sales.
+ *   status, nomor_resi, kurir, dan field bantuan pelanggan.
  *
  * Field pelanggan & finansial (nama, telepon, alamat, total, dll) SENGAJA
  * tidak dimasukkan karena read-only by design (integritas data / bukti transaksi).
@@ -46,15 +46,15 @@ class PesananForm
                         ->placeholder('JNE / J&T / SiCepat / AnterAja'),
                 ]),
 
-            Section::make('After-Sales')
-                ->description('Penanganan return / refund / komplain pelanggan.')
+            Section::make('Bantuan pelanggan')
+                ->description('Penanganan retur, pengembalian dana, atau komplain pelanggan.')
                 ->columns(2)
                 ->schema([
                     Select::make('after_sales_status')
-                        ->label('Status After-Sales')
+                        ->label('Status bantuan pelanggan')
                         ->options(self::afterSalesStatusOptions()),
                     Select::make('after_sales_type')
-                        ->label('Jenis Request')
+                        ->label('Jenis bantuan')
                         ->options(self::afterSalesTypeOptions()),
                     DateTimePicker::make('after_sales_requested_at')->label('Diminta Pada'),
                     DateTimePicker::make('after_sales_resolved_at')->label('Diselesaikan Pada'),
@@ -68,18 +68,18 @@ class PesananForm
     public static function afterSalesStatusOptions(): array
     {
         return [
-            'requested' => 'Requested',
-            'in_review' => 'In Review',
-            'resolved' => 'Resolved',
-            'rejected' => 'Rejected',
+            'requested' => 'Diminta pelanggan',
+            'in_review' => 'Sedang ditinjau',
+            'resolved' => 'Selesai ditangani',
+            'rejected' => 'Ditolak',
         ];
     }
 
     public static function afterSalesTypeOptions(): array
     {
         return [
-            'return' => 'Penukaran / Return',
-            'refund' => 'Refund',
+            'return' => 'Penukaran atau retur',
+            'refund' => 'Pengembalian dana',
             'issue' => 'Komplain Pesanan',
         ];
     }
@@ -87,7 +87,7 @@ class PesananForm
     public static function statusOptions(): array
     {
         return [
-            'pending_payment' => 'Menunggu Pembayaran',
+            'pending_payment' => 'Menunggu bayar',
             'paid' => 'Dibayar',
             'processing' => 'Diproses',
             'packed' => 'Dikemas',

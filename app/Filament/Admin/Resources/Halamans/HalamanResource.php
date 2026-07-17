@@ -20,13 +20,13 @@ class HalamanResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
-    protected static ?string $navigationLabel = 'Halaman';
+    protected static ?string $navigationLabel = 'Halaman Toko';
 
     protected static ?string $modelLabel = 'Halaman';
 
     protected static ?string $pluralModelLabel = 'Halaman';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Pengaturan';
+    protected static string|\UnitEnum|null $navigationGroup = 'Pengaturan Toko';
 
     protected static ?int $navigationSort = 70;
 
@@ -53,9 +53,28 @@ class HalamanResource extends Resource
         ];
     }
 
-    public static function canViewAny(): bool { return auth()->user()?->can('view_halaman') ?? false; }
-    public static function canCreate(): bool { return auth()->user()?->can('create_halaman') ?? false; }
-    public static function canEdit($record): bool { return auth()->user()?->can('update_halaman') ?? false; }
-    public static function canDelete($record): bool { return auth()->user()?->can('delete_halaman') ?? false; }
-    public static function canDeleteAny(): bool { return auth()->user()?->can('delete_halaman') ?? false; }
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_halaman') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create_halaman') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->can('update_halaman') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->can('delete_halaman') ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->can('delete_halaman') ?? false;
+    }
 }

@@ -20,13 +20,13 @@ class RoleResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;
 
-    protected static ?string $navigationLabel = 'Peran';
+    protected static ?string $navigationLabel = 'Hak Akses';
 
     protected static ?string $modelLabel = 'Peran';
 
     protected static ?string $pluralModelLabel = 'Peran';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Pengaturan';
+    protected static string|\UnitEnum|null $navigationGroup = 'Pengaturan Toko';
 
     protected static ?int $navigationSort = 91;
 
@@ -56,9 +56,28 @@ class RoleResource extends Resource
         ];
     }
 
-    public static function canViewAny(): bool { return auth()->user()?->can('view_role') ?? false; }
-    public static function canCreate(): bool { return auth()->user()?->can('create_role') ?? false; }
-    public static function canEdit($record): bool { return auth()->user()?->can('update_role') ?? false; }
-    public static function canDelete($record): bool { return auth()->user()?->can('delete_role') ?? false; }
-    public static function canDeleteAny(): bool { return auth()->user()?->can('delete_role') ?? false; }
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_role') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create_role') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->can('update_role') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->can('delete_role') ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->can('delete_role') ?? false;
+    }
 }

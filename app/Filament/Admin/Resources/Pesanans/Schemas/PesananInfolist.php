@@ -2,10 +2,12 @@
 
 namespace App\Filament\Admin\Resources\Pesanans\Schemas;
 
+use Carbon\Carbon;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\TextSize;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -16,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
  *  - Baris 2 : Pelanggan (kiri) + Pengiriman (kanan)
  *  - Baris 3 : Item Pesanan (full width, produk cards)
  *  - Baris 4 : Pembayaran (full width, ringkasan financial)
- *  - Baris 5 : After-Sales (full width, conditional)
+ *  - Baris 5 : Bantuan pelanggan (full width, conditional)
  *  - Baris 6 : Riwayat Aktivitas (full width, collapsible)
  */
 class PesananInfolist
@@ -51,14 +53,14 @@ class PesananInfolist
                         TextEntry::make('status')
                             ->hiddenLabel()
                             ->badge()
-                            ->size(\Filament\Support\Enums\TextSize::Large)
+                            ->size(TextSize::Large)
                             ->formatStateUsing(fn ($state): string => PesananForm::statusOptions()[$state] ?? ucfirst(str_replace('_', ' ', (string) $state)))
                             ->color(fn ($state): string => self::statusColor($state)),
                         TextEntry::make('total')
                             ->hiddenLabel()
                             ->weight(FontWeight::Bold)
                             ->money('IDR', divideBy: 1)
-                            ->size(\Filament\Support\Enums\TextSize::Large)
+                            ->size(TextSize::Large)
                             ->color('primary'),
                     ]),
 
@@ -208,7 +210,7 @@ class PesananInfolist
                                     ->label('Waktu Transaksi')
                                     ->placeholder('-')
                                     ->state(fn ($record): ?string => self::extractMidtransField($record, 'transaction_time'))
-                                    ->formatStateUsing(fn ($state): ?string => $state ? \Carbon\Carbon::parse($state)->format('d M Y, H:i') : null)
+                                    ->formatStateUsing(fn ($state): ?string => $state ? Carbon::parse($state)->format('d M Y, H:i') : null)
                                     ->inlineLabel(),
                                 TextEntry::make('dibayar_pada')
                                     ->label('Dibayar Pada')
@@ -240,7 +242,7 @@ class PesananInfolist
                                     ->label('Waktu Settlement')
                                     ->placeholder('-')
                                     ->state(fn ($record): ?string => self::extractMidtransField($record, 'settlement_time'))
-                                    ->formatStateUsing(fn ($state): ?string => $state ? \Carbon\Carbon::parse($state)->format('d M Y, H:i') : null)
+                                    ->formatStateUsing(fn ($state): ?string => $state ? Carbon::parse($state)->format('d M Y, H:i') : null)
                                     ->inlineLabel(),
                             ])
                             ->visible(fn ($record): bool => self::extractMidtransField($record, 'bank') || self::extractMidtransField($record, 'va_number')),
@@ -275,15 +277,15 @@ class PesananInfolist
                             ->inlineLabel(),
                     ]),
 
-                // ====== Baris 5: After-Sales (full width, conditional) ======
-                Section::make('After-Sales')
+                // ====== Baris 5: Bantuan pelanggan (full width, conditional) ======
+                Section::make('Bantuan pelanggan')
                     ->columnSpan(12)
                     ->icon('heroicon-o-chat-bubble-left-right')
                     ->schema([
                         TextEntry::make('after_sales_status')
                             ->label('Status')
                             ->badge()
-                            ->placeholder('Tidak ada request')
+                            ->placeholder('Tidak ada permintaan bantuan')
                             ->formatStateUsing(fn ($state) => $state ? (PesananForm::afterSalesStatusOptions()[$state] ?? ucfirst((string) $state)) : null)
                             ->color(fn ($state): string => match ($state) {
                                 'requested' => 'warning',
@@ -332,13 +334,24 @@ class PesananInfolist
      */
     public static function activityLog($record)
     {
-        $cacheKey = "pesanan.activity.{$record->id}";
+        $cacheKey = "pesanan.activity.v2.{$record->id}";
 
+        // Jangan cache Collection atau obyek Eloquent secara langsung agar tidak bermasalah
+        // saat ditarik ulang dari cache. Kembalikan array berisi data mentah.
         return Cache::remember($cacheKey, 300, function () use ($record) {
             return $record->activities()
-                ->latest()
+                ->with('causer')
+                ->latest('created_at')
+                ->latest('id')
                 ->limit(20)
-                ->get();
+                ->get()
+                ->map(static fn ($activity): array => [
+                    'description' => (string) $activity->description,
+                    'properties' => $activity->properties?->all() ?? [],
+                    'causer_name' => $activity->causer?->name,
+                    'created_at' => $activity->created_at?->toIso8601String(),
+                ])
+                ->all();
         });
     }
 
@@ -394,8 +407,8 @@ class PesananInfolist
             'deny' => 'Ditolak',
             'cancel' => 'Dibatalkan',
             'expire' => 'Kedaluwarsa',
-            'refund' => 'Refund',
-            'partial_refund' => 'Refund Sebagian',
+            'refund' => 'Dana dikembalikan',
+            'partial_refund' => 'Dana dikembalikan sebagian',
             'chargeback' => 'Chargeback',
             'partial_chargeback' => 'Chargeback Sebagian',
             default => ucfirst((string) ($state ?? '-')),

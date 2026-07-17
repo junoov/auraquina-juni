@@ -5,12 +5,10 @@ namespace App\Filament\Admin\Resources\Produks\Schemas;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
@@ -124,7 +122,7 @@ class ProdukForm
                                                     ->default(0)
                                                     ->required(),
                                             ])
-                                            ->itemLabel(fn (array $state): ?string => $state['utama'] ? '🌟 Foto Cover' : '📷 Foto Detail')
+                                            ->itemLabel(fn (array $state): ?string => $state['utama'] ? 'Foto cover' : 'Foto detail')
                                             ->columnSpanFull(),
                                     ]),
                             ]),
@@ -179,10 +177,10 @@ class ProdukForm
                                             ->label('Label / Tag Produk')
                                             ->helperText('Tanda khusus yang tampil di gambar produk, misalnya "Baru" atau "Terlaris".')
                                             ->options([
-                                                'baru' => '✨ Baru',
-                                                'terlaris' => '🔥 Terlaris',
-                                                'terbatas' => '⚡ Terbatas',
-                                                'preorder' => '📦 Pra-pesan',
+                                                'baru' => 'Baru',
+                                                'terlaris' => 'Terlaris',
+                                                'terbatas' => 'Terbatas',
+                                                'preorder' => 'Pra-pesan',
                                             ])
                                             ->nullable(),
                                     ]),

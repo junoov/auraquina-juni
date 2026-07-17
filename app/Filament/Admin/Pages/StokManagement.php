@@ -7,9 +7,9 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ViewField;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -21,7 +21,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\HtmlString;
 use Livewire\Attributes\Computed;
 
 class StokManagement extends Page implements HasTable
@@ -30,11 +29,11 @@ class StokManagement extends Page implements HasTable
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;
 
-    protected static ?string $navigationLabel = 'Stok';
+    protected static ?string $navigationLabel = 'Stok Produk';
 
-    protected static ?string $title = 'Manajemen Stok';
+    protected static ?string $title = 'Stok Produk';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Katalog';
+    protected static string|\UnitEnum|null $navigationGroup = 'Produk & Stok';
 
     protected static ?int $navigationSort = 25;
 
@@ -68,6 +67,7 @@ class StokManagement extends Page implements HasTable
     {
         return $table
             ->deferLoading()
+            ->searchPlaceholder('Cari produk')
             ->paginationMode(PaginationMode::Simple)
             ->query(
                 VarianProduk::query()
@@ -84,12 +84,14 @@ class StokManagement extends Page implements HasTable
                     ->state(fn ($record): string => trim("{$record->warna} / {$record->ukuran}"))
                     ->badge()
                     ->color('gray')
-                    ->searchable(),
+                    ->searchable()
+                    ->visibleFrom('sm'),
                 TextColumn::make('sku')
                     ->label('SKU')
                     ->copyable()
                     ->tooltip('Klik untuk menyalin kode')
-                    ->color('gray'),
+                    ->color('gray')
+                    ->visibleFrom('md'),
                 TextColumn::make('stok')
                     ->label('Stok')
                     ->numeric()
@@ -100,7 +102,7 @@ class StokManagement extends Page implements HasTable
                         default => 'success',
                     })
                     ->tooltip(fn ($state) => $state <= 0
-                        ? '⚠️ Stok habis!'
+                        ? 'Stok habis'
                         : ($state < 5 ? "Sisa {$state} unit" : "Stok aman: {$state} unit"))
                     ->sortable(),
             ])
@@ -121,14 +123,18 @@ class StokManagement extends Page implements HasTable
             ])
             ->recordActions([
                 Action::make('adjust')
-                    ->label('Sesuaikan Stok')
+                    ->label('Ubah stok')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
                     ->slideOver()
+                    ->modalSubmitActionLabel('Simpan stok')
+                    ->extraAttributes([
+                        'aria-label' => 'Ubah stok',
+                        'class' => 'stock-adjust-action',
+                    ])
                     ->visible(fn () => auth()->user()?->can('adjust_stok'))
                     ->schema(fn (VarianProduk $record): array => [
-                        // ── Custom View Preview Box ──
-                        \Filament\Forms\Components\ViewField::make('stok_preview')
+                        ViewField::make('stok_preview')
                             ->view('filament.admin.components.stok-preview-box')
                             ->viewData([
                                 'stok' => $record->stok,
@@ -136,13 +142,12 @@ class StokManagement extends Page implements HasTable
                             ->columnSpanFull()
                             ->dehydrated(false),
 
-                        // ── Pilih Aksi ──
                         Radio::make('mode')
-                            ->label('Pilih Aksi')
+                            ->label('Cara mengubah stok')
                             ->options([
-                                'add' => 'Tambah Stok',
-                                'sub' => 'Kurangi Stok',
-                                'set' => 'Atur Menjadi',
+                                'add' => 'Tambah stok',
+                                'sub' => 'Kurangi stok',
+                                'set' => 'Ganti angka stok',
                             ])
                             ->default('add')
                             ->required()
@@ -154,7 +159,6 @@ class StokManagement extends Page implements HasTable
                                 'set' => 'Timpa stok dengan angka saat ini',
                             ]),
 
-                        // ── Jumlah ──
                         TextInput::make('jumlah')
                             ->label('Jumlah')
                             ->numeric()
@@ -188,7 +192,7 @@ class StokManagement extends Page implements HasTable
      */
     private static function previewStok(int $current, ?string $mode, int $jumlah): string
     {
-        if (!$mode || $jumlah <= 0 && $mode !== 'set') {
+        if (! $mode || $jumlah <= 0 && $mode !== 'set') {
             return 'Masukkan jumlah yang ingin diubah.';
         }
 
@@ -201,8 +205,7 @@ class StokManagement extends Page implements HasTable
 
         $diff = $result - $current;
         $sign = $diff >= 0 ? '+' : '';
-        $color = $result <= 0 ? 'color: #dc2626;' : 'color: #16a34a;';
 
-        return new HtmlString("<span style=\"{$color} font-weight: 600;\">📊 Hasil Akhir: {$current} → {$result} ({$sign}{$diff})</span>");
+        return "Hasil akhir: {$current} menjadi {$result} ({$sign}{$diff}).";
     }
 }

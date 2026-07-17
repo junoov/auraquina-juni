@@ -21,13 +21,13 @@ class ProdukResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
-    protected static ?string $navigationLabel = 'Produk';
+    protected static ?string $navigationLabel = 'Daftar Produk';
 
     protected static ?string $modelLabel = 'Produk';
 
     protected static ?string $pluralModelLabel = 'Produk';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Katalog';
+    protected static string|\UnitEnum|null $navigationGroup = 'Produk & Stok';
 
     protected static ?int $navigationSort = 20;
 
@@ -59,9 +59,28 @@ class ProdukResource extends Resource
         ];
     }
 
-    public static function canViewAny(): bool { return auth()->user()?->can('view_produk') ?? false; }
-    public static function canCreate(): bool { return auth()->user()?->can('create_produk') ?? false; }
-    public static function canEdit($record): bool { return auth()->user()?->can('update_produk') ?? false; }
-    public static function canDelete($record): bool { return auth()->user()?->can('delete_produk') ?? false; }
-    public static function canDeleteAny(): bool { return auth()->user()?->can('delete_produk') ?? false; }
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_produk') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create_produk') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->can('update_produk') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->can('delete_produk') ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->can('delete_produk') ?? false;
+    }
 }

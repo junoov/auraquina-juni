@@ -111,7 +111,7 @@ class VariansRelationManager extends RelationManager
                                             ->required()
                                             ->columnSpan(1),
                                     ])
-                                    ->itemLabel(fn (array $state): ?string => $state['utama'] ? '🌟 Utama' : '📷 Foto')
+                                    ->itemLabel(fn (array $state): ?string => $state['utama'] ? 'Foto utama' : 'Foto')
                                     ->columnSpanFull(),
                             ]),
                     ]),
@@ -130,8 +130,10 @@ class VariansRelationManager extends RelationManager
                     ->defaultImageUrl(function ($record) {
                         if ($record && $record->kode_warna) {
                             $encoded = urlencode($record->kode_warna);
+
                             return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='40' height='40' rx='8' fill='{$encoded}'/></svg>";
                         }
+
                         return null;
                     }),
                 TextColumn::make('warna')
@@ -157,7 +159,7 @@ class VariansRelationManager extends RelationManager
                         default => 'success',
                     })
                     ->tooltip(fn ($state) => $state <= 0
-                        ? '⚠️ Stok habis!'
+                        ? 'Stok habis'
                         : ($state < 5 ? "Sisa {$state} unit" : "Stok aman: {$state} unit")),
                 TextColumn::make('penyesuaian_harga')
                     ->label('Selisih Harga')
