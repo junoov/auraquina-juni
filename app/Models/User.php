@@ -45,7 +45,7 @@ class User extends Authenticatable implements FilamentUser
             return true;
         }
 
-        return $this->hasAnyRole(['owner', 'admin', 'operator_pesanan', 'operator_produk', 'operator_konten', 'viewer']);
+        return $this->hasAnyRole(['owner', 'admin']);
     }
 
     public function pesanans(): HasMany

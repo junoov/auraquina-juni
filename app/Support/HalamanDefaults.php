@@ -10,7 +10,7 @@ class HalamanDefaults
             [
                 'slug' => 'contact',
                 'title' => 'Hubungi Auraquina',
-                'eyebrow' => 'Customer Care',
+                'eyebrow' => 'Layanan Pelanggan',
                 'description' => 'Saluran resmi untuk pertanyaan pesanan, ukuran, dan bantuan belanja Auraquina.',
                 'sections' => [
                     ['heading' => 'Kontak Utama', 'body' => [
@@ -27,7 +27,7 @@ class HalamanDefaults
             [
                 'slug' => 'shipping-policy',
                 'title' => 'Kebijakan Pengiriman',
-                'eyebrow' => 'Shipping Policy',
+                'eyebrow' => 'Ketentuan Pengiriman',
                 'description' => 'Informasi pengiriman, waktu proses, dan tanggung jawab penerimaan pesanan.',
                 'sections' => [
                     ['heading' => 'Waktu Proses Pesanan', 'body' => [
@@ -69,8 +69,8 @@ class HalamanDefaults
             ],
             [
                 'slug' => 'return-exchange',
-                'title' => 'Return & Exchange',
-                'eyebrow' => 'After Sales Policy',
+                'title' => 'Retur & Penukaran',
+                'eyebrow' => 'Layanan Purna Jual',
                 'description' => 'Panduan pengajuan penukaran, retur, dan penanganan kendala pasca pembelian.',
                 'sections' => [
                     ['heading' => 'Kelayakan Retur dan Penukaran', 'body' => [
@@ -112,8 +112,8 @@ class HalamanDefaults
             ],
             [
                 'slug' => 'faq',
-                'title' => 'Frequently Asked Questions',
-                'eyebrow' => 'FAQ',
+                'title' => 'Pertanyaan Umum',
+                'eyebrow' => 'Tanya Jawab',
                 'description' => 'Jawaban ringkas untuk pertanyaan yang paling sering ditanyakan pelanggan Auraquina.',
                 'sections' => [
                     ['heading' => 'Apakah bisa belanja tanpa akun?', 'body' => [
@@ -161,7 +161,7 @@ class HalamanDefaults
             [
                 'slug' => 'about',
                 'title' => 'Tentang Auraquina',
-                'eyebrow' => 'About Us',
+                'eyebrow' => 'Tentang Kami',
                 'description' => 'Auraquina menghadirkan modest fashion dengan siluet tenang, material nyaman, dan estetika yang timeless.',
                 'sections' => [
                     ['heading' => 'Brand Story', 'body' => [
@@ -175,47 +175,36 @@ class HalamanDefaults
                 ],
             ],
             [
-                'slug' => 'size-guide',
-                'title' => 'Size Guide',
-                'eyebrow' => 'Panduan Ukuran',
-                'description' => 'Gunakan panduan ini untuk memilih ukuran yang paling nyaman sebelum checkout.',
+                'slug' => 'product-care',
+                'title' => 'Panduan Pemeliharaan Produk',
+                'eyebrow' => 'Petunjuk Perawatan',
+                'description' => 'Ikuti panduan ini untuk menjaga kualitas, warna, dan keawetan bahan pakaian Auraquina Anda.',
                 'sections' => [
-                    ['heading' => 'Cara Mengukur Tubuh', 'body' => [
-                        'Gunakan meteran kain dan ukur tubuh dalam posisi berdiri rileks. Jangan menarik meteran terlalu ketat agar hasil tidak lebih kecil dari ukuran sebenarnya.',
-                        'Untuk abaya, gamis, dan modestwear, ukur lingkar dada pada bagian terlebar, lingkar pinggang, lingkar pinggul, lebar bahu, panjang lengan, dan panjang baju dari titik bahu ke bawah.',
-                        'Untuk khimar, perhatikan panjang depan, panjang belakang, lingkar wajah, dan area bahu atau dada sesuai detail ukuran yang ditampilkan pada halaman produk.',
+                    ['heading' => 'Cara Mencuci', 'body' => [
+                        'Gunakan air dingin atau air bersuhu ruang untuk mencuci pakaian. Hindari penggunaan air panas agar serat kain tidak menyusut.',
+                        'Cuci pakaian dengan warna senada untuk menghindari luntur. Disarankan mencuci secara manual (hand wash) atau menggunakan putaran lambat (delicate cycle) jika menggunakan mesin cuci.',
+                        'Gunakan detergen cair yang lembut dan hindari pemutih pakaian agar warna alami kain tetap terjaga.',
                     ]],
-                    ['heading' => 'Ukuran Produk dan Ukuran Tubuh', 'body' => [
-                        'Detail ukuran pada halaman produk umumnya mengacu pada ukuran pakaian saat dibentangkan, bukan ukuran tubuh pelanggan, kecuali dinyatakan berbeda.',
-                        'Agar nyaman dipakai, pilih ukuran produk yang memiliki ruang gerak lebih besar dari ukuran tubuh, terutama pada area dada, pinggul, lengan, dan bahu.',
-                        'Untuk hasil terbaik, bandingkan detail ukuran produk Auraquina dengan pakaian sejenis yang sudah Anda miliki dan terasa nyaman saat dipakai.',
+                    ['heading' => 'Cara Menjemur', 'body' => [
+                        'Jemur pakaian dengan posisi dibalik (bagian dalam di luar) untuk melindunginya dari paparan sinar matahari langsung yang dapat memudarkan warna.',
+                        'Hindari memeras pakaian terlalu kuat agar serat dan bentuk pakaian tidak rusak.',
+                        'Cukup gantung atau bentangkan pakaian di tempat yang teduh dengan sirkulasi udara yang baik.',
                     ]],
-                    ['heading' => 'Toleransi Ukuran Manual', 'body' => [
-                        'Pengukuran produk dilakukan secara manual sehingga terdapat toleransi wajar sekitar 1 sampai 3 cm pada beberapa bagian.',
-                        'Toleransi dapat dipengaruhi oleh metode pengukuran, karakter bahan, potongan, proses produksi, dan cara produk dibentangkan saat diukur.',
-                        'Perbedaan dalam rentang toleransi tersebut masih dianggap normal selama tidak mengubah fungsi utama dan kenyamanan produk secara signifikan.',
+                    ['heading' => 'Cara Menyetrika', 'body' => [
+                        'Setrika pakaian dengan suhu rendah hingga sedang, menyesuaikan dengan jenis bahan.',
+                        'Gunakan kain pelapis (alas setrika) atau balik pakaian saat menyetrika untuk mencegah efek mengilap pada permukaan bahan pakaian.',
+                        'Untuk pakaian berbahan rentan atau pleated (berlipat), disarankan menggunakan setrika uap (steamer).',
                     ]],
-                    ['heading' => 'Panduan Fit dan Kenyamanan', 'body' => [
-                        'Auraquina berfokus pada modestwear dengan siluet yang rapi, nyaman, dan tidak terlalu membentuk tubuh. Perhatikan catatan fit pada setiap produk karena potongan straight, A-line, loose, atau flowy dapat terasa berbeda di tubuh.',
-                        'Jika Anda menyukai tampilan lebih longgar, pilih ukuran dengan ruang gerak lebih besar pada dada dan pinggul. Jika menyukai tampilan lebih rapi, pilih ukuran yang mendekati ukuran nyaman Anda tanpa mengabaikan ruang gerak.',
-                        'Untuk bahan yang jatuh, ringan, atau flowy, ukuran dapat terlihat lebih longgar saat dipakai. Untuk bahan yang lebih berstruktur, ruang gerak tambahan biasanya lebih terasa penting.',
-                    ]],
-                    ['heading' => 'Jika Berada di Antara Dua Ukuran', 'body' => [
-                        'Jika hasil pengukuran berada di antara dua ukuran, pilih ukuran lebih besar apabila Anda mengutamakan kenyamanan, ruang gerak, atau layering inner.',
-                        'Pilih ukuran lebih kecil hanya apabila seluruh ukuran tubuh masih berada dalam batas aman detail produk dan Anda menyukai fit yang lebih pas.',
-                        'Untuk abaya dan gamis, prioritaskan lingkar dada, pinggul, dan panjang baju. Untuk khimar, prioritaskan panjang depan, panjang belakang, dan kenyamanan area wajah atau bahu.',
-                    ]],
-                    ['heading' => 'Catatan Perawatan dan Perubahan Fit', 'body' => [
-                        'Ikuti instruksi perawatan pada produk agar bentuk, panjang, dan kenyamanan bahan tetap terjaga setelah dicuci.',
-                        'Hindari pencucian dengan air terlalu panas, pemutih, atau pengering bersuhu tinggi apabila tidak disarankan, karena dapat memengaruhi tekstur bahan dan rasa pakai.',
-                        'Setrika dengan suhu sesuai karakter bahan dan simpan produk dalam kondisi kering agar abaya, gamis, khimar, dan modestwear tetap nyaman digunakan dalam jangka panjang.',
+                    ['heading' => 'Cara Menyimpan', 'body' => [
+                        'Simpan pakaian dalam keadaan benar-benar kering untuk menghindari jamur dan bau lembap.',
+                        'Gantung pakaian menggunakan gantungan baju yang tebal atau berbusa untuk menjaga bentuk bahu, atau lipat dengan rapi di lemari pakaian yang sejuk dan kering.',
                     ]],
                 ],
             ],
             [
                 'slug' => 'privacy-policy',
                 'title' => 'Kebijakan Privasi',
-                'eyebrow' => 'Privacy Policy',
+                'eyebrow' => 'Kebijakan Privasi',
                 'description' => 'Penjelasan singkat tentang data yang kami kumpulkan dan cara Auraquina menggunakannya.',
                 'sections' => [
                     ['heading' => 'Data yang Dikumpulkan', 'body' => [
@@ -266,7 +255,7 @@ class HalamanDefaults
             [
                 'slug' => 'terms-conditions',
                 'title' => 'Syarat & Ketentuan',
-                'eyebrow' => 'Terms & Conditions',
+                'eyebrow' => 'Syarat & Ketentuan',
                 'description' => 'Ketentuan penggunaan website, akun, transaksi, pembayaran, pengiriman, dan layanan purna jual Auraquina.',
                 'sections' => [
                     ['heading' => 'Ringkasan dan Persetujuan Penggunaan', 'body' => [

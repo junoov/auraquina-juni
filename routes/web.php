@@ -53,7 +53,8 @@ Route::get('/pesanan/{kode}/pay', [CheckoutController::class, 'retryPayment'])->
 Route::redirect('/shipping-policy', '/pages/shipping-policy');
 Route::redirect('/return-exchange', '/pages/return-exchange');
 Route::redirect('/faq', '/pages/faq');
-Route::redirect('/size-guide', '/pages/size-guide');
+Route::redirect('/size-guide', '/pages/product-care');
+Route::redirect('/product-care', '/pages/product-care');
 Route::redirect('/privacy-policy', '/pages/privacy-policy');
 Route::redirect('/terms-conditions', '/pages/terms-conditions');
 Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');

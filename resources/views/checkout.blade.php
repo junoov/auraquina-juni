@@ -129,18 +129,18 @@
             <div onclick="openSheet('voucher')" style="border:1.5px solid rgba(211,192,172,0.58);border-radius:8px;padding:12px 16px;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;cursor:pointer;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#83513D" stroke-width="1.7"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                <span id="voucher-label" style="font-size:12px;color:#201916;font-weight:700;">{{ $voucher ? 'Voucher: ' . $voucher->code : 'Vouchers' }}</span>
+                <span id="voucher-label" style="font-size:12px;color:#201916;font-weight:700;">{{ $voucher ? 'Voucher: ' . $voucher->code : 'Gunakan Voucher' }}</span>
               </div>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71665d" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
             </div>
 
             {{-- Totals --}}
             <div style="margin-bottom:6px;display:flex;justify-content:space-between;">
-              <span style="font-size:13px;color:#71665d;">Subtotal · {{ count($cartItems) }} items</span>
+              <span style="font-size:13px;color:#71665d;">Subtotal · {{ count($cartItems) }} produk</span>
               <span style="font-size:13px;color:#201916;">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
             </div>
             <div style="margin-bottom:16px;display:flex;justify-content:space-between;">
-              <span style="font-size:13px;color:#71665d;">Shipping</span>
+              <span style="font-size:13px;color:#71665d;">Pengiriman</span>
               <span id="summary-shipping" style="font-size:13px;color:#201916;">Rp {{ number_format($shipping, 0, ',', '.') }}</span>
             </div>
             <div id="discount-row" style="margin-bottom:16px;display:{{ ($discount ?? 0) > 0 ? 'flex' : 'none' }};justify-content:space-between;">

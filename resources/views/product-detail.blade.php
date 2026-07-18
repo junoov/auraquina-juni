@@ -174,7 +174,7 @@
 
           {{-- Qty + Cart --}}
           <div style="margin-bottom:32px;">
-            <label class="qty-label" for="qty-val">Quantity</label>
+            <label class="qty-label" for="qty-val">Jumlah</label>
             <div class="qty-box">
               <button type="button" onclick="changeQty(-1)" aria-label="Kurangi jumlah">−</button>
               <span id="qty-val">1</span>
@@ -182,8 +182,8 @@
             </div>
           </div>
           <div style="display:grid;gap:10px;">
-            <button type="button" class="action-btn action-btn-outline" onclick="tambahKeKeranjang()">Add to Cart</button>
-            <button type="button" class="action-btn action-btn-solid" onclick="beliSekarang()">Buy It Now</button>
+            <button type="button" class="action-btn action-btn-outline" onclick="tambahKeKeranjang()">Tambah ke Keranjang</button>
+            <button type="button" class="action-btn action-btn-solid" onclick="beliSekarang()">Beli Sekarang</button>
           </div>
 
           {{-- Accordions --}}
@@ -199,7 +199,7 @@
       <section style="max-width:780px;margin:0 auto 56px;padding-top:8px;">
         <div style="display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;">
           <div>
-            <p style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:#A7745E;margin:0 0 6px;font-weight:700;">Customer Reviews</p>
+            <p style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:#A7745E;margin:0 0 6px;font-weight:700;">Ulasan Pelanggan</p>
             <h2 style="margin:0;font-size:28px;color:#201916;font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-weight:500;letter-spacing:-0.02em;">Ulasan Produk</h2>
           </div>
           <div style="font-size:13px;color:#71665d;">{{ $ratingCount > 0 ? number_format($ratingAverage, 1) . ' / 5 dari ' . $ratingCount . ' ulasan' : 'Jadilah yang pertama memberi ulasan' }}</div>

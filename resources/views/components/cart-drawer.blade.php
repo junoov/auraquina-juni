@@ -28,7 +28,7 @@
 <div id="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title" style="position:fixed;top:0;right:0;bottom:0;z-index:10000;width:100%;max-width:420px;transform:translateX(100%);background:var(--white);box-shadow:-8px 0 40px rgba(32,25,22,0.14);transition:transform 0.6s cubic-bezier(0.22,1,0.36,1);display:none;flex-direction:column;pointer-events:none;">
   {{-- Header --}}
   <div class="cart-slide-item" style="display:flex;align-items:center;justify-content:space-between;padding:24px 24px 20px;border-bottom:1px solid var(--border);">
-    <h2 id="cart-title" style="margin:0;font-size:18px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--brown);font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Cart</h2>
+    <h2 id="cart-title" style="margin:0;font-size:18px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--brown);font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Keranjang</h2>
     <button type="button" onclick="closeCart()" aria-label="Tutup" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:none;border-radius:50%;background:none;cursor:pointer;color:var(--muted);transition:all 0.15s;" onmouseover="this.style.color='var(--brown)';this.style.background='var(--cream)'" onmouseout="this.style.color='var(--muted)';this.style.background='none'">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
@@ -62,8 +62,8 @@
       <span style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--brown);">Subtotal</span>
       <span id="cart-subtotal" style="font-size:15px;font-weight:700;color:var(--brown);font-family:'Plus Jakarta Sans',system-ui,sans-serif;">Rp 0</span>
     </div>
-    <p style="font-size:11px;color:var(--muted);margin:0 0 16px;">Shipping, taxes, and discount codes calculated at checkout.</p>
-    <button type="button" id="cart-drawer-checkout" onclick="checkoutFromDrawer()" style="display:flex;align-items:center;justify-content:center;height:46px;width:100%;border-radius:3px;background:var(--brown);color:#fff;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;border:none;cursor:pointer;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Check Out</button>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 16px;">Pengiriman dan diskon dihitung saat checkout.</p>
+    <button type="button" id="cart-drawer-checkout" onclick="checkoutFromDrawer()" style="display:flex;align-items:center;justify-content:center;height:46px;width:100%;border-radius:3px;background:var(--brown);color:#fff;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;transition:opacity 0.2s;border:none;cursor:pointer;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Checkout</button>
   </div>
 </div>
 

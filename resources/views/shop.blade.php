@@ -24,14 +24,14 @@
               ['label' => 'All Size', 'value' => 'All Size'],
           ]),
           'Harga' => collect([
-            ['label' => '< Rp 300.000', 'value' => 'under_300'],
-            ['label' => 'Rp 300.000 - 500.000', 'value' => '300_500'],
-            ['label' => '> Rp 500.000', 'value' => 'over_500'],
+            ['label' => '< Rp 150.000', 'value' => 'under_150'],
+            ['label' => 'Rp 150.000 - 300.000', 'value' => '150_300'],
+            ['label' => '> Rp 300.000', 'value' => 'over_300'],
           ]),
       ];
 
       $sortOptions = [
-        'featured' => 'Featured',
+        'featured' => 'Unggulan',
         'newest' => 'Terbaru',
         'price_asc' => 'Harga: Rendah ke Tinggi',
         'price_desc' => 'Harga: Tinggi ke Rendah',
@@ -58,10 +58,10 @@
 
         {{-- Page title + sort (desktop) --}}
         <div class="mb-7 flex items-center justify-between gap-4 max-sm:hidden">
-          <h1 class="text-[20px] leading-[1.2] font-bold text-[var(--ink)]">{{ empty($searchTerm) ? 'All Products' : 'Search Results' }}</h1>
+          <h1 class="text-[20px] leading-[1.2] font-bold text-[var(--ink)]">{{ empty($searchTerm) ? 'Semua Produk' : 'Hasil Pencarian' }}</h1>
           <select name="sort" form="shop-filter-form" class="h-9 rounded-lg border border-[var(--border)] bg-[var(--white)] px-3 text-[12px] font-bold text-[var(--ink)] outline-none transition focus:border-[var(--brown)]">
             @foreach ($sortOptions as $value => $label)
-              <option value="{{ $value }}" {{ $selectedSort === $value ? 'selected' : '' }}>sort : {{ $label }}</option>
+              <option value="{{ $value }}" {{ $selectedSort === $value ? 'selected' : '' }}>urutkan : {{ $label }}</option>
             @endforeach
           </select>
         </div>
@@ -70,7 +70,7 @@
         <div class="mb-4 hidden max-sm:flex gap-2">
           <button id="mobile-sort-btn" type="button" class="flex h-9 flex-1 items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--white)] text-[12px] font-bold tracking-[0.02em] text-[var(--ink)] transition hover:border-[var(--brown)]">
             <svg aria-hidden="true" viewBox="0 0 24 24" class="h-3.5 w-3.5 fill-none stroke-current stroke-[1.8]"><path d="M3 6h18M6 12h12M9 18h6" /></svg>
-            Sort
+            Urutan
           </button>
           <button id="mobile-filter-btn" type="button" class="flex h-9 flex-1 items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--white)] text-[12px] font-bold tracking-[0.02em] text-[var(--ink)] transition hover:border-[var(--brown)]">
             <svg aria-hidden="true" viewBox="0 0 24 24" class="h-3.5 w-3.5 fill-none stroke-current stroke-[1.8]"><path d="M4 4h16M4 12h10M4 20h6" /></svg>
@@ -118,7 +118,7 @@
             </div>
 
             <div class="sticky bottom-0 border-t border-[var(--border)] bg-[var(--white)] px-5 py-4">
-              <button id="filter-apply" type="button" class="flex h-[46px] w-full items-center justify-center rounded-[6px] bg-[var(--brown)] text-[13px] font-bold tracking-[0.02em] text-[var(--white)]">Apply</button>
+              <button id="filter-apply" type="button" class="flex h-[46px] w-full items-center justify-center rounded-[6px] bg-[var(--brown)] text-[13px] font-bold tracking-[0.02em] text-[var(--white)]">Terapkan</button>
             </div>
           </div>
         </div>
@@ -128,7 +128,7 @@
           <div id="sort-backdrop" class="absolute inset-0 bg-[var(--ink)]/0 transition-all duration-300"></div>
           <div id="sort-panel" class="absolute right-0 bottom-0 left-0 max-h-[60vh] translate-y-full overflow-y-auto rounded-t-[8px] bg-[var(--white)] shadow-[0_-4px_24px_rgba(122,80,62,0.09)] transition-transform duration-300">
             <div class="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border)] bg-[var(--white)] px-5 py-4">
-              <h2 class="text-[18px] font-bold text-[var(--ink)]">Sort</h2>
+              <h2 class="text-[18px] font-bold text-[var(--ink)]">Urutkan</h2>
               <button id="sort-close" type="button" aria-label="Close" class="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--ink)] transition hover:bg-[var(--cream)]">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="stroke-[1.8]"><path d="M6 6l12 12M18 6 6 18" /></svg>
               </button>
@@ -144,7 +144,7 @@
             </div>
 
             <div class="sticky bottom-0 border-t border-[var(--border)] bg-[var(--white)] px-5 py-4">
-              <button id="sort-apply" type="button" class="flex h-[46px] w-full items-center justify-center rounded-[6px] bg-[var(--brown)] text-[13px] font-bold tracking-[0.02em] text-[var(--white)]">Apply</button>
+              <button id="sort-apply" type="button" class="flex h-[46px] w-full items-center justify-center rounded-[6px] bg-[var(--brown)] text-[13px] font-bold tracking-[0.02em] text-[var(--white)]">Terapkan</button>
             </div>
           </div>
         </div>

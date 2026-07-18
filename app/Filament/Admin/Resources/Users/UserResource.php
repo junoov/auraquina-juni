@@ -32,6 +32,12 @@ class UserResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->whereHas('roles', fn ($query) => $query->whereIn('name', ['owner', 'admin']));
+    }
+
     public static function form(Schema $schema): Schema
     {
         return UserForm::configure($schema);

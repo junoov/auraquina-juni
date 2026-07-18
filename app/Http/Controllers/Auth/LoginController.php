@@ -71,10 +71,6 @@ class LoginController extends Controller
         return Auth::user()?->hasAnyRole([
             'owner',
             'admin',
-            'operator_pesanan',
-            'operator_produk',
-            'operator_konten',
-            'viewer',
         ]) ? '/admin' : '/';
     }
 

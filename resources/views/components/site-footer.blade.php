@@ -2,7 +2,6 @@
   $socialIcons = [
       ['label' => 'Instagram', 'href' => 'https://www.instagram.com/auraquina/', 'icon' => '<rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><path d="M17 7h.01" />'],
       ['label' => 'TikTok', 'href' => 'https://www.tiktok.com/@auraquina_', 'icon' => '<path d="M14 3v11.5a4 4 0 1 1-4-4" /><path d="M14 6a6 6 0 0 0 5 3" />'],
-      ['label' => 'Email', 'href' => 'mailto:auraquina9@gmail.com', 'icon' => '<path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" />'],
   ];
   $payments = [
       [
@@ -44,7 +43,7 @@
       'Pertanyaan Umum' => '/pages/faq',
   ];
   $footerLinks2 = [
-      'Panduan Ukuran' => '/pages/size-guide',
+      'Panduan Pemeliharaan Produk' => '/pages/product-care',
       'Kebijakan Privasi' => '/pages/privacy-policy',
       'Syarat & Ketentuan' => '/pages/terms-conditions',
   ];
@@ -55,7 +54,7 @@
   <div class="{{ $containerClass }} grid grid-cols-[1.35fr_0.8fr_0.8fr_1.4fr] gap-[52px] border-b border-[var(--border)] py-9 pb-[22px] text-[13px] leading-5 max-lg:grid-cols-2 max-lg:gap-7 max-sm:grid-cols-1 max-sm:gap-y-4 max-sm:py-6 max-sm:pb-5">
     <div>
       <p class="mb-2 text-[14px] leading-5 font-bold text-[var(--ink)]">Auraquina Official</p>
-      <p class="mb-2 max-sm:mb-1 text-[var(--muted)]">Admin : <a class="text-[var(--ink)] transition hover:text-[var(--brown)]" href="tel:+6285942003395">+62 859-4200-3395</a></p>
+      <p class="mb-2 max-sm:mb-1 text-[var(--muted)]">Admin : <a class="text-[var(--ink)] transition hover:text-[var(--brown)]" href="tel:+6287711516373">0877-1151-6373</a></p>
       <p class="mb-2 text-[var(--muted)]">Yogyakarta, Indonesia.</p>
       <div class="mt-7 flex items-center gap-[18px] max-sm:mt-5">
         @foreach ($socialIcons as $social)
@@ -106,7 +105,7 @@
       </details>
     </div>
     <div>
-      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)] max-sm:mb-3">Payment Method</p>
+      <p class="mb-[14px] text-[14px] leading-5 font-bold text-[var(--ink)] max-sm:mb-3">Metode Pembayaran</p>
       <div class="site-footer__payments flex flex-wrap items-center gap-2 max-sm:gap-1.5">
         @foreach ($payments as $payment)
           <div class="inline-flex h-8 items-center justify-center rounded-[6px] border border-[var(--border)] bg-[var(--white)] px-2.5 max-sm:h-7 max-sm:px-2" title="{{ $payment['name'] }}">
@@ -117,7 +116,7 @@
     </div>
   </div>
   <div class="{{ $containerClass }} flex justify-between gap-5 py-[18px] pb-5 text-[12px] leading-[18px] text-[var(--muted)] max-lg:flex-col max-sm:pb-[72px]">
-    <span>© 2024 Auraquina. All rights reserved.</span>
-    <span class="flex items-center gap-3 font-bold text-[var(--ink)] max-sm:hidden">We Accept <b>VISA</b><b>Mastercard</b><b>BCA</b><b>mandiri</b><b>BRI</b><b>BSI</b></span>
+    <span>© 2024 Auraquina. Hak cipta dilindungi undang-undang.</span>
+    <span class="flex items-center gap-3 font-bold text-[var(--ink)] max-sm:hidden">Kami Menerima <b>VISA</b><b>Mastercard</b><b>BCA</b><b>mandiri</b><b>BRI</b><b>BSI</b></span>
   </div>
 </footer>

@@ -34,6 +34,7 @@ class ReviewTest extends TestCase
         ]);
 
         $this->actingAs($user)
+            ->from(route('produk.detail', $produk->slug))
             ->post(route('produk.reviews.store', $produk->slug), [
                 'rating' => 5,
                 'review' => 'Produk sangat nyaman dipakai, jahitan rapi, dan warna sesuai foto yang ditampilkan.',
@@ -44,21 +45,23 @@ class ReviewTest extends TestCase
             'user_id' => $user->id,
             'produk_id' => $produk->id,
             'rating' => 5,
-            'status' => 'pending',
+            'status' => 'approved',
         ]);
 
         $this->actingAs($user)
+            ->from(route('produk.detail', $produk->slug))
             ->post(route('produk.reviews.store', $produk->slug), [
                 'rating' => 4,
                 'review' => 'Setelah dicoba lagi tetap bagus, hanya ukuran terasa sedikit lebih longgar dari ekspektasi.',
             ])
-            ->assertRedirect(route('produk.detail', $produk->slug));
+            ->assertRedirect(route('produk.detail', $produk->slug))
+            ->assertSessionHas('error');
 
         $this->assertSame(1, Review::count());
         $this->assertDatabaseHas('reviews', [
             'user_id' => $user->id,
             'produk_id' => $produk->id,
-            'rating' => 4,
+            'rating' => 5,
         ]);
     }
 
@@ -81,6 +84,7 @@ class ReviewTest extends TestCase
         ]);
 
         $this->actingAs($user)
+            ->from(route('produk.detail', $produk->slug))
             ->post(route('produk.reviews.store', $produk->slug), [
                 'rating' => 5,
                 'review' => 'Bahannya jatuh dengan cantik dan foto ini menunjukkan warna aslinya.',
@@ -93,6 +97,7 @@ class ReviewTest extends TestCase
         $this->assertCount(1, $review->photos);
         Storage::disk('public')->assertExists($review->photos[0]);
     }
+
 
     public function test_product_detail_displays_review_photos(): void
     {

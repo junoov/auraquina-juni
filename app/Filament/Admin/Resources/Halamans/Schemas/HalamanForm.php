@@ -41,8 +41,6 @@ class HalamanForm
                                 ->simple(
                                     Textarea::make('isi')->label('Teks')->rows(3)->required()
                                 )
-                                ->formatStateUsing(fn ($state) => collect($state ?? [])->map(fn ($item) => is_array($item) ? ($item['isi'] ?? '') : $item)->all())
-                                ->dehydrateStateUsing(fn ($state) => collect($state ?? [])->map(fn ($item) => is_array($item) ? ($item['isi'] ?? '') : $item)->filter()->values()->all())
                                 ->defaultItems(1),
                         ])
                         ->defaultItems(1)

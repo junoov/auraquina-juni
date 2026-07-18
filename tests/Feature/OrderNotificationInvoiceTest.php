@@ -52,7 +52,10 @@ class OrderNotificationInvoiceTest extends TestCase
 
     public function test_signed_invoice_route_is_accessible(): void
     {
-        $pesanan = $this->createOrder(['email' => 'customer@example.com']);
+        $pesanan = $this->createOrder([
+            'email' => 'customer@example.com',
+            'status' => Pesanan::STATUS_PAID,
+        ]);
         $url = URL::temporarySignedRoute('pesanan.invoice', now()->addDays(30), [
             'kode' => $pesanan->kode_pesanan,
         ]);

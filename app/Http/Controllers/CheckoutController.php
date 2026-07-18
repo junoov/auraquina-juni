@@ -647,6 +647,16 @@ class CheckoutController extends Controller
             return ['bri_va'];
         }
 
+        // Transfer Bank BNI
+        if (str_contains($metode, 'bni')) {
+            return ['bni_va'];
+        }
+
+        // Transfer Bank Permata
+        if (str_contains($metode, 'permata')) {
+            return ['permata_va'];
+        }
+
         // Transfer Bank BSI
         if (str_contains($metode, 'bsi')) {
             return ['bsi_va'];
@@ -734,7 +744,7 @@ class CheckoutController extends Controller
             $metode = strtolower($pesanan->metode_pembayaran);
 
             $enabledPayments = $this->getEnabledPayments($pesanan->metode_pembayaran);
-            $snapOnlyPayments = ['cimb_va', 'seabank_va', 'danamon_va', 'saqu_va', 'other_va'];
+            $snapOnlyPayments = ['cimb_va', 'seabank_va', 'danamon_va', 'saqu_va', 'other_va', 'bsi_va'];
 
             if (array_intersect($enabledPayments, $snapOnlyPayments)) {
                 $params['enabled_payments'] = $enabledPayments;

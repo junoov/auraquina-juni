@@ -40,6 +40,9 @@ class RolePermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
         }
 
+        // Delete old roles that are no longer needed
+        Role::whereIn('name', ['operator_pesanan', 'operator_produk', 'operator_konten', 'viewer'])->delete();
+
         $owner = Role::firstOrCreate(['name' => 'owner', 'guard_name' => 'web']);
         $owner->syncPermissions(Permission::all());
 
@@ -51,35 +54,16 @@ class RolePermissionSeeder extends Seeder
                 ->get()
         );
 
-        $opPesanan = Role::firstOrCreate(['name' => 'operator_pesanan', 'guard_name' => 'web']);
-        $opPesanan->syncPermissions([
-            'view_pesanan', 'update_pesanan',
-            'process_pesanan', 'cancel_pesanan', 'refund_pesanan',
-            'view_customer',
-        ]);
+        $pelanggan = Role::firstOrCreate(['name' => 'pelanggan', 'guard_name' => 'web']);
 
-        $opProduk = Role::firstOrCreate(['name' => 'operator_produk', 'guard_name' => 'web']);
-        $opProduk->syncPermissions([
-            'view_kategori', 'create_kategori', 'update_kategori', 'delete_kategori',
-            'view_produk', 'create_produk', 'update_produk', 'delete_produk',
-            'view_varian', 'create_varian', 'update_varian', 'delete_varian',
-            'view_gambar', 'create_gambar', 'update_gambar', 'delete_gambar',
-            'view_stok', 'update_stok', 'adjust_stok',
-        ]);
+        // Assign 'pelanggan' role to all existing users who do not have owner or admin roles
+        $nonAdminUsers = User::whereDoesntHave('roles', function ($query) {
+            $query->whereIn('name', ['owner', 'admin']);
+        })->get();
 
-        $opKonten = Role::firstOrCreate(['name' => 'operator_konten', 'guard_name' => 'web']);
-        $opKonten->syncPermissions([
-            'view_kategori', 'create_kategori', 'update_kategori',
-            'view_produk', 'update_produk',
-            'view_gambar', 'create_gambar', 'update_gambar', 'delete_gambar',
-            'view_review', 'update_review',
-            'view_halaman', 'create_halaman', 'update_halaman', 'delete_halaman',
-        ]);
-
-        $viewer = Role::firstOrCreate(['name' => 'viewer', 'guard_name' => 'web']);
-        $viewer->syncPermissions(
-            Permission::where('name', 'like', 'view_%')->get()
-        );
+        foreach ($nonAdminUsers as $user) {
+            $user->assignRole('pelanggan');
+        }
 
         $ownerUser = User::firstOrCreate(
             ['email' => 'owner@auraquina.id'],

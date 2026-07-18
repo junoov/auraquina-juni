@@ -19,10 +19,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(fn (Request $request) => $request->user()?->hasAnyRole([
             'owner',
             'admin',
-            'operator_pesanan',
-            'operator_produk',
-            'operator_konten',
-            'viewer',
         ]) ? '/admin' : '/');
         $middleware->validateCsrfTokens(except: [
             'payment/midtrans/callback',

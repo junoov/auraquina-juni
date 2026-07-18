@@ -13,13 +13,13 @@
   {{-- Desktop Nav --}}
   <div class="site-header__inner relative flex items-center px-12 max-lg:hidden {{ $transparent ? 'absolute inset-x-0 top-0' : '' }}" style="height:86px;">
     <nav class="mr-auto flex items-center gap-1" aria-label="Primary navigation">
-      <a class="flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap {{ request()->is('/') ? 'font-bold' : '' }}" href="/">Home</a>
-      <a class="flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap {{ request()->is('shop') ? 'font-bold' : '' }}" href="/shop">All Product</a>
+      <a class="flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap {{ request()->is('/') ? 'font-bold' : '' }}" href="/">Beranda</a>
+      <a class="flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap {{ request()->is('shop') ? 'font-bold' : '' }}" href="/shop">Semua Produk</a>
       <div class="group relative flex h-9 items-center px-3.5 text-[14px] leading-5 whitespace-nowrap">
-        Collection
+        Koleksi
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="ml-0.5 h-4 w-4 stroke-[1.7]"><path d="m6 9 6 6 6-6" /></svg>
         <div class="pointer-events-none absolute top-9 left-1/2 z-80 min-w-[214px] -translate-x-1/2 translate-y-2 border border-[var(--border)] bg-[var(--white)] py-2 opacity-0 shadow-[0_8px_24px_rgba(131,81,61,0.12)] transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
-          <a class="block px-4 py-2 text-[13px] leading-[18px] text-[var(--ink)] hover:bg-[var(--cream)]" href="/shop">New Arrival</a>
+          <a class="block px-4 py-2 text-[13px] leading-[18px] text-[var(--ink)] hover:bg-[var(--cream)]" href="/shop">Produk Terbaru</a>
           @foreach ($kategoris as $kategori)
             <a class="block px-4 py-2 text-[13px] leading-[18px] text-[var(--ink)] hover:bg-[var(--cream)]" href="/shop?category={{ urlencode($kategori->slug) }}">{{ $kategori->nama }}</a>
           @endforeach
@@ -39,7 +39,7 @@
 
       <a href="{{ $accountHref }}" class="flex items-center gap-2 px-3 h-9 rounded-lg transition" aria-label="Account">
         <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-        <span class="text-[13px] font-semibold tracking-wide uppercase truncate max-w-[120px]">{{ auth()->check() ? 'Hi, ' . Str::limit(auth()->user()->name, 12) : 'Hi, Guest' }}</span>
+        <span class="text-[13px] font-semibold tracking-wide uppercase truncate max-w-[120px]">{{ auth()->check() ? 'Halo, ' . Str::limit(auth()->user()->name, 12) : 'Halo, Tamu' }}</span>
       </a>
 
       <button type="button" onclick="openCart()" aria-label="Cart" class="relative flex h-9 w-9 items-center justify-center rounded-lg transition">
@@ -98,9 +98,9 @@
     </button>
   </div>
   <nav class="flex flex-col px-5 py-4 text-[15px] leading-[22px]">
-    <a class="border-b border-[var(--border)] py-4 {{ request()->is('/') ? 'font-bold text-[var(--brown)]' : '' }}" href="/">Home</a>
-    <a class="border-b border-[var(--border)] py-4 {{ request()->is('shop') ? 'font-bold text-[var(--brown)]' : '' }}" href="/shop">All Product</a>
-    <a class="border-b border-[var(--border)] py-4" href="/shop">Collection</a>
+    <a class="border-b border-[var(--border)] py-4 {{ request()->is('/') ? 'font-bold text-[var(--brown)]' : '' }}" href="/">Beranda</a>
+    <a class="border-b border-[var(--border)] py-4 {{ request()->is('shop') ? 'font-bold text-[var(--brown)]' : '' }}" href="/shop">Semua Produk</a>
+    <a class="border-b border-[var(--border)] py-4" href="/shop">Koleksi</a>
     <a class="border-b border-[var(--border)] py-4 font-bold text-[var(--brown)]" href="{{ $accountHref }}">{{ auth()->check() ? 'Akun Saya' : 'Masuk' }}</a>
   </nav>
 </div>

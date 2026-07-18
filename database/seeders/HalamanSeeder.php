@@ -10,6 +10,8 @@ class HalamanSeeder extends Seeder
 {
     public function run(): void
     {
+        Halaman::where('slug', 'size-guide')->delete();
+
         foreach (HalamanDefaults::items() as $index => $item) {
             Halaman::updateOrCreate(
                 ['slug' => $item['slug']],

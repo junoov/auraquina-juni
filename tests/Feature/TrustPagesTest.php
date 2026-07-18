@@ -17,7 +17,7 @@ class TrustPagesTest extends TestCase
             'return-exchange',
             'faq',
             'about',
-            'size-guide',
+            'product-care',
             'privacy-policy',
             'terms-conditions',
         ] as $slug) {

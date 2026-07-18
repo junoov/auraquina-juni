@@ -67,30 +67,24 @@
       $bestSellers = $homeProductCards->take(4)->values();
       $serviceItems = [
           [
-              'title' => 'Premium Fabric',
+              'title' => 'Bahan Premium',
               'desc' => 'Nyaman dipakai seharian.',
               'icon' => '<path d="M12 2 4 6.5v9L12 20l8-4.5v-9L12 2Zm0 0v8.8m8-4.3-8 4.3m-8-4.3 8 4.3m0 9.2v-9.2" />',
           ],
           [
-              'title' => 'Timeless Design',
+              'title' => 'Desain Abadi',
               'desc' => 'Gaya minimal yang selalu relevan.',
               'icon' => '<path d="M12 7v5l3 2m5-2a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM9 2h6" />',
           ],
           [
-              'title' => 'Easy Styling',
+              'title' => 'Mudah Dipadukan',
               'desc' => 'Mudah dipadukan untuk setiap kesempatan.',
               'icon' => '<path d="M4 14a8 8 0 0 1 16 0v5a2 2 0 0 1-2 2h-2v-7h4M4 14h4v7H6a2 2 0 0 1-2-2v-5Z" />',
-          ],
-          [
-              'title' => 'Reliable Service',
-              'desc' => 'Kami siap membantu kapan saja.',
-              'icon' => '<path d="M7 18a5 5 0 1 1 .8-9.9A6.5 6.5 0 0 1 20 11.5a3.5 3.5 0 0 1-.5 6.5H7Z" />',
           ],
       ];
       $socialIcons = [
           ['label' => 'Instagram', 'href' => 'https://www.instagram.com/auraquina/', 'icon' => '<rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><path d="M17 7h.01" />'],
           ['label' => 'TikTok', 'href' => 'https://www.tiktok.com/@auraquina_', 'icon' => '<path d="M14 3v11.5a4 4 0 1 1-4-4" /><path d="M14 6a6 6 0 0 0 5 3" />'],
-          ['label' => 'Email', 'href' => 'mailto:auraquina9@gmail.com', 'icon' => '<path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" />'],
       ];
       $payments = [
           [
@@ -132,7 +126,7 @@
           'Pertanyaan Umum' => '/pages/faq',
       ];
       $footerLinks2 = [
-          'Panduan Ukuran' => '/pages/size-guide',
+          'Panduan Pemeliharaan Produk' => '/pages/product-care',
           'Kebijakan Privasi' => '/pages/privacy-policy',
           'Syarat & Ketentuan' => '/pages/terms-conditions',
       ];
@@ -224,14 +218,16 @@
           </div>
         </section>
 
-        <section class="bg-[var(--cream)] py-20 max-sm:py-14" aria-label="Brand philosophy">
-          <div class="{{ $containerClass }} text-center">
-            <p class="mb-6 text-[11px] font-bold tracking-[0.22em] uppercase text-[var(--brown)]">Our Philosophy</p>
-            <blockquote class="mx-auto max-w-[580px] text-[32px] leading-[1.35] font-medium tracking-[-0.01em] text-[var(--ink)] max-lg:text-[26px] max-sm:text-[22px]" style="font-family:'Cormorant Garamond',Georgia,serif">
-              <em>"Designed for women who find beauty in simplicity."</em>
+        <section class="bg-[var(--cream)] py-24 max-sm:py-16 relative overflow-hidden" aria-label="Brand philosophy">
+          <div class="absolute inset-0 opacity-[0.03] pointer-events-none select-none flex items-center justify-center">
+            <span class="text-[280px] font-serif font-bold text-[var(--brown)]">AQ</span>
+          </div>
+          <div class="{{ $containerClass }} text-center relative z-10">
+            <span class="block text-[48px] leading-none text-[var(--brown)]/25 font-serif mb-1 select-none">“</span>
+            <blockquote class="mx-auto max-w-[620px] text-[38px] leading-[1.4] font-medium tracking-wide text-[var(--ink)] max-lg:text-[32px] max-sm:text-[24px] -mt-5" style="font-family:'Cormorant Garamond',Georgia,serif; font-style: italic;">
+              Anggun dalam sederhana.
             </blockquote>
-            <div class="mx-auto mt-7 mb-0 h-px w-12 bg-[var(--brown)]/40"></div>
-            <p class="mt-6 text-[14px] leading-[1.75] text-[var(--muted)] max-w-[480px] mx-auto max-sm:text-[13px]">Setiap helai kain dipilih dengan hati, setiap jahitan dibuat dengan niat — untuk menemani langkahmu dengan tenang dan percaya diri.</p>
+            <span class="block text-[48px] leading-none text-[var(--brown)]/25 font-serif mt-1 select-none">”</span>
           </div>
         </section>
 
@@ -239,10 +235,10 @@
         <section aria-labelledby="bestseller-title" class="{{ $containerClass }} py-14 max-sm:py-8">
           <div class="mb-7 flex items-center justify-between gap-5 max-sm:mb-5 max-sm:flex-col max-sm:items-start">
             <div>
-              <p class="mb-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--brown)]">Most Loved</p>
-              <h2 id="bestseller-title" class="text-[28px] leading-[1.15] font-medium text-[var(--ink)] max-sm:text-[24px]" style="font-family:'Cormorant Garamond',Georgia,serif">Customer Picks</h2>
+              <p class="mb-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--brown)]">Paling Disukai</p>
+              <h2 id="bestseller-title" class="text-[28px] leading-[1.15] font-medium text-[var(--ink)] max-sm:text-[24px]" style="font-family:'Cormorant Garamond',Georgia,serif">Pilihan Pelanggan</h2>
             </div>
-            <a class="inline-flex items-center gap-7 whitespace-nowrap text-[14px] leading-5 font-bold text-[var(--brown)]" href="/shop">View All {!! $arrowIcon !!}</a>
+            <a class="inline-flex items-center gap-7 whitespace-nowrap text-[14px] leading-5 font-bold text-[var(--brown)]" href="/shop">Lihat Semua {!! $arrowIcon !!}</a>
           </div>
           <div class="grid grid-cols-4 gap-5 max-lg:grid-cols-2 max-lg:gap-[14px] max-sm:grid-cols-2 max-sm:auto-rows-fr max-sm:gap-4">
             @foreach ($bestSellers as $index => $item)
@@ -264,9 +260,9 @@
         <section aria-labelledby="instagram-title" class="border-t border-[var(--border)] bg-[var(--warm)] pt-12 pb-0 max-sm:pt-8 max-sm:pb-0">
           <div class="{{ $containerClass }} mb-7 flex items-center justify-between gap-5 max-sm:mb-5 max-sm:flex-col max-sm:items-start">
             <div>
-              <p class="mb-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--brown)]">Community</p>
-              <h2 id="instagram-title" class="text-[28px] leading-[1.15] font-medium text-[var(--ink)] max-sm:text-[24px]" style="font-family:'Cormorant Garamond',Georgia,serif">Follow Us on Instagram</h2>
-              <p class="mt-1.5 text-[14px] leading-5 text-[var(--muted)] max-sm:text-[13px]">See how our community styles Auraquina</p>
+              <p class="mb-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--brown)]">Komunitas</p>
+              <h2 id="instagram-title" class="text-[28px] leading-[1.15] font-medium text-[var(--ink)] max-sm:text-[24px]" style="font-family:'Cormorant Garamond',Georgia,serif">Ikuti Kami di Instagram</h2>
+              <p class="mt-1.5 text-[14px] leading-5 text-[var(--muted)] max-sm:text-[13px]">Lihat bagaimana komunitas kami memadukan gaya Auraquina</p>
             </div>
             <a class="inline-flex items-center gap-3 text-[14px] font-bold text-[var(--brown)] max-sm:text-[13px]" href="https://www.instagram.com/auraquina/" target="_blank" rel="noopener">
               <svg aria-hidden="true" viewBox="0 0 24 24" class="h-[18px] w-[18px] fill-none stroke-[var(--brown)] stroke-[1.8]"><rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><path d="M17 7h.01" /></svg>
@@ -276,9 +272,9 @@
         </section>
 
         <section class="border-y border-[var(--border)] bg-[var(--cream)] py-[34px] max-sm:py-6" aria-label="Store benefits">
-          <div class="{{ $containerClass }} grid grid-cols-4 gap-0 max-lg:grid-cols-2 max-lg:gap-y-[26px] max-sm:grid-cols-1 max-sm:gap-y-5">
+          <div class="{{ $containerClass }} grid grid-cols-3 gap-0 max-sm:grid-cols-1 max-sm:gap-y-5">
             @foreach ($serviceItems as $service)
-              <div class="grid grid-cols-[34px_minmax(0,1fr)] items-center gap-3.5 px-7 {{ ! $loop->first ? 'max-sm:px-0' : 'pl-0 max-sm:px-0' }} {{ ! $loop->last ? 'border-r border-[var(--border)] max-lg:border-r-0' : 'pr-0 max-sm:px-0' }} {{ $loop->index === 0 ? 'max-lg:px-[18px]' : '' }} {{ $loop->index > 0 && $loop->index < 3 ? 'max-lg:px-[18px]' : '' }}">
+              <div class="grid grid-cols-[34px_minmax(0,1fr)] items-center gap-3.5 px-6 {{ $loop->first ? 'pl-0' : '' }} {{ $loop->last ? 'pr-0' : 'border-r border-[var(--border)] max-sm:border-r-0' }} max-sm:px-0">
                 <svg aria-hidden="true" viewBox="0 0 24 24" class="h-[26px] w-[26px] fill-none stroke-[var(--brown)] stroke-[1.7]">{!! $service['icon'] !!}</svg>
                 <span>
                   <strong class="mb-1 block text-[13px] leading-[18px] text-[var(--ink)]">{{ $service['title'] }}</strong>

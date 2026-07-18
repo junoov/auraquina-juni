@@ -90,17 +90,14 @@ class AdminPanelTest extends TestCase
             ->assertSeeText('Riwayat Aktivitas');
     }
 
-    public function test_viewer_cannot_edit_an_order_shipping_address(): void
+    public function test_pelanggan_cannot_access_admin_panel(): void
     {
-        $viewer = User::factory()->create();
-        $viewer->assignRole('viewer');
-        $pesanan = $this->createOrder();
+        $pelanggan = User::factory()->create();
+        $pelanggan->assignRole('pelanggan');
 
-        $this->actingAs($viewer)
-            ->get(route('filament.admin.resources.pesanans.view', ['record' => $pesanan]))
-            ->assertOk()
-            ->assertDontSeeText('Ubah alamat kirim')
-            ->assertDontSeeText('Ubah data khusus');
+        $this->actingAs($pelanggan)
+            ->get('/admin')
+            ->assertForbidden();
     }
 
     private function createOrder(array $overrides = []): Pesanan

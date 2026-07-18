@@ -45,9 +45,9 @@ class ProdukController extends Controller
                     foreach ($prices as $price) {
                         $priceQuery->orWhere(function ($rangeQuery) use ($price) {
                             match ($price) {
-                                'under_300' => $rangeQuery->where('harga', '<', 300000),
-                                '300_500' => $rangeQuery->whereBetween('harga', [300000, 500000]),
-                                'over_500' => $rangeQuery->where('harga', '>', 500000),
+                                'under_150' => $rangeQuery->where('harga', '<', 150000),
+                                '150_300' => $rangeQuery->whereBetween('harga', [150000, 300000]),
+                                'over_300' => $rangeQuery->where('harga', '>', 300000),
                                 default => $rangeQuery->whereRaw('1 = 0'),
                             };
                         });

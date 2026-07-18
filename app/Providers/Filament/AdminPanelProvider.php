@@ -10,6 +10,7 @@ use App\Filament\Admin\Resources\Produks\ProdukResource;
 use App\Filament\Admin\Resources\Reviews\ReviewResource;
 use App\Filament\Admin\Resources\Roles\RoleResource;
 use App\Filament\Admin\Resources\Users\UserResource;
+use App\Filament\Admin\Resources\PelangganResource;
 use App\Filament\Admin\Resources\Vouchers\VoucherResource;
 use App\Filament\Admin\Widgets\DashboardStats;
 use App\Filament\Admin\Widgets\RecentOrders;
@@ -55,6 +56,7 @@ class AdminPanelProvider extends PanelProvider
                 HalamanResource::class,
                 UserResource::class,
                 RoleResource::class,
+                PelangganResource::class,
             ])
             ->pages([
                 Dashboard::class,
