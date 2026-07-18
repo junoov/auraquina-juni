@@ -38,7 +38,33 @@
 	      ])->values()->toArray();
       $defaultVarian = $produk->varians->firstWhere('warna', $colors[0]['name'] ?? null) ?? $produk->varians->first();
       $initialVariantImages = $defaultVarian ? ($variantGalleries[$defaultVarian->id] ?? []) : [];
-      $initialImages = array_values(array_unique(array_merge($initialVariantImages, $images)));
+	      $initialImages = array_values(array_unique(array_merge($initialVariantImages, $images)));
+	      $mobileRailSlides = collect($images)->map(fn (string $image, int $index) => [
+	          'type' => 'detail',
+	          'color' => '',
+	          'image' => $image,
+	          'imageIndex' => $index,
+	      ])->concat(collect($colors)->flatMap(function (array $color) use ($produk, $variantGalleries, $images) {
+	          $variantImages = $produk->varians
+	              ->where('warna', $color['name'])
+	              ->flatMap(fn ($variant) => $variantGalleries[$variant->id] ?? [])
+	              ->filter()
+	              ->unique()
+	              ->values()
+	              ->toArray();
+	          $gallery = $variantImages ?: $images;
+
+	          return collect($gallery)->map(fn (string $image, int $index) => [
+	              'type' => 'color',
+	              'color' => $color['name'],
+	              'image' => $image,
+	              'imageIndex' => $index,
+	          ]);
+	      }))->values()->toArray();
+	      $initialMobileRailIndex = count($images);
+	      $initialColorSlides = collect($mobileRailSlides)
+	          ->filter(fn (array $slide) => $slide['type'] === 'color' && $slide['color'] === ($colors[0]['name'] ?? null))
+	          ->values();
       $initialImageIndex = 0;
       $blankImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
       $approvedReviews = $reviews ?? collect();
@@ -83,19 +109,19 @@
         </div>
 
         {{-- Mobile Gallery (hidden on desktop) --}}
-        <div class="product-mobile-gallery" style="display:none;">
-          <div id="mobile-gallery" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;width:100%;">
-            @foreach ($initialImages as $i => $img)
-              <div class="product-mobile-gallery__slide" style="width:100%;min-width:100%;max-width:100%;flex:0 0 100%;scroll-snap-align:start;flex-shrink:0;">
-                <img src="{{ $i === $initialImageIndex ? $img : $blankImage }}" @if ($i !== $initialImageIndex) data-src="{{ $img }}" @endif loading="lazy" decoding="async" alt="{{ $produk->nama }}" style="width:100%;max-width:100%;height:auto;object-fit:contain;object-position:center;display:block;background:#F5F0EA;" />
+          <div class="product-mobile-gallery" style="display:none;">
+            <div id="mobile-gallery" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;width:100%;">
+	            @foreach ($mobileRailSlides as $i => $slide)
+	              <div class="product-mobile-gallery__slide" data-gallery-type="{{ $slide['type'] }}" data-color="{{ $slide['color'] }}" data-image-index="{{ $slide['imageIndex'] }}" style="width:100%;min-width:100%;max-width:100%;flex:0 0 100%;scroll-snap-align:start;flex-shrink:0;">
+	                <img src="{{ $i === $initialMobileRailIndex ? $slide['image'] : $blankImage }}" @if ($i !== $initialMobileRailIndex) data-src="{{ $slide['image'] }}" @endif loading="lazy" decoding="async" alt="{{ $produk->nama }}" style="width:100%;max-width:100%;height:auto;object-fit:contain;object-position:center;display:block;background:#F5F0EA;" />
               </div>
             @endforeach
-          </div>
-          <div id="mobile-dots" style="display:flex;justify-content:center;gap:6px;padding:12px 0;">
-            @foreach ($initialImages as $i => $img)
-              <span class="dot" style="width:{{ $i === 0 ? '20px' : '7px' }};height:7px;border-radius:4px;background:{{ $i === 0 ? '#83513D' : '#D3C0AC' }};transition:all 0.2s;"></span>
+            </div>
+            <div id="mobile-dots" style="display:flex;justify-content:center;gap:6px;padding:12px 0;">
+	            @foreach ($initialColorSlides as $i => $slide)
+	              <span class="dot" style="width:{{ $i === 0 ? '20px' : '7px' }};height:7px;border-radius:4px;background:{{ $i === 0 ? '#83513D' : '#D3C0AC' }};transition:all 0.2s;"></span>
             @endforeach
-          </div>
+            </div>
         </div>
 
         {{-- Product Info --}}
@@ -551,13 +577,12 @@
 
       .related-mobile { scrollbar-width: none; -ms-overflow-style: none; }
       .related-mobile::-webkit-scrollbar { display: none; }
-      #mobile-gallery {
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        transition: opacity 0.2s ease;
-      }
+	      #mobile-gallery {
+	        scrollbar-width: none;
+	        -ms-overflow-style: none;
+	        overscroll-behavior-x: contain;
+	      }
       #mobile-gallery::-webkit-scrollbar { display: none; }
-      #mobile-gallery.is-swapping { opacity: 0; }
       .product-mobile-gallery__slide {
         min-height: 0;
         overflow: hidden;
@@ -565,8 +590,9 @@
         margin: 0 auto;
         flex: 0 0 100%;
         width: 100%;
-        max-width: 100%;
-      }
+	        max-width: 100%;
+	        scroll-snap-stop: always;
+	      }
       .product-mobile-gallery__slide img {
         width: 100%;
         max-width: 100%;
@@ -712,7 +738,8 @@
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.scrollTo(0, 0);
 
-      const defaultImages = @json($images);
+	      const defaultImages = @json($images);
+	      const initialMobileRailIndex = {{ $initialMobileRailIndex }};
 	      const colorOrder = @json(array_column($colors, 'name'));
 	      const variantGalleries = @json($variantGalleries);
 	      const produkId = {{ $produk->id }};
@@ -721,8 +748,9 @@
 	      let images = @json($initialImages);
 		      let activeImageIndex = {{ $initialImageIndex }};
 		      let qty = 1;
-		      let selectedSize = '{{ $sizes[0] ?? '' }}';
-		      let selectedColor = '{{ $colors[0]['name'] ?? '' }}';
+	      let selectedSize = '{{ $sizes[0] ?? '' }}';
+	      let selectedColor = '{{ $colors[0]['name'] ?? '' }}';
+	      let mobileRailReady = false;
 	
 	      function variantsForColor(colorName) {
         return varians.filter(v => v.warna === colorName);
@@ -1038,36 +1066,17 @@
 
         const mobileGallery = document.getElementById('mobile-gallery');
         if (mobileGallery) {
-          // Ganti warna di mobile: crossfade halus, bukan lompat instan.
-          const swapToken = (mobileGallery._swapToken || 0) + 1;
-          mobileGallery._swapToken = swapToken;
-          const isSwap = images.length && mobileGallery.children.length;
+          mobileGallery.innerHTML = images.map((img) => `
+            <div class="product-mobile-gallery__slide" style="width:100%;min-width:100%;max-width:100%;flex:0 0 100%;scroll-snap-align:start;flex-shrink:0;">
+              <img src="${blankImage}" data-src="${img}" loading="lazy" decoding="async" alt="{{ $produk->nama }}" style="width:100%;max-width:100%;height:auto;object-fit:contain;object-position:center;display:block;background:#F5F0EA;" />
+            </div>
+          `).join('');
 
-		          const doSwap = () => {
-		            mobileGallery.innerHTML = images.map((img) => `
-		              <div class="product-mobile-gallery__slide" style="width:100%;min-width:100%;max-width:100%;flex:0 0 100%;scroll-snap-align:start;flex-shrink:0;">
-			                <img src="${blankImage}" data-src="${img}" loading="lazy" decoding="async" alt="{{ $produk->nama }}" style="width:100%;max-width:100%;height:auto;object-fit:contain;object-position:center;display:block;background:#F5F0EA;" />
-		              </div>
-		            `).join('');
-
-            if (window.matchMedia('(max-width: 1023px)').matches) {
-              hydrateDeferredImages(mobileGallery);
-            }
-
-			            // Reset posisi dulu tanpa animasi (masih invisible), lalu fade-in.
-		            mobileGallery.scrollTo({ left: mobileGallery.clientWidth * startIndex, behavior: 'auto' });
-		            mobileGallery.classList.remove('is-swapping');
-		          };
-
-          if (isSwap) {
-            mobileGallery.classList.add('is-swapping');
-            setTimeout(() => {
-              if (mobileGallery._swapToken !== swapToken) return; // dipencet lagi, skip
-              doSwap();
-            }, 180);
-          } else {
-            doSwap();
+          if (window.matchMedia('(max-width: 1023px)').matches) {
+            hydrateDeferredImages(mobileGallery);
           }
+
+          mobileGallery.scrollTo({ left: mobileGallery.clientWidth * startIndex, behavior: 'auto' });
         }
 
         const dots = document.getElementById('mobile-dots');
@@ -1079,12 +1088,83 @@
       }
 
       function renderSelectedVariantGallery(includeDefaultImages = true, startIndex = 0) {
+        if (mobileRailReady && window.matchMedia('(max-width: 1023px)').matches) {
+          scrollMobileColor(selectedColor, startIndex);
+          return;
+        }
+
         const resolvedVariant = variantForSelection(selectedColor, selectedSize) || firstVariantForColor(selectedColor);
         renderGallery(resolvedVariant ? galleryForVariant(resolvedVariant.id, includeDefaultImages) : defaultImages, startIndex);
       }
 
       function colorButtonByName(colorName) {
         return document.querySelector(`[data-color-name="${CSS.escape(colorName)}"]`);
+      }
+
+      function mobileSlides() {
+        return Array.from(document.querySelectorAll('#mobile-gallery .product-mobile-gallery__slide'));
+      }
+
+      function mobileSlideIndex(colorName, imageIndex = 0) {
+        const matches = mobileSlides().filter((slide) => slide.dataset.color === colorName);
+        const target = matches[Math.max(0, Math.min(imageIndex, matches.length - 1))];
+        return target ? mobileSlides().indexOf(target) : -1;
+      }
+
+      function hydrateMobileSlides(activeIndex) {
+        const slides = mobileSlides();
+        for (let index = Math.max(0, activeIndex - 2); index <= Math.min(slides.length - 1, activeIndex + 2); index++) {
+          hydrateDeferredImages(slides[index]);
+        }
+      }
+
+	      function renderMobileDots(colorName, imageIndex, galleryType = 'color') {
+	        const colorSlides = mobileSlides().filter((slide) => (
+	          slide.dataset.galleryType === galleryType
+	          && (galleryType === 'detail' || slide.dataset.color === colorName)
+	        ));
+        const dots = document.getElementById('mobile-dots');
+        if (!dots) return;
+
+        dots.innerHTML = colorSlides.map((_, index) => `
+          <span class="dot" style="width:${index === imageIndex ? '20px' : '7px'};height:7px;border-radius:4px;background:${index === imageIndex ? '#83513D' : '#D3C0AC'};transition:all 0.2s;"></span>
+        `).join('');
+      }
+
+	      function syncMobileSlide(slide, railIndex) {
+	        if (!slide) return;
+
+	        const colorName = slide.dataset.color;
+	        const imageIndex = Number(slide.dataset.imageIndex || 0);
+	        activeImageIndex = imageIndex;
+	        hydrateMobileSlides(railIndex);
+	        if (slide.dataset.galleryType === 'detail') {
+	          renderMobileDots('', imageIndex, 'detail');
+	          return;
+	        }
+
+	        renderMobileDots(colorName, imageIndex);
+
+        if (colorName === selectedColor) return;
+
+        selectedColor = colorName;
+        const activeButton = colorButtonByName(colorName);
+        activeButton?.parentElement.querySelectorAll('button').forEach((button) => {
+          button.style.borderColor = button === activeButton ? '#83513D' : 'rgba(211,192,172,0.58)';
+        });
+        document.getElementById('sel-color').textContent = colorName;
+        ensureValidSizeForColor(colorName);
+        syncSizeButtons();
+        document.getElementById('sel-size').textContent = selectedSize;
+      }
+
+      function scrollMobileColor(colorName, imageIndex = 0) {
+        const gallery = document.getElementById('mobile-gallery');
+        const targetIndex = mobileSlideIndex(colorName, imageIndex);
+        if (!gallery || targetIndex < 0) return;
+
+        hydrateMobileSlides(targetIndex);
+        gallery.scrollTo({ left: gallery.clientWidth * targetIndex, behavior: 'smooth' });
       }
 
       function stepColor(direction) {
@@ -1142,6 +1222,12 @@
         ensureValidSizeForColor(name);
         syncSizeButtons();
         document.getElementById('sel-size').textContent = selectedSize;
+
+        if (mobileRailReady && window.matchMedia('(max-width: 1023px)').matches) {
+          scrollMobileColor(name, targetImageIndex);
+          return;
+        }
+
         renderSelectedVariantGallery(includeDefaultImages, targetImageIndex);
       }
 
@@ -1225,40 +1311,19 @@
       const gallery = document.getElementById('mobile-gallery');
 
       // Mobile gallery dots - scroll based
-      if (gallery) {
-        hydrateDeferredImages(gallery);
-        let touchStartX = 0;
-        let touchStartY = 0;
+	      if (gallery) {
+	        mobileRailReady = true;
+	        hydrateMobileSlides(initialMobileRailIndex);
+	        gallery.scrollLeft = gallery.clientWidth * initialMobileRailIndex;
+	        syncMobileSlide(mobileSlides()[initialMobileRailIndex], initialMobileRailIndex);
 
-        gallery.addEventListener('touchstart', (event) => {
-          const touch = event.touches[0];
-          touchStartX = touch.clientX;
-          touchStartY = touch.clientY;
-        }, { passive: true });
+	      gallery.addEventListener('scroll', () => {
+	        const width = gallery.clientWidth;
+	        if (!width) return;
 
-        gallery.addEventListener('touchend', (event) => {
-          const touch = event.changedTouches[0];
-          const deltaX = touchStartX - touch.clientX;
-          const deltaY = touchStartY - touch.clientY;
-
-          if (Math.abs(deltaX) < 42 || Math.abs(deltaX) < Math.abs(deltaY)) return;
-
-          if (deltaX > 0 && activeImageIndex >= images.length - 1) {
-            stepImage(1);
-          } else if (deltaX < 0 && activeImageIndex <= 0) {
-            stepImage(-1);
-          }
-        }, { passive: true });
-
-	        gallery.addEventListener('scroll', () => {
-	          const scrollLeft = gallery.scrollLeft;
-		          const width = gallery.offsetWidth;
-		          const activeIdx = Math.max(0, Math.min(images.length - 1, Math.round(scrollLeft / width)));
-		          activeImageIndex = activeIdx;
-		          document.querySelectorAll('#mobile-dots .dot').forEach((dot, i) => {
-	            dot.style.width = i === activeIdx ? '20px' : '7px';
-	            dot.style.background = i === activeIdx ? '#83513D' : '#D3C0AC';
-          });
+	        const slides = mobileSlides();
+	        const railIndex = Math.max(0, Math.min(slides.length - 1, Math.round(gallery.scrollLeft / width)));
+	        syncMobileSlide(slides[railIndex], railIndex);
         });
       }
 
