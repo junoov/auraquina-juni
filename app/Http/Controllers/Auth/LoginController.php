@@ -19,7 +19,7 @@ class LoginController extends Controller
     public function show(): View|RedirectResponse
     {
         if (Auth::check()) {
-            return redirect()->intended('/');
+            return redirect('/');
         }
 
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
@@ -63,7 +63,19 @@ class LoginController extends Controller
                 'session_id' => $request->session()->getId(),
             ]);
 
-        return redirect()->intended('/');
+        return redirect($this->destination());
+    }
+
+    private function destination(): string
+    {
+        return Auth::user()?->hasAnyRole([
+            'owner',
+            'admin',
+            'operator_pesanan',
+            'operator_produk',
+            'operator_konten',
+            'viewer',
+        ]) ? '/admin' : '/';
     }
 
     /**
