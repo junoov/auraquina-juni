@@ -56,8 +56,7 @@ class Pesanan extends Model
         'subtotal',
         'ongkir',
         'diskon',
-        'voucher_id',
-        'voucher_code',
+        'voucher_codes',
         'total',
         'batas_bayar',
         'dibayar_pada',
@@ -77,6 +76,7 @@ class Pesanan extends Model
         'after_sales_resolved_at' => 'datetime',
         'after_sales_items' => 'array',
         'after_sales_evidence' => 'array',
+        'voucher_codes' => 'array',
     ];
 
     public function canRequestAfterSales(): bool
@@ -109,6 +109,16 @@ class Pesanan extends Model
     public function voucher(): BelongsTo
     {
         return $this->belongsTo(Voucher::class);
+    }
+
+    public function loyaltyVoucher(): BelongsTo
+    {
+        return $this->belongsTo(LoyaltyVoucher::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'pesanan_id');
     }
 
     public static function allowedTransitions(): array
