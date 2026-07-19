@@ -8,7 +8,7 @@
     <link rel="icon" href="{{ asset('images/logo.png') }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Alex+Brush&family=Great+Vibes&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
   </head>
   <body class="min-h-full overflow-x-clip bg-[var(--warm)] text-[var(--text)] antialiased [text-rendering:geometricPrecision]">
@@ -220,14 +220,17 @@
 
         <section class="bg-[var(--cream)] py-24 max-sm:py-16 relative overflow-hidden" aria-label="Brand philosophy">
           <div class="absolute inset-0 pointer-events-none select-none flex items-center justify-center" style="opacity: 0.03;">
-            <span class="font-serif font-bold text-[var(--brown)]" style="font-size: clamp(120px, 20vw, 280px); line-height: 1;">AQ</span>
+            <span class="font-serif font-bold text-[var(--brown)]" style="font-size: clamp(100px, 15vw, 220px); line-height: 1;">AQ</span>
           </div>
-          <div class="{{ $containerClass }} text-center relative z-10">
-            <span class="block font-serif select-none" style="font-size: 48px; line-height: 1; opacity: 0.25; color: var(--brown);">“</span>
-            <blockquote class="mx-auto max-w-[620px] font-medium tracking-wide text-[var(--ink)]" style="font-family:'Cormorant Garamond',Georgia,serif; font-style: italic; font-size: clamp(24px, 4vw, 38px); line-height: 1.4; margin: 16px auto;">
-              Anggun dalam sederhana.
-            </blockquote>
-            <span class="block font-serif select-none" style="font-size: 48px; line-height: 1; opacity: 0.25; color: var(--brown);">”</span>
+          <div class="{{ $containerClass }} text-center relative z-10 py-4">
+            <div class="inline-flex flex-col items-center justify-center">
+              <h2 class="block text-[var(--brown)] mb-2 select-none" style="font-family: 'Great Vibes', 'Alex Brush', cursive; font-size: clamp(52px, 8vw, 76px); font-weight: 400; line-height: 1.1; letter-spacing: normal;">
+                Daily Wear
+              </h2>
+              <p class="block text-[var(--brown)] tracking-[0.25em] font-medium uppercase select-none" style="font-family: 'Lato', sans-serif; font-size: clamp(10px, 1.8vw, 13px); line-height: 1.5; opacity: 0.9;">
+                Anggun Dalam Sederhana
+              </p>
+            </div>
           </div>
         </section>
 
