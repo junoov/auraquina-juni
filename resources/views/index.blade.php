@@ -219,15 +219,15 @@
         </section>
 
         <section class="bg-[var(--cream)] py-24 max-sm:py-16 relative overflow-hidden" aria-label="Brand philosophy">
-          <div class="absolute inset-0 opacity-[0.03] pointer-events-none select-none flex items-center justify-center">
-            <span class="text-[280px] font-serif font-bold text-[var(--brown)]">AQ</span>
+          <div class="absolute inset-0 pointer-events-none select-none flex items-center justify-center" style="opacity: 0.03;">
+            <span class="font-serif font-bold text-[var(--brown)]" style="font-size: clamp(120px, 20vw, 280px); line-height: 1;">AQ</span>
           </div>
           <div class="{{ $containerClass }} text-center relative z-10">
-            <span class="block text-[48px] leading-none text-[var(--brown)]/25 font-serif mb-1 select-none">“</span>
-            <blockquote class="mx-auto max-w-[620px] text-[38px] leading-[1.4] font-medium tracking-wide text-[var(--ink)] max-lg:text-[32px] max-sm:text-[24px] -mt-5" style="font-family:'Cormorant Garamond',Georgia,serif; font-style: italic;">
+            <span class="block font-serif mb-1 select-none" style="font-size: 48px; line-height: 1; opacity: 0.25; color: var(--brown);">“</span>
+            <blockquote class="mx-auto max-w-[620px] font-medium tracking-wide text-[var(--ink)] -mt-5" style="font-family:'Cormorant Garamond',Georgia,serif; font-style: italic; font-size: clamp(24px, 4vw, 38px); line-height: 1.4;">
               Anggun dalam sederhana.
             </blockquote>
-            <span class="block text-[48px] leading-none text-[var(--brown)]/25 font-serif mt-1 select-none">”</span>
+            <span class="block font-serif mt-1 select-none" style="font-size: 48px; line-height: 1; opacity: 0.25; color: var(--brown);">”</span>
           </div>
         </section>
 
