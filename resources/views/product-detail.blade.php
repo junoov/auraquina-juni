@@ -847,7 +847,7 @@
 
         // Quick visual feedback on button
         if (btn) {
-          btn.textContent = 'Added ✓';
+          btn.textContent = 'Ditambahkan ✓';
           btn.disabled = true;
           btn.style.opacity = '0.7';
         }
@@ -897,7 +897,7 @@
         const origText = btn?.textContent;
 
         if (btn) {
-          btn.textContent = 'Processing...';
+          btn.textContent = 'Memproses...';
           btn.disabled = true;
           btn.style.opacity = '0.7';
         }
@@ -1365,13 +1365,13 @@
       window.addEventListener('pageshow', () => {
         const buyBtn = document.querySelector('.action-btn-solid');
         if (buyBtn) {
-          buyBtn.textContent = 'Buy It Now';
+          buyBtn.textContent = 'Beli Sekarang';
           buyBtn.disabled = false;
           buyBtn.style.opacity = '';
         }
         const cartBtn = document.querySelector('.action-btn-outline');
         if (cartBtn) {
-          cartBtn.textContent = 'Add to Cart';
+          cartBtn.textContent = 'Tambah ke Keranjang';
           cartBtn.disabled = false;
           cartBtn.style.opacity = '';
         }
