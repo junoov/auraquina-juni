@@ -223,11 +223,11 @@
             <span class="font-serif font-bold text-[var(--brown)]" style="font-size: clamp(120px, 20vw, 280px); line-height: 1;">AQ</span>
           </div>
           <div class="{{ $containerClass }} text-center relative z-10">
-            <span class="block font-serif mb-1 select-none" style="font-size: 48px; line-height: 1; opacity: 0.25; color: var(--brown);">“</span>
-            <blockquote class="mx-auto max-w-[620px] font-medium tracking-wide text-[var(--ink)] -mt-5" style="font-family:'Cormorant Garamond',Georgia,serif; font-style: italic; font-size: clamp(24px, 4vw, 38px); line-height: 1.4;">
+            <span class="block font-serif select-none" style="font-size: 48px; line-height: 1; opacity: 0.25; color: var(--brown);">“</span>
+            <blockquote class="mx-auto max-w-[620px] font-medium tracking-wide text-[var(--ink)]" style="font-family:'Cormorant Garamond',Georgia,serif; font-style: italic; font-size: clamp(24px, 4vw, 38px); line-height: 1.4; margin: 16px auto;">
               Anggun dalam sederhana.
             </blockquote>
-            <span class="block font-serif mt-1 select-none" style="font-size: 48px; line-height: 1; opacity: 0.25; color: var(--brown);">”</span>
+            <span class="block font-serif select-none" style="font-size: 48px; line-height: 1; opacity: 0.25; color: var(--brown);">”</span>
           </div>
         </section>
 
