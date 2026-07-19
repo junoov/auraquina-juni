@@ -57,7 +57,7 @@
           'srcset' => $productImageSrcset($produk->gambarUtama?->url),
           'href' => '/shop/'.$produk->slug,
           'desc' => $produk->deskripsi_singkat ?: Str::limit((string) $produk->deskripsi, 130),
-          'badge' => $produk->badge ? Str::title($produk->badge) : 'New Arrival',
+          'badge' => $produk->badge ? (strtolower($produk->badge) === 'new arrival' ? 'Terbaru' : Str::title($produk->badge)) : 'Terbaru',
       ])->values();
       $featuredProduct = $homeProductCards->first();
       $products = $homeProductCards->skip(1)->take(6)->values();
@@ -192,7 +192,7 @@
         {{-- New Collection — horizontal scroll carousel --}}
         <section aria-labelledby="new-collection-title" class="{{ $containerClass }} py-16 pb-14 max-lg:py-12 max-sm:py-10">
           <div class="mb-10 text-center max-lg:mb-8 max-sm:mb-7">
-            <h2 id="new-collection-title" class="text-[13px] leading-5 font-bold tracking-[0.18em] uppercase text-[var(--ink)]" style="font-family:'Lato',sans-serif">New Collection: Auraquina</h2>
+            <h2 id="new-collection-title" class="text-[13px] leading-5 font-bold tracking-[0.18em] uppercase text-[var(--ink)]" style="font-family:'Lato',sans-serif">Koleksi Terbaru: Auraquina</h2>
           </div>
           <div class="product-carousel-wrapper">
             <button id="product-carousel-prev" type="button" aria-label="Previous" class="carousel-arrow carousel-arrow--prev">
