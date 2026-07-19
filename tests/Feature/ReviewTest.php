@@ -21,7 +21,7 @@ class ReviewTest extends TestCase
     {
         $user = User::factory()->create();
         $produk = $this->createProduct();
-        $pesanan = $this->createDeliveredOrder($user);
+        $pesanan = $this->createCompletedOrder($user);
 
         ItemPesanan::create([
             'pesanan_id' => $pesanan->id,
@@ -54,8 +54,7 @@ class ReviewTest extends TestCase
                 'rating' => 4,
                 'review' => 'Setelah dicoba lagi tetap bagus, hanya ukuran terasa sedikit lebih longgar dari ekspektasi.',
             ])
-            ->assertRedirect(route('produk.detail', $produk->slug))
-            ->assertSessionHas('error');
+            ->assertForbidden();
 
         $this->assertSame(1, Review::count());
         $this->assertDatabaseHas('reviews', [
@@ -71,7 +70,7 @@ class ReviewTest extends TestCase
 
         $user = User::factory()->create();
         $produk = $this->createProduct();
-        $pesanan = $this->createDeliveredOrder($user);
+        $pesanan = $this->createCompletedOrder($user);
 
         ItemPesanan::create([
             'pesanan_id' => $pesanan->id,
@@ -107,7 +106,7 @@ class ReviewTest extends TestCase
         Review::create([
             'produk_id' => $produk->id,
             'user_id' => $user->id,
-            'pesanan_id' => $this->createDeliveredOrder($user)->id,
+            'pesanan_id' => $this->createCompletedOrder($user)->id,
             'rating' => 5,
             'review' => 'Foto pelanggan memperlihatkan warna produk dengan jelas.',
             'photos' => ['reviews/sample.jpg'],
@@ -154,13 +153,13 @@ class ReviewTest extends TestCase
         ]);
     }
 
-    private function createDeliveredOrder(User $user): Pesanan
+    private function createCompletedOrder(User $user): Pesanan
     {
         return Pesanan::create([
             'kode_pesanan' => Pesanan::generateKode(),
             'session_id' => 'test-session-'.$user->id,
             'user_id' => $user->id,
-            'status' => Pesanan::STATUS_DELIVERED,
+            'status' => Pesanan::STATUS_COMPLETED,
             'nama_penerima' => $user->name,
             'telepon' => '081234567890',
             'kota' => 'Malang',

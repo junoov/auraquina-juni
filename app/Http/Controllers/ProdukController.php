@@ -6,6 +6,7 @@ use App\Models\Kategori;
 use App\Models\Pesanan;
 use App\Models\Produk;
 use App\Models\Review;
+use App\Models\LoyaltyVoucher;
 use App\Models\VarianProduk;
 use App\Services\ProductImageVariantService;
 use Illuminate\Http\Request;
@@ -229,8 +230,9 @@ class ProdukController extends Controller
         ]);
 
         $eligibleOrder = Pesanan::where('user_id', $request->user()->id)
-            ->whereIn('status', [Pesanan::STATUS_DELIVERED, Pesanan::STATUS_COMPLETED])
+            ->where('status', Pesanan::STATUS_COMPLETED)
             ->whereHas('items', fn ($query) => $query->where('produk_id', $produk->id))
+            ->whereDoesntHave('reviews', fn ($query) => $query->where('produk_id', $produk->id))
             ->latest('id')
             ->first();
 
@@ -241,14 +243,6 @@ class ProdukController extends Controller
             ->values()
             ->all();
 
-        $exists = Review::where('produk_id', $produk->id)
-            ->where('user_id', $request->user()->id)
-            ->exists();
-
-        if ($exists) {
-            return back()->with('error', 'Anda sudah memberikan ulasan untuk produk ini.');
-        }
-
         Review::create([
             'produk_id' => $produk->id,
             'user_id' => $request->user()->id,
@@ -258,6 +252,8 @@ class ProdukController extends Controller
             'photos' => $photos,
             'status' => Review::STATUS_APPROVED,
         ]);
+
+        LoyaltyVoucher::awardForUser($request->user());
 
         $produk->forceFill([
             'rating_star' => round((float) $produk->reviews()->where('status', 'approved')->avg('rating'), 2),
