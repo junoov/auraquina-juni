@@ -129,10 +129,21 @@
             <div onclick="openSheet('voucher')" style="border:1.5px solid rgba(211,192,172,0.58);border-radius:8px;padding:12px 16px;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;cursor:pointer;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#83513D" stroke-width="1.7"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                <span id="voucher-label" style="font-size:12px;color:#201916;font-weight:700;">{{ $voucher ? 'Voucher: ' . $voucher->code : 'Gunakan Voucher' }}</span>
+                <span id="voucher-label" style="font-size:12px;color:#201916;font-weight:700;">{{ count($appliedVouchers ?? []) > 0 ? count($appliedVouchers) . ' voucher dipakai' : 'Gunakan Voucher' }}</span>
               </div>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71665d" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
             </div>
+
+            @if (count($appliedVouchers ?? []) > 0)
+              <div id="applied-vouchers" style="margin-bottom:16px;display:flex;flex-wrap:wrap;gap:6px;">
+                @foreach ($appliedVouchers as $applied)
+                  <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:4px;background:#F5F0EA;font-size:10px;font-weight:700;color:#83513D;">
+                    {{ $applied['code'] }} (-Rp {{ number_format($applied['discount'], 0, ',', '.') }})
+                    <button type="button" onclick="event.stopPropagation(); removeVoucher('{{ $applied['code'] }}')" style="background:none;border:none;cursor:pointer;color:#83513D;font-size:12px;line-height:1;padding:0 2px;">×</button>
+                  </span>
+                @endforeach
+              </div>
+            @endif
 
             {{-- Totals --}}
             <div style="margin-bottom:6px;display:flex;justify-content:space-between;">
@@ -302,10 +313,23 @@
           `).join('');
         } else if (type === 'voucher') {
           title.textContent = 'Masukkan Kode Voucher';
+          const appliedCodes = @json(array_column($appliedVouchers ?? [], 'code'));
           html = `
             <div style="display:flex;gap:10px;margin-bottom:16px;">
-              <input id="voucher-code" type="text" value="{{ $voucher?->code }}" placeholder="Kode voucher" style="flex:1;height:46px;border:1.5px solid rgba(211,192,172,0.58);border-radius:6px;padding:0 14px;font-size:14px;color:#201916;background:#FFFFFF;outline:none;text-transform:uppercase;" />
+              <input id="voucher-code" type="text" placeholder="Kode voucher" style="flex:1;height:46px;border:1.5px solid rgba(211,192,172,0.58);border-radius:6px;padding:0 14px;font-size:14px;color:#201916;background:#FFFFFF;outline:none;text-transform:uppercase;" />
+              <button type="button" onclick="applyVoucher()" style="height:46px;padding:0 16px;background:#83513D;color:#FFFFFF;border:none;font-size:12px;font-weight:700;border-radius:6px;cursor:pointer;">Tambah</button>
             </div>
+            <div id="applied-voucher-chips" style="margin-bottom:16px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+            @if (($loyaltyVouchers ?? collect())->isNotEmpty())
+              <div style="margin-bottom:16px;padding:12px;border-radius:8px;background:#F5F0EA;">
+                <p style="margin:0 0 8px;font-size:11px;font-weight:700;color:#83513D;">Voucher loyalty tersedia (bisa dipakai bersamaan)</p>
+                @foreach ($loyaltyVouchers as $loyaltyVoucher)
+                  <button type="button" onclick="applyVoucherDirect('{{ $loyaltyVoucher->code }}')" style="display:block;width:100%;padding:8px 10px;margin-top:6px;border:1px solid rgba(131,81,61,0.25);border-radius:6px;background:#FFFFFF;text-align:left;cursor:pointer;font-size:11px;color:#201916;">
+                    {{ $loyaltyVoucher->code }} · Potongan Rp {{ number_format($loyaltyVoucher->value, 0, ',', '.') }}
+                  </button>
+                @endforeach
+              </div>
+            @endif
             <button type="button" onclick="applyVoucher()" style="width:100%;height:46px;background:#83513D;color:#FFFFFF;border:none;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;">Apply</button>
             <p style="font-size:11px;color:#71665d;margin-top:12px;text-align:center;">Coba AURA10 atau FREESHIP500.</p>
           `;
@@ -361,17 +385,70 @@
             showToast(data.error || 'Voucher tidak bisa dipakai.', 'error');
             return;
           }
-          document.getElementById('voucher-label').textContent = `Voucher: ${data.voucher}`;
-          document.getElementById('discount-row').style.display = data.discount > 0 ? 'flex' : 'none';
-          document.getElementById('discount-amount').textContent = `-${formatRupiah(data.discount)}`;
-          document.getElementById('total-amount').textContent = formatRupiah(data.total);
-          currentDiscount = data.discount;
+          updateVoucherUI(data);
+          document.getElementById('voucher-code').value = '';
           showToast(data.message, 'success');
-          setTimeout(closeSheet, 600);
         })
         .catch(() => {
           showToast('Voucher gagal diproses. Coba lagi.', 'error');
         });
+      }
+
+      function removeVoucher(code) {
+        fetch('/checkout/voucher/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '', 'Accept': 'application/json' },
+          body: JSON.stringify({ code }),
+        })
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok || !data.success) {
+            showToast(data.error || 'Gagal menghapus voucher.', 'error');
+            return;
+          }
+          updateVoucherUI(data);
+          showToast(data.message, 'success');
+        })
+        .catch(() => showToast('Gagal menghapus voucher.', 'error'));
+      }
+
+      function applyVoucherDirect(code) {
+        fetch('/checkout/voucher', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '', 'Accept': 'application/json' },
+          body: JSON.stringify({ code }),
+        })
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok || !data.success) {
+            showToast(data.error || 'Voucher tidak bisa dipakai.', 'error');
+            return;
+          }
+          updateVoucherUI(data);
+          showToast(data.message, 'success');
+        })
+        .catch(() => showToast('Voucher gagal diproses.', 'error'));
+      }
+
+      function updateVoucherUI(data) {
+        const count = data.appliedVouchers?.length || 0;
+        document.getElementById('voucher-label').textContent = count > 0 ? `${count} voucher dipakai` : 'Gunakan Voucher';
+        document.getElementById('discount-row').style.display = data.discount > 0 ? 'flex' : 'none';
+        document.getElementById('discount-amount').textContent = `-${formatRupiah(data.discount)}`;
+        document.getElementById('total-amount').textContent = formatRupiah(data.total);
+        currentDiscount = data.discount;
+
+        const container = document.getElementById('applied-vouchers') || document.querySelector('[id="applied-vouchers"]');
+        if (container) {
+          if (count > 0) {
+            container.innerHTML = data.appliedVouchers.map(v =>
+              `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:4px;background:#F5F0EA;font-size:10px;font-weight:700;color:#83513D;">${v.code} (-${formatRupiah(v.discount)})<button type="button" onclick="event.stopPropagation(); removeVoucher('${v.code}')" style="background:none;border:none;cursor:pointer;color:#83513D;font-size:12px;line-height:1;padding:0 2px;">×</button></span>`
+            ).join('');
+            container.style.display = 'flex';
+          } else {
+            container.style.display = 'none';
+          }
+        }
       }
 
       function placeOrder() {
