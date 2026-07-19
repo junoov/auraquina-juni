@@ -9,6 +9,7 @@ use App\Models\Produk;
 use App\Models\UserAddress;
 use App\Models\VarianProduk;
 use App\Models\Voucher;
+use App\Models\LoyaltyVoucher;
 use DomainException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -74,28 +75,46 @@ class CheckoutController extends Controller
     {
         $subtotal = $checkoutItems->sum(fn (array $item) => $item['price'] * $item['qty']);
         $shipping = 11500;
-        $voucher = null;
-        $discount = 0;
+        $codes = array_values(array_unique(session('checkout_voucher_codes', [])));
+        $appliedVouchers = [];
+        $totalDiscount = 0;
 
-        $voucherCode = session('checkout_voucher_code');
+        foreach ($codes as $code) {
+            $code = strtoupper((string) $code);
+            $adminVoucher = Voucher::where('code', $code)->first();
 
-        if ($voucherCode) {
-            $voucher = Voucher::where('code', strtoupper((string) $voucherCode))->first();
+            if ($adminVoucher?->isAvailableFor($subtotal)) {
+                $d = $adminVoucher->discountFor($subtotal, $shipping);
+                $appliedVouchers[] = ['type' => 'admin', 'code' => $code, 'discount' => $d, 'voucher' => $adminVoucher];
+                $totalDiscount += $d;
+                continue;
+            }
 
-            if ($voucher?->isAvailableFor($subtotal)) {
-                $discount = $voucher->discountFor($subtotal, $shipping);
-            } else {
-                session()->forget('checkout_voucher_code');
-                $voucher = null;
+            $loyaltyVoucher = auth()->check()
+                ? LoyaltyVoucher::available()->where('user_id', auth()->id())->where('code', $code)->first()
+                : null;
+
+            if ($loyaltyVoucher) {
+                $d = min($loyaltyVoucher->value, $subtotal + $shipping);
+                $appliedVouchers[] = ['type' => 'loyalty', 'code' => $code, 'discount' => $d, 'loyaltyVoucher' => $loyaltyVoucher];
+                $totalDiscount += $d;
+                continue;
             }
         }
+
+        $effectiveCodes = array_column($appliedVouchers, 'code');
+        if ($effectiveCodes !== $codes) {
+            session(['checkout_voucher_codes' => $effectiveCodes]);
+        }
+
+        $discount = min($totalDiscount, $subtotal + $shipping);
 
         return [
             'subtotal' => $subtotal,
             'shipping' => $shipping,
             'discount' => $discount,
             'total' => max(0, $subtotal + $shipping - $discount),
-            'voucher' => $voucher,
+            'appliedVouchers' => $appliedVouchers,
         ];
     }
 
@@ -201,13 +220,16 @@ class CheckoutController extends Controller
         $shipping = $totals['shipping'];
         $discount = $totals['discount'];
         $total = $totals['total'];
-        $voucher = $totals['voucher'];
+        $appliedVouchers = $totals['appliedVouchers'];
 
         $addresses = auth()->check()
             ? UserAddress::where('user_id', auth()->id())->orderByDesc('is_default')->latest()->get()
             : collect();
+        $loyaltyVouchers = auth()->check()
+            ? LoyaltyVoucher::available()->where('user_id', auth()->id())->latest()->get()
+            : collect();
 
-        return view('checkout', compact('checkoutItems', 'subtotal', 'shipping', 'discount', 'total', 'voucher', 'addresses'));
+        return view('checkout', compact('checkoutItems', 'subtotal', 'shipping', 'discount', 'total', 'appliedVouchers', 'addresses', 'loyaltyVouchers'));
     }
 
     public function applyVoucher(Request $request)
@@ -223,19 +245,54 @@ class CheckoutController extends Controller
         }
 
         $subtotal = $checkoutItems->sum(fn (array $item) => $item['price'] * $item['qty']);
-        $voucher = Voucher::where('code', strtoupper(trim($validated['code'])))->first();
+        $code = strtoupper(trim($validated['code']));
+        $codes = session('checkout_voucher_codes', []);
 
-        if (! $voucher || ! $voucher->isAvailableFor($subtotal)) {
-            return response()->json(['error' => 'Voucher tidak valid atau belum memenuhi minimal belanja.'], 422);
+        if (in_array($code, $codes, true)) {
+            $codes = array_values(array_diff($codes, [$code]));
+        } else {
+            $adminVoucher = Voucher::where('code', $code)->first();
+            $loyaltyVoucher = auth()->check()
+                ? LoyaltyVoucher::available()->where('user_id', auth()->id())->where('code', $code)->first()
+                : null;
+
+            if ((! $adminVoucher || ! $adminVoucher->isAvailableFor($subtotal)) && ! $loyaltyVoucher) {
+                return response()->json(['error' => 'Voucher tidak valid atau belum memenuhi minimal belanja.'], 422);
+            }
+
+            $codes[] = $code;
         }
 
-        session(['checkout_voucher_code' => $voucher->code]);
+        session(['checkout_voucher_codes' => $codes]);
         $totals = $this->checkoutTotals($checkoutItems);
 
         return response()->json([
             'success' => true,
-            'message' => "Voucher {$voucher->code} berhasil dipakai.",
-            'voucher' => $voucher->code,
+            'message' => "Voucher {$code} berhasil " . (in_array($code, session('checkout_voucher_codes', []), true) ? 'ditambahkan' : 'dihapus') . ".",
+            'appliedVouchers' => $totals['appliedVouchers'],
+            'discount' => $totals['discount'],
+            'total' => $totals['total'],
+        ]);
+    }
+
+    public function removeVoucher(Request $request)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:50',
+        ]);
+
+        $code = strtoupper(trim($validated['code']));
+        $codes = session('checkout_voucher_codes', []);
+        $codes = array_values(array_diff($codes, [$code]));
+        session(['checkout_voucher_codes' => $codes]);
+
+        $checkoutItems = $this->checkoutItemsFromSession();
+        $totals = $this->checkoutTotals($checkoutItems);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Voucher {$code} berhasil dihapus.",
+            'appliedVouchers' => $totals['appliedVouchers'],
             'discount' => $totals['discount'],
             'total' => $totals['total'],
         ]);
@@ -332,10 +389,10 @@ class CheckoutController extends Controller
         $shipping = $totals['shipping'];
         $discount = $totals['discount'];
         $total = $totals['total'];
-        $voucher = $totals['voucher'];
+        $appliedVouchers = $totals['appliedVouchers'];
 
         try {
-            $pesanan = DB::transaction(function () use ($validated, $checkoutItems, $subtotal, $shipping, $discount, $total, $voucher, $payload) {
+            $pesanan = DB::transaction(function () use ($validated, $checkoutItems, $subtotal, $shipping, $discount, $total, $appliedVouchers, $payload) {
                 $this->reserveCheckoutStock($checkoutItems);
 
                 if ($user = auth()->user()) {
@@ -363,8 +420,7 @@ class CheckoutController extends Controller
                     'subtotal' => $subtotal,
                     'ongkir' => $shipping,
                     'diskon' => $discount,
-                    'voucher_id' => $voucher?->id,
-                    'voucher_code' => $voucher?->code,
+                    'voucher_codes' => array_column($appliedVouchers, 'code'),
                     'total' => $total,
                     'batas_bayar' => now()->addHour(),
                     'stock_reserved_at' => now(),
@@ -383,15 +439,31 @@ class CheckoutController extends Controller
                     ]);
                 }
 
-                // Remove purchased items from cart
                 if (($payload['mode'] ?? null) === 'cart' && ! empty($payload['selected_ids'])) {
                     ItemKeranjang::where($this->identifier())
                         ->whereIn('id', $payload['selected_ids'])
                         ->delete();
                 }
 
-                if ($voucher) {
-                    $voucher->increment('used_count');
+                foreach ($appliedVouchers as $applied) {
+                    if ($applied['type'] === 'admin') {
+                        $applied['voucher']->increment('used_count');
+                    } elseif ($applied['type'] === 'loyalty' && auth()->check()) {
+                        $ownedVoucher = LoyaltyVoucher::whereKey($applied['loyaltyVoucher']->id)
+                            ->where('user_id', auth()->id())
+                            ->whereNull('used_at')
+                            ->lockForUpdate()
+                            ->first();
+
+                        if (! $ownedVoucher) {
+                            throw new DomainException('Voucher loyalty sudah dipakai atau tidak tersedia.');
+                        }
+
+                        $ownedVoucher->forceFill([
+                            'used_at' => now(),
+                            'pesanan_id' => $pesanan->id,
+                        ])->save();
+                    }
                 }
 
                 return $pesanan;
@@ -400,8 +472,7 @@ class CheckoutController extends Controller
             return response()->json(['error' => $exception->getMessage()], 422);
         }
 
-        // Clear checkout session
-        session()->forget(['checkout_payload', 'checkout_voucher_code']);
+        session()->forget(['checkout_payload', 'checkout_voucher_codes']);
 
         $pesanan->sendOrderPlacedNotification();
 
