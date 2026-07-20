@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Produks\RelationManagers;
 
+use App\Services\ProductImageVariantService;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -89,6 +90,8 @@ class VariansRelationManager extends RelationManager
                                             ->hiddenLabel()
                                             ->image()
                                             ->disk('r2')
+                                            ->visibility('public')
+                                            ->fetchFileInformation(false)
                                             ->directory('produk/varian')
                                             ->imageEditor()
                                             ->maxSize(5120)
@@ -124,7 +127,8 @@ class VariansRelationManager extends RelationManager
             ->columns([
                 ImageColumn::make('gambarVarianUtama.url')
                     ->label('Foto')
-                    ->disk('r2')
+                    ->getStateUsing(fn ($record) => app(ProductImageVariantService::class)
+                        ->url($record->gambarVarianUtama?->url, 'swatch'))
                     ->circular()
                     ->size(40)
                     ->defaultImageUrl(function ($record) {

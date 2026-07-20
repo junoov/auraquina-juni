@@ -2,39 +2,38 @@
 
 namespace App\Filament\Admin\Resources\Produks\Tables;
 
+use App\Services\ProductImageVariantService;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\PaginationMode;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Storage;
 
 class ProduksTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->deferLoading()
             ->modifyQueryUsing(fn ($query) => $query
-                ->with(['varians', 'gambarUtama', 'kategori'])
+                ->select(['id', 'kategori_id', 'nama', 'harga', 'aktif', 'urutan'])
+                ->with([
+                    'gambarUtama:id,produk_id,url',
+                    'kategori:id,nama',
+                ])
+                ->withSum('varians', 'stok')
+                ->withCount('varians')
             )
             ->paginationMode(PaginationMode::Simple)
             ->columns([
                 ImageColumn::make('gambarUtama.url')
                     ->label('')
-                    ->getStateUsing(function ($record) {
-                        if (!$record->gambarUtama?->url) return null;
-                        $path = $record->gambarUtama->url;
-                        if (str_starts_with($path, 'http')) return $path;
-                        return config('filesystems.disks.r2.url') . '/' . ltrim($path, '/');
-                    })
+                    ->getStateUsing(fn ($record) => app(ProductImageVariantService::class)
+                        ->url($record->gambarUtama?->url, 'thumb'))
                     ->square()
                     ->size(48)
                     ->extraImgAttributes(['class' => 'rounded-lg']),
@@ -61,14 +60,14 @@ class ProduksTable
 
                 TextColumn::make('totalStok')
                     ->label('Stok')
-                    ->state(fn ($record) => $record->varians->sum('stok')) // Use loaded relation, not new query
+                    ->state(fn ($record) => (int) $record->varians_sum_stok)
                     ->badge()
                     ->color(fn ($state) => match (true) {
                         $state === null || $state <= 0 => 'danger',
                         $state < 10 => 'warning',
                         default => 'success',
                     })
-                    ->tooltip(fn ($record) => $record->varians->sum('stok') . ' unit tersedia dari ' . $record->varians->count() . ' varian'),
+                    ->tooltip(fn ($record) => $record->varians_sum_stok.' unit tersedia dari '.$record->varians_count.' varian'),
 
                 TextColumn::make('aktif')
                     ->label('Status')

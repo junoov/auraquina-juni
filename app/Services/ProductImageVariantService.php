@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
+use Throwable;
 
 class ProductImageVariantService
 {
@@ -57,50 +58,56 @@ class ProductImageVariantService
 
     public function generate(string $sourcePath, bool $force = false): int
     {
-        if ($this->isRemote($sourcePath)) {
-            return 0;
-        }
-
-        $disk = Storage::disk($this->diskName());
-
-        if (! $disk->exists($sourcePath)) {
-            return 0;
-        }
-
-        $source = imagecreatefromstring($disk->get($sourcePath));
-
-        if (! $source) {
-            return 0;
-        }
-
-        $written = 0;
-
         try {
-            foreach (self::VARIANTS as $variant => $preset) {
-                $targetPath = $this->variantPath($sourcePath, $variant);
-
-                if (! $force && $disk->exists($targetPath)) {
-                    continue;
-                }
-
-                $image = $this->resize($source, $preset);
-                ob_start();
-                imagewebp($image, null, $preset['quality']);
-                $contents = (string) ob_get_clean();
-                imagedestroy($image);
-
-                $disk->put($targetPath, $contents, [
-                    'visibility' => 'public',
-                    'CacheControl' => 'public, max-age=31536000, immutable',
-                    'ContentType' => 'image/webp',
-                ]);
-                $written++;
+            if ($this->isRemote($sourcePath)) {
+                return 0;
             }
-        } finally {
-            imagedestroy($source);
-        }
 
-        return $written;
+            $disk = Storage::disk($this->diskName());
+
+            if (! $disk->exists($sourcePath)) {
+                return 0;
+            }
+
+            $source = imagecreatefromstring($disk->get($sourcePath));
+
+            if (! $source) {
+                return 0;
+            }
+
+            $written = 0;
+
+            try {
+                foreach (self::VARIANTS as $variant => $preset) {
+                    $targetPath = $this->variantPath($sourcePath, $variant);
+
+                    if (! $force && $disk->exists($targetPath)) {
+                        continue;
+                    }
+
+                    $image = $this->resize($source, $preset);
+                    ob_start();
+                    imagewebp($image, null, $preset['quality']);
+                    $contents = (string) ob_get_clean();
+                    imagedestroy($image);
+
+                    $disk->put($targetPath, $contents, [
+                        'visibility' => 'public',
+                        'CacheControl' => 'public, max-age=31536000, immutable',
+                        'ContentType' => 'image/webp',
+                    ]);
+                    $written++;
+                }
+            } finally {
+                imagedestroy($source);
+            }
+
+            return $written;
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return 0;
+        }
     }
 
     private function variantPath(string $sourcePath, string $variant): string

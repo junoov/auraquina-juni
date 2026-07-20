@@ -18,7 +18,7 @@ class GambarVarianProduk extends Model
     protected static function booted(): void
     {
         static::saved(function (self $image) {
-            if ($image->url) {
+            if ($image->url && ($image->wasRecentlyCreated || $image->wasChanged('url'))) {
                 app(ProductImageVariantService::class)->generate($image->url);
             }
         });
@@ -31,7 +31,9 @@ class GambarVarianProduk extends Model
 
     public function getFullUrlAttribute(): ?string
     {
-        if (!$this->url) return null;
+        if (! $this->url) {
+            return null;
+        }
         if (str_starts_with($this->url, 'http://') || str_starts_with($this->url, 'https://')) {
             return $this->url;
         }

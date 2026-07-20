@@ -10,6 +10,7 @@ use App\Models\Produk;
 use App\Models\Review;
 use App\Models\User;
 use App\Models\VarianProduk;
+use App\Models\Voucher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,7 +48,7 @@ class LoyaltyVoucherTest extends TestCase
             'produk_id' => $produk->id,
             'ukuran' => 'M',
             'warna' => 'Hitam',
-            'sku' => 'VAR-' . uniqid(),
+            'sku' => 'VAR-'.uniqid(),
             'stok' => 5,
         ]);
         $voucher = LoyaltyVoucher::create([
@@ -112,7 +113,7 @@ class LoyaltyVoucherTest extends TestCase
             'produk_id' => $produk->id,
             'ukuran' => 'M',
             'warna' => 'Hitam',
-            'sku' => 'VAR-' . uniqid(),
+            'sku' => 'VAR-'.uniqid(),
             'stok' => 10,
         ]);
         $voucher1 = LoyaltyVoucher::create([
@@ -171,6 +172,94 @@ class LoyaltyVoucherTest extends TestCase
             'id' => $voucher1->pesanan_id,
             'diskon' => 30000,
         ]);
+        $this->assertSame(
+            [$voucher1->code, $voucher2->code],
+            Pesanan::findOrFail($voucher1->pesanan_id)->voucher_codes
+        );
+    }
+
+    public function test_admin_and_loyalty_vouchers_stack_and_admin_limit_is_revalidated(): void
+    {
+        $user = User::factory()->create();
+        $produk = $this->createProduct();
+        $varian = VarianProduk::create([
+            'produk_id' => $produk->id,
+            'ukuran' => 'M',
+            'warna' => 'Hitam',
+            'sku' => 'VAR-'.uniqid(),
+            'stok' => 10,
+        ]);
+        $adminVoucher = Voucher::create([
+            'code' => 'ADMIN15',
+            'name' => 'Admin Rp15.000',
+            'type' => Voucher::TYPE_FIXED,
+            'value' => 15000,
+            'usage_limit' => 1,
+            'active' => true,
+        ]);
+        $loyaltyVoucher = LoyaltyVoucher::create([
+            'user_id' => $user->id,
+            'milestone' => 3,
+            'code' => 'AQ15-3-STACK',
+            'value' => 15000,
+        ]);
+        $checkoutPayload = [
+            'mode' => 'buy_now',
+            'items' => [[
+                'produk_id' => $produk->id,
+                'varian_id' => $varian->id,
+                'slug' => $produk->slug,
+                'name' => $produk->nama,
+                'variant' => 'Hitam / M',
+                'qty' => 1,
+                'price' => $produk->harga,
+                'img' => null,
+            ]],
+        ];
+
+        $this->actingAs($user)
+            ->withSession(['checkout_payload' => $checkoutPayload])
+            ->postJson(route('checkout.voucher'), ['code' => $adminVoucher->code])
+            ->assertOk();
+        $this->postJson(route('checkout.voucher'), ['code' => $loyaltyVoucher->code])
+            ->assertOk()
+            ->assertJsonPath('discount', 30000);
+
+        $this->postJson(route('checkout.place-order'), [
+            'nama_penerima' => 'Pelanggan Stack Admin',
+            'telepon' => '081234567890',
+            'email' => $user->email,
+            'kota' => 'Bandung',
+            'alamat_lengkap' => 'Jl. Stack Admin No. 3',
+            'metode_pengiriman' => 'JNE Reguler',
+            'metode_pembayaran' => 'Transfer BCA',
+        ])->assertOk();
+
+        $pesanan = Pesanan::latest('id')->firstOrFail();
+        $this->assertSame(30000, $pesanan->diskon);
+        $this->assertSame([$adminVoucher->code, $loyaltyVoucher->code], $pesanan->voucher_codes);
+        $this->assertSame(1, $adminVoucher->refresh()->used_count);
+
+        $secondUser = User::factory()->create();
+        $this->actingAs($secondUser)
+            ->withSession([
+                'checkout_payload' => $checkoutPayload,
+                'checkout_voucher_codes' => [$adminVoucher->code],
+            ])
+            ->postJson(route('checkout.place-order'), [
+                'nama_penerima' => 'Pelanggan Kedua',
+                'telepon' => '081234567891',
+                'email' => $secondUser->email,
+                'kota' => 'Bandung',
+                'alamat_lengkap' => 'Jl. Kedua No. 1',
+                'metode_pengiriman' => 'JNE Reguler',
+                'metode_pembayaran' => 'Transfer BCA',
+            ])->assertUnprocessable()
+            ->assertJsonPath('error', 'Voucher sudah dipakai atau tidak tersedia.');
+
+        $this->assertSame(1, $adminVoucher->refresh()->used_count);
+        $this->assertSame(1, Pesanan::count());
+        $this->assertSame(9, $varian->refresh()->stok);
     }
 
     public function test_voucher_stack_capped_at_subtotal_plus_shipping(): void
@@ -181,7 +270,7 @@ class LoyaltyVoucherTest extends TestCase
             'produk_id' => $produk->id,
             'ukuran' => 'M',
             'warna' => 'Hitam',
-            'sku' => 'VAR-' . uniqid(),
+            'sku' => 'VAR-'.uniqid(),
             'stok' => 10,
         ]);
         $voucher1 = LoyaltyVoucher::create([
@@ -255,7 +344,7 @@ class LoyaltyVoucherTest extends TestCase
         for ($index = 0; $index < $count; $index++) {
             $pesanan = Pesanan::create([
                 'kode_pesanan' => Pesanan::generateKode(),
-                'session_id' => 'loyalty-' . uniqid(),
+                'session_id' => 'loyalty-'.uniqid(),
                 'user_id' => $user->id,
                 'status' => Pesanan::STATUS_COMPLETED,
                 'nama_penerima' => $user->name,
@@ -291,17 +380,17 @@ class LoyaltyVoucherTest extends TestCase
     {
         $suffix = str_replace('.', '', uniqid('', true));
         $kategori = Kategori::create([
-            'nama' => 'Loyalty ' . $suffix,
-            'slug' => 'loyalty-' . $suffix,
+            'nama' => 'Loyalty '.$suffix,
+            'slug' => 'loyalty-'.$suffix,
             'aktif' => true,
         ]);
 
         return Produk::create([
             'kategori_id' => $kategori->id,
             'nama' => 'Produk Loyalty',
-            'slug' => 'produk-loyalty-' . $suffix,
+            'slug' => 'produk-loyalty-'.$suffix,
             'harga' => 100000,
-            'sku' => 'LOY-' . $suffix,
+            'sku' => 'LOY-'.$suffix,
             'aktif' => true,
         ]);
     }

@@ -8,25 +8,36 @@ use DomainException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\Activitylog\Models\Concerns\HasActivity;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Spatie\Activitylog\Models\Concerns\HasActivity;
 use Throwable;
 
 class Pesanan extends Model
 {
     use HasActivity;
+
     public const STATUS_PENDING_PAYMENT = 'pending_payment';
+
     public const STATUS_PAID = 'paid';
+
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_PACKED = 'packed';
+
     public const STATUS_SHIPPED = 'shipped';
+
     public const STATUS_DELIVERED = 'delivered';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_CANCELLED = 'cancelled';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_RETURN_REQUESTED = 'return_requested';
+
     public const STATUS_REFUNDED = 'refunded';
 
     protected $fillable = [
@@ -104,16 +115,6 @@ class Pesanan extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function voucher(): BelongsTo
-    {
-        return $this->belongsTo(Voucher::class);
-    }
-
-    public function loyaltyVoucher(): BelongsTo
-    {
-        return $this->belongsTo(LoyaltyVoucher::class);
     }
 
     public function reviews(): HasMany
@@ -250,7 +251,7 @@ class Pesanan extends Model
     public static function generateKode(): string
     {
         do {
-            $kode = 'AQ' . now()->format('ymd') . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
+            $kode = 'AQ'.now()->format('ymd').strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
         } while (static::where('kode_pesanan', $kode)->exists());
 
         return $kode;

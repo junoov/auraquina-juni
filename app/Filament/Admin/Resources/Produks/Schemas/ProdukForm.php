@@ -101,6 +101,8 @@ class ProdukForm
                                                     ->hiddenLabel()
                                                     ->image()
                                                     ->disk('r2')
+                                                    ->visibility('public')
+                                                    ->fetchFileInformation(false)
                                                     ->directory('produk')
                                                     ->imageEditor()
                                                     ->maxSize(5120)

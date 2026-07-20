@@ -4,18 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\ItemKeranjang;
 use App\Models\ItemPesanan;
+use App\Models\LoyaltyVoucher;
 use App\Models\Pesanan;
 use App\Models\Produk;
 use App\Models\UserAddress;
 use App\Models\VarianProduk;
 use App\Models\Voucher;
-use App\Models\LoyaltyVoucher;
 use DomainException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
+use Midtrans\Config;
+use Midtrans\CoreApi;
+use Midtrans\Snap;
+use Midtrans\Transaction;
 
 class CheckoutController extends Controller
 {
@@ -71,38 +75,67 @@ class CheckoutController extends Controller
         return $this->cartItems();
     }
 
-    private function checkoutTotals(Collection $checkoutItems): array
+    private function checkoutTotals(Collection $checkoutItems, bool $lockVouchers = false): array
     {
         $subtotal = $checkoutItems->sum(fn (array $item) => $item['price'] * $item['qty']);
         $shipping = 11500;
         $codes = array_values(array_unique(session('checkout_voucher_codes', [])));
         $appliedVouchers = [];
         $totalDiscount = 0;
+        $lockedAdminVouchers = collect();
+        $lockedLoyaltyVouchers = collect();
+
+        if ($lockVouchers) {
+            $lockedAdminVouchers = Voucher::whereIn('code', $codes)
+                ->orderBy('code')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('code');
+            $lockedLoyaltyVouchers = auth()->check()
+                ? LoyaltyVoucher::available()
+                    ->where('user_id', auth()->id())
+                    ->whereIn('code', $codes)
+                    ->orderBy('code')
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('code')
+                : collect();
+        }
 
         foreach ($codes as $code) {
             $code = strtoupper((string) $code);
-            $adminVoucher = Voucher::where('code', $code)->first();
+            $adminVoucher = $lockVouchers
+                ? $lockedAdminVouchers->get($code)
+                : Voucher::where('code', $code)->first();
 
             if ($adminVoucher?->isAvailableFor($subtotal)) {
                 $d = $adminVoucher->discountFor($subtotal, $shipping);
                 $appliedVouchers[] = ['type' => 'admin', 'code' => $code, 'discount' => $d, 'voucher' => $adminVoucher];
                 $totalDiscount += $d;
+
                 continue;
             }
 
-            $loyaltyVoucher = auth()->check()
-                ? LoyaltyVoucher::available()->where('user_id', auth()->id())->where('code', $code)->first()
-                : null;
+            $loyaltyVoucher = $lockVouchers
+                ? $lockedLoyaltyVouchers->get($code)
+                : (auth()->check()
+                    ? LoyaltyVoucher::available()->where('user_id', auth()->id())->where('code', $code)->first()
+                    : null);
 
             if ($loyaltyVoucher) {
                 $d = min($loyaltyVoucher->value, $subtotal + $shipping);
                 $appliedVouchers[] = ['type' => 'loyalty', 'code' => $code, 'discount' => $d, 'loyaltyVoucher' => $loyaltyVoucher];
                 $totalDiscount += $d;
+
                 continue;
             }
         }
 
         $effectiveCodes = array_column($appliedVouchers, 'code');
+        if ($lockVouchers && $effectiveCodes !== $codes) {
+            throw new DomainException('Voucher sudah dipakai atau tidak tersedia.');
+        }
+
         if ($effectiveCodes !== $codes) {
             session(['checkout_voucher_codes' => $effectiveCodes]);
         }
@@ -173,19 +206,19 @@ class CheckoutController extends Controller
 
         if ($pesanan->status === Pesanan::STATUS_PENDING_PAYMENT) {
             try {
-                \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
-                \Midtrans\Config::$isProduction = config('services.midtrans.is_production', false);
+                Config::$serverKey = config('services.midtrans.server_key');
+                Config::$isProduction = config('services.midtrans.is_production', false);
                 if (app()->environment('local')) {
-                    \Midtrans\Config::$curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
-                    \Midtrans\Config::$curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
-                    \Midtrans\Config::$curlOptions[CURLOPT_HTTPHEADER] = [];
+                    Config::$curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+                    Config::$curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
+                    Config::$curlOptions[CURLOPT_HTTPHEADER] = [];
                 }
-                
-                $statusResponse = \Midtrans\Transaction::status($pesanan->kode_pesanan);
+
+                $statusResponse = Transaction::status($pesanan->kode_pesanan);
                 if (isset($statusResponse->transaction_status)) {
                     $transactionStatus = $statusResponse->transaction_status;
                     $fraudStatus = $statusResponse->fraud_status ?? null;
-                    
+
                     if ($transactionStatus === 'capture' && $fraudStatus === 'accept') {
                         $pesanan->transitionTo(Pesanan::STATUS_PAID, 'midtrans_check');
                     } elseif ($transactionStatus === 'settlement') {
@@ -193,14 +226,14 @@ class CheckoutController extends Controller
                     } elseif (in_array($transactionStatus, ['deny', 'cancel', 'expire'], true)) {
                         $pesanan->transitionTo(Pesanan::STATUS_CANCELLED, 'midtrans_check');
                     }
-                    
+
                     $pesanan->forceFill([
                         'midtrans_status' => $transactionStatus,
                         'midtrans_raw_response' => json_encode($statusResponse),
                     ])->save();
                 }
             } catch (\Exception $e) {
-                \Log::warning('Midtrans Status Check Error: ' . $e->getMessage());
+                \Log::warning('Midtrans Status Check Error: '.$e->getMessage());
             }
         }
 
@@ -268,7 +301,7 @@ class CheckoutController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Voucher {$code} berhasil " . (in_array($code, session('checkout_voucher_codes', []), true) ? 'ditambahkan' : 'dihapus') . ".",
+            'message' => "Voucher {$code} berhasil ".(in_array($code, session('checkout_voucher_codes', []), true) ? 'ditambahkan' : 'dihapus').'.',
             'appliedVouchers' => $totals['appliedVouchers'],
             'discount' => $totals['discount'],
             'total' => $totals['total'],
@@ -384,16 +417,15 @@ class CheckoutController extends Controller
             return response()->json(['error' => 'Tidak ada item untuk dipesan'], 422);
         }
 
-        $totals = $this->checkoutTotals($checkoutItems);
-        $subtotal = $totals['subtotal'];
-        $shipping = $totals['shipping'];
-        $discount = $totals['discount'];
-        $total = $totals['total'];
-        $appliedVouchers = $totals['appliedVouchers'];
-
         try {
-            $pesanan = DB::transaction(function () use ($validated, $checkoutItems, $subtotal, $shipping, $discount, $total, $appliedVouchers, $payload) {
+            $pesanan = DB::transaction(function () use ($validated, $checkoutItems, $payload) {
                 $this->reserveCheckoutStock($checkoutItems);
+                $totals = $this->checkoutTotals($checkoutItems, lockVouchers: true);
+                $subtotal = $totals['subtotal'];
+                $shipping = $totals['shipping'];
+                $discount = $totals['discount'];
+                $total = $totals['total'];
+                $appliedVouchers = $totals['appliedVouchers'];
 
                 if ($user = auth()->user()) {
                     $user->fill([
@@ -449,17 +481,7 @@ class CheckoutController extends Controller
                     if ($applied['type'] === 'admin') {
                         $applied['voucher']->increment('used_count');
                     } elseif ($applied['type'] === 'loyalty' && auth()->check()) {
-                        $ownedVoucher = LoyaltyVoucher::whereKey($applied['loyaltyVoucher']->id)
-                            ->where('user_id', auth()->id())
-                            ->whereNull('used_at')
-                            ->lockForUpdate()
-                            ->first();
-
-                        if (! $ownedVoucher) {
-                            throw new DomainException('Voucher loyalty sudah dipakai atau tidak tersedia.');
-                        }
-
-                        $ownedVoucher->forceFill([
+                        $applied['loyaltyVoucher']->forceFill([
                             'used_at' => now(),
                             'pesanan_id' => $pesanan->id,
                         ])->save();
@@ -618,11 +640,12 @@ class CheckoutController extends Controller
         $serverKey = config('services.midtrans.server_key');
 
         // Verify notification authenticity
-        $hashed = hash('sha512', $request->input('order_id') . $request->input('status_code') . $request->input('gross_amount') . $serverKey);
+        $hashed = hash('sha512', $request->input('order_id').$request->input('status_code').$request->input('gross_amount').$serverKey);
         $signature = $request->input('signature_key');
 
         if ($hashed !== $signature) {
             Log::warning('Midtrans: Invalid signature', ['order_id' => $request->input('order_id')]);
+
             return response()->json(['status' => 'invalid signature'], 403);
         }
 
@@ -631,6 +654,7 @@ class CheckoutController extends Controller
 
         if (! $pesanan) {
             Log::warning('Midtrans: Order not found', ['order_id' => $orderId]);
+
             return response()->json(['status' => 'order not found'], 404);
         }
 
@@ -761,14 +785,14 @@ class CheckoutController extends Controller
     {
         try {
             // Configure Midtrans
-            \Midtrans\Config::$isProduction = config('services.midtrans.is_production', false);
-            \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
-            \Midtrans\Config::$clientKey = config('services.midtrans.client_key');
+            Config::$isProduction = config('services.midtrans.is_production', false);
+            Config::$serverKey = config('services.midtrans.server_key');
+            Config::$clientKey = config('services.midtrans.client_key');
 
             if (app()->environment('local')) {
-                \Midtrans\Config::$curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
-                \Midtrans\Config::$curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
-                \Midtrans\Config::$curlOptions[CURLOPT_HTTPHEADER] = [];
+                Config::$curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+                Config::$curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
+                Config::$curlOptions[CURLOPT_HTTPHEADER] = [];
             }
 
             // Build item details
@@ -777,7 +801,7 @@ class CheckoutController extends Controller
                     'id' => (string) $item->produk_id,
                     'price' => (int) $item->harga,
                     'quantity' => (int) $item->jumlah,
-                    'name' => mb_substr($item->nama_produk . ' ' . $item->varian_label, 0, 50),
+                    'name' => mb_substr($item->nama_produk.' '.$item->varian_label, 0, 50),
                 ];
             })->toArray();
 
@@ -820,7 +844,7 @@ class CheckoutController extends Controller
             if (array_intersect($enabledPayments, $snapOnlyPayments)) {
                 $params['enabled_payments'] = $enabledPayments;
 
-                $response = \Midtrans\Snap::createTransaction($params);
+                $response = Snap::createTransaction($params);
 
                 $pesanan->forceFill([
                     'midtrans_snap_token' => $response->token ?? null,
@@ -857,7 +881,7 @@ class CheckoutController extends Controller
                 $params['payment_type'] = 'gopay'; // Fallback to QRIS/GoPay
             }
 
-            $response = \Midtrans\CoreApi::charge($params);
+            $response = CoreApi::charge($params);
 
             $pesanan->forceFill([
                 'midtrans_raw_response' => json_encode($response),
