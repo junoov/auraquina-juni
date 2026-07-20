@@ -54,6 +54,22 @@ class Produk extends Model
         return 'Rp ' . number_format($this->harga, 0, ',', '.');
     }
 
+    public function hargaCoretFormatted(): ?string
+    {
+        return $this->harga_coret ? 'Rp ' . number_format($this->harga_coret, 0, ',', '.') : null;
+    }
+
+    public function hasDiscount(): bool
+    {
+        return $this->harga_coret !== null && $this->harga_coret > $this->harga;
+    }
+
+    public function discountPercent(): ?int
+    {
+        if (! $this->hasDiscount()) return null;
+        return (int) round((1 - $this->harga / $this->harga_coret) * 100);
+    }
+
     // Helper: total stok dari semua varian
     public function totalStok(): int
     {

@@ -53,6 +53,9 @@
       $homeProductCards = ($produkUnggulan ?? collect())->map(fn ($produk) => [
           'name' => $produk->nama,
           'price' => $produk->hargaFormatted(),
+          'price_coret' => $produk->hargaCoretFormatted(),
+          'has_discount' => $produk->hasDiscount(),
+          'discount_percent' => $produk->discountPercent(),
           'img' => $productImageUrl($produk->gambarUtama?->url) ?? '',
           'srcset' => $productImageSrcset($produk->gambarUtama?->url),
           'href' => '/shop/'.$produk->slug,
@@ -206,11 +209,22 @@
                 <a href="{{ $product['href'] }}" class="product-carousel-item clean-product-card">
                   <span class="clean-product-card__image">
                     <img src="{{ $product['img'] }}" @if (! empty($product['srcset'])) srcset="{{ $product['srcset'] }}" sizes="(max-width: 640px) 72vw, (max-width: 1024px) 36vw, 280px" @endif alt="{{ $product['name'] }}" loading="{{ $loop->index < 4 ? 'eager' : 'lazy' }}" />
-                    <span class="clean-product-card__badge">{{ $product['badge'] }}</span>
+                    @if ($product['has_discount'])
+                      <span class="sale-badge">Hemat {{ $product['discount_percent'] }}%</span>
+                    @else
+                      <span class="clean-product-card__badge">{{ $product['badge'] }}</span>
+                    @endif
                   </span>
                   <span class="clean-product-card__info">
                     <p class="clean-product-card__name">{{ $product['name'] }}</p>
-                    <p class="clean-product-card__price">{{ $product['price'] }}</p>
+                    @if ($product['has_discount'])
+                      <span class="sale-price">
+                        <span class="sale-price__current">{{ $product['price'] }}</span>
+                        <del class="sale-price__compare">{{ $product['price_coret'] }}</del>
+                      </span>
+                    @else
+                      <p class="clean-product-card__price">{{ $product['price'] }}</p>
+                    @endif
                   </span>
                 </a>
               @endforeach
@@ -248,11 +262,22 @@
               <a class="group flex h-full flex-col overflow-hidden bg-[var(--white)] text-[var(--ink)]" href="{{ $item['href'] }}">
                 <span class="relative block aspect-[4/5] overflow-hidden rounded-[4px]" style="background:#f5f5f5">
                   <img src="{{ $item['img'] }}" @if (! empty($item['srcset'])) srcset="{{ $item['srcset'] }}" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw" @endif alt="{{ $item['name'] }}" loading="lazy" class="h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.03]" />
-                  <span class="clean-product-card__badge">{{ $item['badge'] }}</span>
+                  @if ($item['has_discount'])
+                    <span class="sale-badge">Hemat {{ $item['discount_percent'] }}%</span>
+                  @else
+                    <span class="clean-product-card__badge">{{ $item['badge'] }}</span>
+                  @endif
                 </span>
                 <span class="pt-3">
                   <p class="clean-product-card__name max-sm:text-[13px]">{{ $item['name'] }}</p>
-                  <p class="clean-product-card__price max-sm:text-[13px]">{{ $item['price'] }}</p>
+                  @if ($item['has_discount'])
+                    <span class="sale-price">
+                      <span class="sale-price__current">{{ $item['price'] }}</span>
+                      <del class="sale-price__compare">{{ $item['price_coret'] }}</del>
+                    </span>
+                  @else
+                    <p class="clean-product-card__price max-sm:text-[13px]">{{ $item['price'] }}</p>
+                  @endif
                 </span>
               </a>
             @endforeach

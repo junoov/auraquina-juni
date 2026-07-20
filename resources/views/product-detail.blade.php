@@ -61,7 +61,7 @@
 	              'imageIndex' => $index,
 	          ]);
 	      }))->values()->toArray();
-	      $initialMobileRailIndex = count($images);
+	      $initialMobileRailIndex = 0;
 	      $initialColorSlides = collect($mobileRailSlides)
 	          ->filter(fn (array $slide) => $slide['type'] === 'color' && $slide['color'] === ($colors[0]['name'] ?? null))
 	          ->values();
@@ -134,7 +134,18 @@
             @endfor
             <span style="font-size:11px;color:#71665d;margin-left:4px;">{{ $ratingCount > 0 ? number_format($ratingAverage, 1) . ' · ' . $ratingCount . ' ulasan' : 'Belum ada ulasan' }}</span>
           </div>
-          <p style="font-size:22px;font-weight:600;margin-bottom:28px;color:#201916;font-family:'Plus Jakarta Sans',system-ui,sans-serif;letter-spacing:-0.01em;">{{ $produk->hargaFormatted() }}</p>
+          @if ($produk->hasDiscount())
+            <div class="sale-price-panel">
+              <span class="sale-price-panel__label">Penawaran Istimewa</span>
+              <div class="sale-price-panel__row">
+                <span class="sale-price-panel__current">{{ $produk->hargaFormatted() }}</span>
+                <del class="sale-price-panel__compare">{{ $produk->hargaCoretFormatted() }}</del>
+                <span class="sale-price-panel__saving">Hemat {{ $produk->discountPercent() }}%</span>
+              </div>
+            </div>
+          @else
+            <p style="font-size:22px;font-weight:600;margin-bottom:28px;color:#201916;font-family:'Plus Jakarta Sans',system-ui,sans-serif;letter-spacing:-0.01em;">{{ $produk->hargaFormatted() }}</p>
+          @endif
 
           {{-- Divider --}}
           <div style="height:1px;background:rgba(211,192,172,0.4);margin-bottom:24px;"></div>
@@ -290,7 +301,14 @@
               <div class="related-edit__details">
                 <span class="related-edit__category">{{ $item->kategori->nama }}</span>
                 <span class="related-edit__name">{{ $item->nama }}</span>
-                <span class="related-edit__price">{{ $item->hargaFormatted() }}</span>
+                @if ($item->hasDiscount())
+                  <span class="sale-price">
+                    <span class="sale-price__current">{{ $item->hargaFormatted() }}</span>
+                    <del class="sale-price__compare">{{ $item->hargaCoretFormatted() }}</del>
+                  </span>
+                @else
+                  <span class="related-edit__price">{{ $item->hargaFormatted() }}</span>
+                @endif
               </div>
             </a>
           @endforeach
