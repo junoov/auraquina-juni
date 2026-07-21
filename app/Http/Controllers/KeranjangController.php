@@ -39,6 +39,7 @@ class KeranjangController extends Controller
                     'harga' => $item->produk->harga + ($item->varian?->penyesuaian_harga ?? 0),
                     'jumlah' => $item->jumlah,
                     'subtotal' => ($item->produk->harga + ($item->varian?->penyesuaian_harga ?? 0)) * $item->jumlah,
+                    'stok' => $item->varian?->stok ?? 99,
                 ];
             }),
             'total_item' => $items->sum('jumlah'),

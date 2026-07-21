@@ -204,10 +204,11 @@
           const itemId = parseInt(item.id) || 0;
           const itemHarga = parseInt(item.harga) || 0;
           const itemJumlah = parseInt(item.jumlah) || 1;
+          const itemStok = parseInt(item.stok) || 99;
           const variantLabel = [warna, ukuran].filter(Boolean).join(' / ');
 
           return `
-          <div style="display:flex;gap:12px;padding:20px 0;border-bottom:1px solid var(--border);" data-id="${itemId}" data-harga="${itemHarga}">
+          <div style="display:flex;gap:12px;padding:20px 0;border-bottom:1px solid var(--border);" data-id="${itemId}" data-harga="${itemHarga}" data-stok="${itemStok}">
             <div style="display:flex;align-items:center;justify-content:center;padding-right:4px;flex-shrink:0;">
               <input type="checkbox" data-cart-select value="${itemId}" checked style="width:16px;height:16px;accent-color:var(--brown);cursor:pointer;" onchange="recalcSubtotal()" />
             </div>
@@ -215,13 +216,23 @@
               <img src="${gambar}" alt="${nama}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" />
             </div>
             <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;">
-              <div>
-                <p style="margin:0;font-size:13px;font-weight:500;color:var(--brown);line-height:1.4;font-family:'Plus Jakarta Sans',system-ui,sans-serif;">${nama}</p>
-                ${variantLabel ? `
-                <div style="margin-top:6px;display:inline-flex;align-items:center;gap:4px;border-radius:2px;background:var(--cream);padding:2px 6px;">
-                  ${kodeWarna ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${kodeWarna};"></span>` : ''}
-                  <span style="font-size:10px;color:var(--muted);">${_cartEscapeHtml(variantLabel)}</span>
-                </div>` : ''}
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <div style="flex:1;min-width:0;">
+                  <p style="margin:0;font-size:13px;font-weight:500;color:var(--brown);line-height:1.4;font-family:'Plus Jakarta Sans',system-ui,sans-serif;">${nama}</p>
+                  ${variantLabel ? `
+                  <div style="margin-top:6px;display:inline-flex;align-items:center;gap:4px;border-radius:2px;background:var(--cream);padding:2px 6px;">
+                    ${kodeWarna ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${kodeWarna};"></span>` : ''}
+                    <span style="font-size:10px;color:var(--muted);">${_cartEscapeHtml(variantLabel)}</span>
+                  </div>` : ''}
+                </div>
+                <button type="button" onclick="hapusItem(${itemId})" aria-label="Hapus produk" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:color 0.2s;flex-shrink:0;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--muted)'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </button>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
                 <div style="display:inline-flex;align-items:center;border:1px solid var(--brown);border-radius:2px;">
@@ -259,11 +270,44 @@
       });
   }
 
+  function showCartToast(msg) {
+    let t = document.getElementById('aq-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'aq-toast';
+      t.setAttribute('role', 'status');
+      t.setAttribute('aria-live', 'polite');
+      t.setAttribute('aria-atomic', 'true');
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--brown);color:#fff;padding:10px 20px;border-radius:4px;font-size:12px;font-weight:600;letter-spacing:0.04em;z-index:99999;opacity:0;transition:opacity 0.25s,transform 0.25s;pointer-events:none;font-family:inherit;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 2500);
+  }
+
   function changeItemQty(id, delta) {
     const itemEl = document.querySelector(`[data-id="${id}"]`);
     const qtySpan = itemEl?.querySelector('span[style*="font-weight:700"][style*="width:32px"]');
     const current = parseInt(qtySpan?.textContent) || 1;
-    updateQty(id, current + delta);
+    const stok = parseInt(itemEl?.dataset.stok) || 99;
+
+    let targetQty = current + delta;
+    if (targetQty > stok) {
+      targetQty = stok;
+      showCartToast(`Hanya tersisa ${stok} item untuk varian ini.`);
+    }
+
+    if (targetQty === current && delta > 0) {
+      return; // Do nothing, avoid API request when already at max stock
+    }
+
+    updateQty(id, targetQty);
   }
 
   function updateQty(id, newQty) {
